@@ -10,7 +10,7 @@ import {
   StatusBar 
 } from "react-native";
 
-const App = () => {
+const Cartscreen = () => {
   const [quantity, setQuantity] = useState(1);
   const price = 199000;
 
@@ -25,7 +25,7 @@ const App = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <Image source={require('./img/arrow.png')} style={{ width: 20, height: 20 }} />
+        <Image source={require('../img/arrow.png')} style={{ width: 20, height: 20 }} />
         <Text style={[styles.headerTitle, { flex: 1, textAlign: "center" }]}>Giỏ hàng</Text>
         <View style={{ width: 20 }} />
       </View>
@@ -44,11 +44,11 @@ const App = () => {
           </View>
           <View style={styles.quantityContainer}>
             <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
-              <Image source={require('./img/minus-sign.png')} style={{ width: 15, height: 15 }} />
+              <Image source={require('../img/minus-sign.png')} style={{ width: 15, height: 15 }} />
             </TouchableOpacity>
             <Text style={styles.quantityText}>{quantity}</Text>
             <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
-              <Image source={require('./img/plus.png')} style={{ width: 15, height: 15 }} />
+              <Image source={require('../img/plus.png')} style={{ width: 15, height: 15 }} />
             </TouchableOpacity>
           </View>
         </View>
@@ -60,7 +60,7 @@ const App = () => {
         <View style={styles.discountContainer}>
           <TextInput style={styles.discountInput} placeholder="Nhập mã khuyến mãi của bạn" />
           <TouchableOpacity style={styles.applyButton}>
-            <Image source={require('./img/right-arrow.png')} />
+            <Image source={require('../img/right-arrow.png')} />
           </TouchableOpacity>
         </View>
 
@@ -132,4 +132,4 @@ const styles = StyleSheet.create({
   checkoutText: { color: "white", fontSize: 16, fontWeight: "bold" },
 });
 
-export default App;
+export default Cartscreen;

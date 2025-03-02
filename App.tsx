@@ -15,6 +15,7 @@ import BottomNavigation from "./src/navigation/BottomNavigation.tsx";
 import FavoriteScreen from "./src/component/FavoriteScreen.tsx";
 import NotificationScreen from "./src/component/NotificationScreen.tsx";
 import ProfileScreen from "./src/component/ProfileScreen.tsx";
+import CartScreen from "./src/component/CartScreen.tsx";
 
 
 
@@ -34,6 +35,7 @@ function App() {
         <Stack.Screen name="FavoriteScreen" options={{headerShown:false}}  component={FavoriteScreen}/>
         <Stack.Screen name="NotificationScreen" options={{headerShown:false}}  component={NotificationScreen}/>
         <Stack.Screen name="ProfileScreen" options={{headerShown:false}}  component={ProfileScreen}/>
+        <Stack.Screen name="CartScreen" options={{headerShown:false}}  component={CartScreen}/>
 
       </Stack.Navigator>
    </NavigationContainer>

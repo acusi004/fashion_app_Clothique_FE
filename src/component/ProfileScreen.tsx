@@ -5,66 +5,64 @@ import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 
 
 function ProfileScreen(){
-    const ProfileScreen = () => {
-        return (
-            <View style={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity>
-                        <Image source={require('../img/arrow.png')} style={{ width: 20, height: 20 }} />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>Cá nhân</Text>
-                    <View style={{ width: 28 }} /> {/* Giữ tiêu đề cân đối */}
-                </View>
 
-                {/* User Info */}
-                <View style={styles.profileContainer}>
-                    <Image
-                        source={require('../img/profile.png')} // Ảnh đại diện mẫu
-                        style={styles.avatar}
-                    />
-                    <View>
-                        <Text style={styles.userName}>Đỗ Trung Hiếu</Text>
-                        <Text style={styles.email}>hieudtph35761@fpt.edu.vn</Text>
-                    </View>
-                </View>
-
-                {/* Menu Items */}
-                <TouchableOpacity style={styles.menuItem}>
-                    <View>
-                        <Text style={styles.menuText}>Đơn hàng của tôi</Text>
-                        <Text style={styles.subText}>Đã có 10 đơn hàng</Text>
-                    </View>
-                    <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
+    return (
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity>
+                    <Image source={require('../img/arrow.png')} style={{ width: 20, height: 20 }} />
                 </TouchableOpacity>
-
-                <TouchableOpacity style={styles.menuItem}>
-                    <View>
-                        <Text style={styles.menuText}>Địa chỉ giao hàng</Text>
-                        <Text style={styles.subText}>03 Địa chỉ</Text>
-                    </View>
-                    <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.menuItem}>
-                    <View>
-                        <Text style={styles.menuText}>Đánh giá của tôi</Text>
-                        <Text style={styles.subText}>Đã đánh giá 5 mục</Text>
-                    </View>
-                    <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.menuItem}>
-                    <View>
-                        <Text style={styles.menuText}>Cài đặt</Text>
-                        <Text style={styles.subText}>Thông báo, Mật khẩu, FAQ, Liên hệ</Text>
-                    </View>
-                    <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
-                </TouchableOpacity>
+                <Text style={styles.title}>Cá nhân</Text>
+                <View style={{ width: 28 }} /> {/* Giữ tiêu đề cân đối */}
             </View>
-        );
-    };
 
+            {/* User Info */}
+            <View style={styles.profileContainer}>
+                <Image
+                    source={require('../img/profile.png')} // Ảnh đại diện mẫu
+                    style={styles.avatar}
+                />
+                <View>
+                    <Text style={styles.userName}>Đỗ Trung Hiếu</Text>
+                    <Text style={styles.email}>hieudtph35761@fpt.edu.vn</Text>
+                </View>
+            </View>
+
+            {/* Menu Items */}
+            <TouchableOpacity style={styles.menuItem}>
+                <View>
+                    <Text style={styles.menuText}>Đơn hàng của tôi</Text>
+                    <Text style={styles.subText}>Đã có 10 đơn hàng</Text>
+                </View>
+                <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+                <View>
+                    <Text style={styles.menuText}>Địa chỉ giao hàng</Text>
+                    <Text style={styles.subText}>03 Địa chỉ</Text>
+                </View>
+                <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+                <View>
+                    <Text style={styles.menuText}>Đánh giá của tôi</Text>
+                    <Text style={styles.subText}>Đã đánh giá 5 mục</Text>
+                </View>
+                <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+                <View>
+                    <Text style={styles.menuText}>Cài đặt</Text>
+                    <Text style={styles.subText}>Thông báo, Mật khẩu, FAQ, Liên hệ</Text>
+                </View>
+                <Image source={require('../img/chevron.png')} style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+        </View>
+    );
 
 }
 

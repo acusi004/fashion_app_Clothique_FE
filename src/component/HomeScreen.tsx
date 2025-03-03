@@ -1,21 +1,27 @@
-import {FlatList, Image, StyleSheet, Text, View} from "react-native";
+import {FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {TextInput} from "react-native-paper";
 import Swiper from "react-native-swiper";
 import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
 import {useState} from "react";
+import CartScreen from "./CartScreen.tsx";
 
 
 
 
 
 
-function HomeScreen(){
+// @ts-ignore
+function HomeScreen({navigation}){
 
     //banner
     const banner = [
         require('../Image/banner.png'),
         require('../Image/banner2.png')
     ]
+
+    const navigateCart=()=>{
+        navigation.navigate(CartScreen)
+    }
     return(
        <View style={styles.container}>
            <View style={styles.Header}>
@@ -23,9 +29,11 @@ function HomeScreen(){
                     Chào{'\n'}
                     <Text style={{fontWeight:'bold'}}>Hieu</Text>
                 </Text>
-               <Image
-                   style={styles.ImageHeader}
-                   source={require('../Image/shopping-cart.png')}/>
+               <TouchableOpacity onPress={navigateCart}>
+                   <Image
+                       style={styles.ImageHeader}
+                       source={require('../Image/shopping-cart.png')}/>
+               </TouchableOpacity>
            </View>
            <View style={{marginTop:10}}>
                <TextInput

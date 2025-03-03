@@ -8,7 +8,7 @@ function SuccessScreen(){
 
             {/* Icon Check */}
             <View style={styles.iconContainer}>
-                <Image source={require("../img/checked.png")} style={styles.icon} />
+                <Image source={require('../Image/shopping-bag.png')} style={styles.icon} />
             </View>
 
             {/* Nội dung thông báo */}

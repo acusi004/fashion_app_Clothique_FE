@@ -1,8 +1,11 @@
 import {Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {useState} from "react";
 import {TextInput} from "react-native-paper";
+import HomeScreen from "./HomeScreen.tsx";
+
 
 function CartScreen() {
+
 
     const [quantity, setQuantity] = useState(1);
     const price = 199000;
@@ -13,64 +16,57 @@ function CartScreen() {
     };
 
     return (
-        <View>
-            <SafeAreaView style={styles.container}>
-                <StatusBar barStyle="dark-content" backgroundColor="#fff"/>
+        <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-                {/* Header */}
-                <View style={styles.header}>
-                    <Image source={require('../img/arrow.png')} style={{width: 20, height: 20}}/>
-                    <Text style={[styles.headerTitle, {flex: 1, textAlign: "center"}]}>Giỏ hàng</Text>
-                    <View style={{width: 20}}/>
-                </View>
 
-                {/* Nội dung giỏ hàng */}
-                <View style={{flex: 1}}>
-                    <View style={styles.cartItem}>
-                        <Image
-                            source={{uri: "https://cdn0199.cdn4s.com/media/238%20ma%CC%82%CC%83u%20.jpg"}}
-                            style={styles.productImage}
-                        />
-                        <View style={styles.productInfo}>
-                            <Text style={styles.productTitle}>Áo phông nam thu đông</Text>
-                            <Text style={styles.productSize}>Size S</Text>
-                            <Text style={styles.productPrice}>{price.toLocaleString()} đ</Text>
-                        </View>
-                        <View style={styles.quantityContainer}>
-                            <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
-                                <Image source={require('../img/minus-sign.png')} style={{width: 15, height: 15}}/>
-                            </TouchableOpacity>
-                            <Text style={styles.quantityText}>{quantity}</Text>
-                            <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
-                                <Image source={require('../img/plus.png')} style={{width: 15, height: 15}}/>
-                            </TouchableOpacity>
-                        </View>
+
+            {/* Nội dung giỏ hàng */}
+            <View style={{ flex: 1 }}>
+                <View style={styles.cartItem}>
+                    <Image
+                        source={{ uri: "https://cdn0199.cdn4s.com/media/238%20ma%CC%82%CC%83u%20.jpg" }}
+                        style={styles.productImage}
+                    />
+                    <View style={styles.productInfo}>
+                        <Text style={styles.productTitle}>Áo phông nam thu đông</Text>
+                        <Text style={styles.productSize}>Size S</Text>
+                        <Text style={styles.productPrice}>{price.toLocaleString()} đ</Text>
                     </View>
-                </View>
-
-                {/* Phần thanh toán */}
-                <View style={styles.paymentContainer}>
-                    {/* Mã giảm giá */}
-                    <View style={styles.discountContainer}>
-                        <TextInput style={styles.discountInput} placeholder="Nhập mã khuyến mãi của bạn"/>
-                        <TouchableOpacity style={styles.applyButton}>
-                            <Image source={require('../img/right-arrow.png')}/>
+                    <View style={styles.quantityContainer}>
+                        <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
+                            <Image source={require('../Image/minus.png')} style={{ width: 15, height: 15 }} />
+                        </TouchableOpacity>
+                        <Text style={styles.quantityText}>{quantity}</Text>
+                        <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
+                            <Image source={require('../Image/add.png')} style={{ width: 15, height: 15 }} />
                         </TouchableOpacity>
                     </View>
+                </View>
+            </View>
 
-                    {/* Tổng tiền */}
-                    <View style={styles.totalContainer}>
-                        <Text style={styles.totalText}>Thành tiền:</Text>
-                        <Text style={styles.totalAmount}>{(price * quantity).toLocaleString()} VND</Text>
-                    </View>
-
-                    {/* Nút thanh toán */}
-                    <TouchableOpacity style={styles.checkoutButton}>
-                        <Text style={styles.checkoutText}>Thanh toán</Text>
+            {/* Phần thanh toán */}
+            <View style={styles.paymentContainer}>
+                {/* Mã giảm giá */}
+                <View style={styles.discountContainer}>
+                    <TextInput style={styles.discountInput} placeholder="Nhập mã khuyến mãi của bạn" />
+                    <TouchableOpacity style={styles.applyButton}>
+                        <Image source={require('../Image/next.png')} />
                     </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-        </View>
+
+                {/* Tổng tiền */}
+                <View style={styles.totalContainer}>
+                    <Text style={styles.totalText}>Thành tiền:</Text>
+                    <Text style={styles.totalAmount}>{(price * quantity).toLocaleString()} VND</Text>
+                </View>
+
+                {/* Nút thanh toán */}
+                <TouchableOpacity style={styles.checkoutButton}>
+                    <Text style={styles.checkoutText}>Thanh toán</Text>
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     )
 }
 
@@ -154,10 +150,15 @@ const styles = StyleSheet.create({
     },
     discountInput: {
         flex: 1,
-        fontSize: 14
+        fontSize: 14,
+        backgroundColor:'@null',
+
     },
     applyButton: {
-        padding: 8
+        padding: 13,
+        borderRadius:10,
+        backgroundColor:'#C5CCC9',
+
     },
 
     totalContainer: {

@@ -37,6 +37,7 @@ const FeedbackScreen = () => {
             <Text style={styles.reviewText}>Áo đẹp quá</Text>
           </View>
           <Text style={styles.reviewDate}>20/03/2020</Text>
+         
         </View>
       </View>
     </View>

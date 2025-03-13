@@ -1,8 +1,6 @@
 import {Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {useState} from "react";
 import {TextInput} from "react-native-paper";
-import HomeScreen from "./HomeScreen.tsx";
-
 
 function CartScreen() {
 

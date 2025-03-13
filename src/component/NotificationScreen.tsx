@@ -2,10 +2,6 @@ import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} f
 import DetailScreen from "./DetailScreen.tsx";
 import {useState} from "react";
 
-
-
-
-
 function NotificationScreen(){
 
     const notifications = [

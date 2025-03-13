@@ -18,6 +18,9 @@ import ChoseScreen from './src/component/ChoseScreen.tsx';
 import AddressScreen from './src/component/AddressScreen.tsx';
 import EditAddress from './src/component/EditAddress.tsx';
 import EditProfileScreen from './src/component/EditProfileScreen.tsx';
+import CheckOutScreen from './src/component/CheckOutScreen.tsx';
+import FeedBackScreen from './src/component/FeedBackScreen.tsx';
+import HTScreen from './src/component/HTScreen.tsx';
 
 function App() {
 
@@ -36,6 +39,18 @@ function App() {
                     name="ChoseScreen"
                     options={{ headerShown: false }}
                     component={ChoseScreen} />
+                <Stack.Screen
+                    name="CheckOutScreen"
+                    options={{ headerShown: false }}
+                    component={CheckOutScreen} />
+                <Stack.Screen
+                    name="FeedBackScreen"
+                    options={{ headerShown: false }}
+                    component={FeedBackScreen} />
+                <Stack.Screen
+                    name="HTScreen"
+                    options={{ headerShown: false }}
+                    component={HTScreen} />
                 <Stack.Screen
                     name="LoginScreen"
                     options={{ headerShown: false }}

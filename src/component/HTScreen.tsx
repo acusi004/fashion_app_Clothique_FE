@@ -8,8 +8,8 @@ const HTScreen = () => {
       <Text style={styles.title}>Thành Công!</Text>
 
       {/* Icon Check */}
-      <View style={styles.iconContainer}>
-        <Image source={require("../img/checked.png")} style={styles.icon} />
+      <View >
+        <Image source={require("../Image/checked.png")} style={styles.icon} />
       </View>
 
       {/* Nội dung thông báo */}
@@ -38,10 +38,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
   },
-  
+
   icon: {
-    width: 100,  
-    height: 100, 
+    width: 100,
+    height: 100,
     resizeMode: "contain",
     marginBottom: 20,
   },

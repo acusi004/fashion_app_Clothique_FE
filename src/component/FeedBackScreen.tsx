@@ -5,14 +5,14 @@ import Stars from "react-native-stars";
 import { useNavigation } from "@react-navigation/native";
 
 const FeedBackScreen = () => {
-  const navigation = useNavigation(); 
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={require("../img/arrow.png")} style={styles.backIcon} />
+          <Image source={require("../Image/arrow.png")} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Đánh giá sản phẩm</Text>
       </View>
@@ -21,7 +21,7 @@ const FeedBackScreen = () => {
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <Image
-            source={require("../img/product1.jpg")} // Ảnh sản phẩm
+            source={require("../Image/aolen.jpg")} // Ảnh sản phẩm
             style={styles.productImage}
           />
           <View style={styles.productInfo}>

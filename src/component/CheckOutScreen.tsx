@@ -9,7 +9,7 @@ const CheckOutScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Nút quay lại */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-       <Image source={require('../img/arrow.png')} style={{ width: 20, height: 20 }} />
+       <Image source={require('../Image/arrow.png')} style={{ width: 20, height: 20 }} />
       </TouchableOpacity>
 
       <Text style={styles.title}>Thanh toán</Text>
@@ -33,7 +33,7 @@ const CheckOutScreen = ({ navigation }) => {
           >
             <View style={styles.radioRow}>
             <Image
-            source={require("../img/zalopay.png")}
+            source={require("../Image/zalopay.png")}
             style={styles.zalopay}
           />
               <RadioButton value="zalopay" color="#007AFF" />
@@ -41,7 +41,7 @@ const CheckOutScreen = ({ navigation }) => {
             </View>
             <View style={styles.radioRow}>
             <Image
-            source={require("../img/cod.png")}
+            source={require("../Image/cod.png")}
             style={styles.cod}/>
               <RadioButton value="cod" color="#007AFF" />
               <Text>Thanh toán khi nhận hàng</Text>
@@ -55,7 +55,7 @@ const CheckOutScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Phương thức giao hàng</Text>
         <View style={styles.shippingBox}>
           <Image
-            source={require("../img/ghtk.png")}
+            source={require("../Image/ghtk.png")}
             style={styles.shippingIcon}
           />
           <Text>Giao hàng tiết kiệm (2-3 days)</Text>

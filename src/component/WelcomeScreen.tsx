@@ -1,5 +1,6 @@
 import { StyleSheet, View, Image } from "react-native";
 import { useEffect } from "react";
+import LoginScreen from "./LoginScreen.tsx";
 
 // @ts-ignore
 function WelcomeScreen({ navigation }) {
@@ -7,7 +8,7 @@ function WelcomeScreen({ navigation }) {
     useEffect(() => {
         // Sau 3 giây, tự động chuyển sang màn hình Home
         const timer = setTimeout(() => {
-            navigation.replace("BottomNavigation");
+            navigation.navigate(LoginScreen);
         }, 3000);
 
         return () => clearTimeout(timer);

@@ -3,6 +3,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import { useState } from "react";
 import { TextInput } from "react-native-paper";
 import Swiper from "react-native-swiper";
+import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
 
 // @ts-ignore
 function HomeScreen({ navigation }) {
@@ -57,10 +58,8 @@ function HomeScreen({ navigation }) {
                 </Swiper>
             </View>
 
-            {/* Nội dung chính */}
-            <View style={styles.Body}>
-                {/* Nội dung sẽ được thêm sau */}
-            </View>
+
+            <TopTabNavigation/>
         </View>
     );
 }
@@ -71,7 +70,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 30,
-        backgroundColor: "#fff",
+
     },
     Header: {
         width: '100%',
@@ -105,6 +104,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 180,
         marginTop: 20,
+        marginBottom:20,
     },
     slideBanner: {
         borderRadius: 20,
@@ -118,6 +118,8 @@ const styles = StyleSheet.create({
     },
     Body: {
         marginTop: 10,
+        width:"100%",
+        height:'auto'
     },
 });
 

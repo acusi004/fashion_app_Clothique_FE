@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import BottomNavigation from "../navigation/BottomNavigation.tsx";
 
+// @ts-ignore
 function LoginScreen({ navigation }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [secureText, setSecureText] = useState(true);
+
+    const LoginHome =()=>{
+        navigation.navigate("BottomNavigation");
+    }
 
     return (
         <View style={styles.container}>
@@ -45,7 +51,7 @@ function LoginScreen({ navigation }) {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={LoginHome}>
                 <Text style={styles.buttonText}>Đăng nhập</Text>
             </TouchableOpacity>
 

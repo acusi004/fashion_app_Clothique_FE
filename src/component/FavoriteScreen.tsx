@@ -18,6 +18,7 @@ function FavoriteScreen() {
                 <TouchableOpacity style={styles.btnDelete}>
                     <Image style={styles.btnIconBag} source={require('../Image/remove.png')} />
                 </TouchableOpacity>
+
             </View>
         </TouchableOpacity>
     )

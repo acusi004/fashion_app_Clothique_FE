@@ -1,16 +1,35 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert} from "react-native";
 import BottomNavigation from "../navigation/BottomNavigation.tsx";
 
 // @ts-ignore
 function LoginScreen({ navigation }) {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState('');  // Biến username thay vì email
+    const [password, setPassword] = useState('');  // Biến password
     const [secureText, setSecureText] = useState(true);
 
-    const LoginHome =()=>{
-        navigation.navigate("BottomNavigation");
+
+    const handleLogin = () => {
+        console.log('Username:', username);  // Log giá trị username
+        console.log('Password:', password);  // Log giá trị password
+
+        // Kiểm tra xem username và password có hợp lệ hay không
+        if (!username || username.trim() === '') {
+            Alert.alert('Lỗi', 'Vui lòng nhập email');
+            return;
+        }
+
+        // Kiểm tra xem mật khẩu đã được nhập chưa
+        if (!password || password.trim() === '') {
+            Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
+            return;
+        }
+
+
+
+
     }
+
 
     return (
         <View style={styles.container}>
@@ -24,8 +43,8 @@ function LoginScreen({ navigation }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Email"
-                        value={email}
-                        onChangeText={setEmail}
+                        value={username}
+                        onChangeText={text => setUsername(text)}
                     />
                 </View>
 
@@ -35,7 +54,7 @@ function LoginScreen({ navigation }) {
                         placeholder="Mật khẩu"
                         secureTextEntry={secureText}
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={text => setPassword(text)}
                     />
                     <TouchableOpacity onPress={() => setSecureText(!secureText)} style={styles.eyeIcon}>
                         <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")} style={styles.eyeImage} />
@@ -51,7 +70,7 @@ function LoginScreen({ navigation }) {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={LoginHome}>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Đăng nhập</Text>
             </TouchableOpacity>
 

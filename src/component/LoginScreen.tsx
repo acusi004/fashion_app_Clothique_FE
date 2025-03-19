@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert} from "react-native";
 import BottomNavigation from "../navigation/BottomNavigation.tsx";
+import authService from "../service/authService";
 
 // @ts-ignore
 function LoginScreen({ navigation }) {
@@ -9,7 +10,7 @@ function LoginScreen({ navigation }) {
     const [secureText, setSecureText] = useState(true);
 
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         console.log('Username:', username);  // Log giá trị username
         console.log('Password:', password);  // Log giá trị password
 
@@ -17,13 +18,29 @@ function LoginScreen({ navigation }) {
         if (!username || username.trim() === '') {
             Alert.alert('Lỗi', 'Vui lòng nhập email');
             return;
+        }else  if (!password || password.trim() === '') {
+            Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
+            console.log('pass'+password)
+            return;
+        }else {
+            try {
+                // Gọi hàm loginUser từ authService
+                const result = await authService.loginUser(username, password);
+                // Nếu thành công điều hướng sang màn hình Home
+                Alert.alert('Đăng nhập thành công', `Chào, ${result.username?.full_name || 'bạn'}`);
+                // Ví dụ điều hướng:
+                navigation.navigate('BottomNavigation');
+            } catch (error) {
+                // Tuỳ vào error trả về từ backend, bạn hiển thị phù hợp
+                Alert.alert('Đăng nhập thất bại');
+
+                console.error(error);
+            }
         }
 
-        // Kiểm tra xem mật khẩu đã được nhập chưa
-        if (!password || password.trim() === '') {
-            Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
-            return;
-        }
+
+
+
 
 
 

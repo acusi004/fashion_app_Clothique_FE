@@ -1,10 +1,82 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert} from "react-native";
+import RegisterService from "../service/RegisterService";
+import {ActivityIndicator} from "react-native-paper";
 
-function RegisterScreen() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+// @ts-ignore
+function RegisterScreen({navigation}) {
+
+    const [email, setEmail]                   = useState('');
+    const [password, setPassword]             = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading]               = useState(false);
+
+
+    // Hàm validate email: kiểm tra email có đúng định dạng
+    // @ts-ignore
+    const validateEmail = (mail) => {
+        // Regex đơn giản kiểm tra định dạng email: có ký tự trước @, sau @, và sau dấu chấm
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(mail);
+    };
+
+    // Hàm validate mật khẩu:
+    // - Ít nhất 8 ký tự
+    // - Ký tự đầu tiên phải là chữ cái in hoa
+    // - Có ít nhất 1 số và 1 ký tự đặc biệt (ví dụ: !@#$%^&*)
+    // @ts-ignore
+    const validatePassword = (pwd) => {
+        const regex = /^(?=.{8,})(?=.*\d)(?=.*[!@#$%^&*])[A-Z][A-Za-z0-9!@#$%^&*]+$/;
+        return regex.test(pwd);
+    };
+
+
+    const handleRegister = async () => {
+        // Kiểm tra các trường thông tin đã được nhập chưa
+        if ( !email || !password || !confirmPassword) {
+            Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin!');
+            return;
+        }
+
+        // Kiểm tra định dạng email
+        if (!validateEmail(email)) {
+            Alert.alert('Lỗi', 'Email không hợp lệ, vui lòng kiểm tra lại!');
+            return;
+        }
+
+        // Kiểm tra mật khẩu và xác nhận mật khẩu có khớp không
+        if (password !== confirmPassword) {
+            Alert.alert('Lỗi', 'Mật khẩu không khớp!');
+            return;
+        }
+        // Kiểm tra định dạng mật khẩu
+        if (!validatePassword(password)) {
+            Alert.alert(
+                'Lỗi',
+                'Mật khẩu phải có ít nhất 8 ký tự, ký tự đầu viết hoa, có ít nhất 1 số và 1 ký tự đặc biệt (ví dụ: !@#$%^&*).'
+            );
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const result = await RegisterService.register({ email, password });
+            setLoading(false);
+            Alert.alert('Thành công', 'Đăng ký thành công!', [
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        // Sau khi đăng ký thành công chuyển về màn hình đăng nhập
+                        navigation.navigate('LoginScreen');
+                    },
+                },
+            ]);
+
+        } catch (error) {
+            setLoading(false);
+            console.error(error)
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -14,6 +86,7 @@ function RegisterScreen() {
                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
+                keyboardType={"email-address"}
             />
             <TextInput
                 style={styles.input}
@@ -29,9 +102,13 @@ function RegisterScreen() {
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
             />
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Đăng ký</Text>
-            </TouchableOpacity>
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                    <Text style={styles.buttonText}>Đăng ký</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 }

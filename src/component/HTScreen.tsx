@@ -3,6 +3,35 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 
 const HTScreen = () => {
+  
+      const handleLogin = async () => {
+          console.log('Username:', username);  // Log giá trị username
+          console.log('Password:', password);  // Log giá trị password
+  
+          // Kiểm tra xem username và password có hợp lệ hay không
+          if (!username || username.trim() === '') {
+              Alert.alert('Lỗi', 'Vui lòng nhập email');
+              return;
+          }else  if (!password || password.trim() === '') {
+              Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
+              console.log('pass'+password)
+              return;
+          }else {
+              try {
+                  // Gọi hàm loginUser từ authService
+                  const result = await authService.loginUser(username, password);
+                  // Nếu thành công điều hướng sang màn hình Home
+                  Alert.alert('Đăng nhập thành công', `Chào, ${result.username?.full_name || 'bạn'}`);
+                  // Ví dụ điều hướng:
+                  navigation.navigate('BottomNavigation');
+              } catch (error) {
+                  // Tuỳ vào error trả về từ backend, bạn hiển thị phù hợp
+                  Alert.alert('Đăng nhập thất bại');
+  
+                  console.error(error);
+              }
+          }
+          
   const navigation = useNavigation(); // ✅ Đúng! Gọi hook bên trong function component
   return (
     <View style={styles.container}>

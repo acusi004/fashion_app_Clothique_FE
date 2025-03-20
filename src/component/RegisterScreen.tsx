@@ -10,7 +10,7 @@ function RegisterScreen({navigation}) {
     const [password, setPassword]             = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading]               = useState(false);
-
+    const [secureText, setSecureText] = useState(true);
 
     // Hàm validate email: kiểm tra email có đúng định dạng
     // @ts-ignore
@@ -61,19 +61,15 @@ function RegisterScreen({navigation}) {
         setLoading(true);
         try {
             const result = await RegisterService.register({ email, password });
-            setLoading(false);
-            Alert.alert('Thành công', 'Đăng ký thành công!', [
-                {
-                    text: 'OK',
-                    onPress: () => {
-                        // Sau khi đăng ký thành công chuyển về màn hình đăng nhập
-                        navigation.navigate('LoginScreen');
-                    },
-                },
-            ]);
+
+            setLoading(true)
+            setTimeout(() => {
+                setLoading(false);
+                navigation.navigate('LoginScreen'); // chuyển sang màn hình login sau 3 giây
+            }, 3000);
 
         } catch (error) {
-            setLoading(false);
+
             console.error(error)
         }
     };
@@ -91,7 +87,7 @@ function RegisterScreen({navigation}) {
             <TextInput
                 style={styles.input}
                 placeholder="Mật khẩu"
-                secureTextEntry
+                secureTextEntry={secureText}
                 value={password}
                 onChangeText={setPassword}
             />
@@ -103,7 +99,7 @@ function RegisterScreen({navigation}) {
                 onChangeText={setConfirmPassword}
             />
             {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color="#000" />
             ) : (
                 <TouchableOpacity style={styles.button} onPress={handleRegister}>
                     <Text style={styles.buttonText}>Đăng ký</Text>

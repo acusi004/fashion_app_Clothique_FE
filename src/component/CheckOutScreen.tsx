@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { RadioButton } from "react-native-paper";
 
+// @ts-ignore
 const CheckOutScreen = ({ navigation }) => {
   const [paymentMethod, setPaymentMethod] = useState("zalopay");
 

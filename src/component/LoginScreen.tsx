@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert} from "react-native";
 import BottomNavigation from "../navigation/BottomNavigation.tsx";
 import authService from "../service/authService";
+import {ActivityIndicator} from "react-native-paper";
 
 // @ts-ignore
 function LoginScreen({ navigation }) {
     const [username, setUsername] = useState('');  // Biến username thay vì email
     const [password, setPassword] = useState('');  // Biến password
     const [secureText, setSecureText] = useState(true);
-
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
         console.log('Username:', username);  // Log giá trị username
@@ -26,10 +27,15 @@ function LoginScreen({ navigation }) {
             try {
                 // Gọi hàm loginUser từ authService
                 const result = await authService.loginUser(username, password);
+
                 // Nếu thành công điều hướng sang màn hình Home
-                Alert.alert('Đăng nhập thành công', `Chào, ${result.username?.full_name || 'bạn'}`);
-                // Ví dụ điều hướng:
-                navigation.navigate('BottomNavigation');
+                setLoading(true);
+                setTimeout(() => {
+                    setLoading(false);
+                    navigation.navigate('BottomNavigation'); // chuyển sang màn hình chính sau 3 giây
+                }, 3000);
+
+
             } catch (error) {
                 // Tuỳ vào error trả về từ backend, bạn hiển thị phù hợp
                 Alert.alert('Đăng nhập thất bại');
@@ -87,9 +93,14 @@ function LoginScreen({ navigation }) {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Đăng nhập</Text>
-            </TouchableOpacity>
+
+            {loading ? (
+                <ActivityIndicator size="large" color="#000" />
+            ) : (
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                    <Text style={styles.buttonText}>Đăng nhập</Text>
+                </TouchableOpacity>
+            )}
 
 
         </View>

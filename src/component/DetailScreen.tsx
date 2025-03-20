@@ -1,30 +1,40 @@
-import {Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {useState} from "react";
+// DetailScreen.js
+import React, { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-function DetailScreen(){
+// @ts-ignore
+function DetailScreen({ route, navigation }){
+    // Lấy dữ liệu sản phẩm được truyền qua navigation
+    const { product } = route.params;
 
-    // luu size
+    // Lưu kích cỡ được chọn
     const [size, setSize] = useState('');
     const sz = [
         {id:0, Size: 'S'},
         {id:1, Size: 'M'},
         {id:2, Size: 'L'},
         {id:3, Size: 'XL'}
-    ]
+    ];
 
-    return(
+    return (
         <View style={styles.container}>
             <ScrollView style={styles.ScrollView}>
                 <View style={styles.header}>
-                    <Image style={styles.ImageItem} source={require('../Image/image1.png')}/>
-                    <TouchableOpacity style={styles.btnBackToHome}>
+                    {/* Hiển thị ảnh sản phẩm chính, bạn có thể lấy từ product.imageUrls hoặc variant nào đó */}
+                    <Image
+                        style={styles.ImageItem}
+                        source={{ uri: product.imageUrls?.[0] || 'https://via.placeholder.com/300' }}
+                    />
+                    <TouchableOpacity style={styles.btnBackToHome} onPress={() => navigation.goBack()}>
                         <Image source={require('../Image/back.png')} />
                     </TouchableOpacity>
                 </View>
 
                 <View style={{paddingLeft:10, paddingRight:10}}>
                     <View style={styles.headerChild}>
-                        <Text style={styles.itemPrice}>199.000 VND</Text>
+                        <Text style={styles.itemPrice}>
+                            {`${product.variants[0]?.price.toLocaleString()} VND`}
+                        </Text>
                         <Text style={styles.itemLuotBan}>Đã bán 39.1k</Text>
                     </View>
                     <View style={styles.body}>
@@ -50,33 +60,21 @@ function DetailScreen(){
                                     justifyContent:'center',
                                     marginRight:5,
                                     marginTop:10
-
                                 }}
                             >
-                                <Text style={{ color: size === item.Size ? 'white' : 'black' }}>{item.Size}</Text>
+                                <Text style={{ color: size === item.Size ? 'white' : 'black' }}>
+                                    {item.Size}
+                                </Text>
                             </TouchableOpacity>
                         ))}
                     </View>
                     <View style={styles.footer}>
                         <Text style={styles.itemTitle}>
-                            Ao phong nam thu dong
+                            {product.name}
                         </Text>
                         <View style={{padding:17}}>
                             <Text style={styles.footer_Content}>
-                                Chất liệu và Đặc điểm Nổi bật
-                                Chất liệu cao cấp, giữ ấm hoàn hảo: len lông cừu, cotton dày dặn hoặc nỉ pha sợi tổng hợp giúp bảo vệ cơ thể khỏi cái lạnh nhưng vẫn thoáng khí.
-                                Bề mặt vải mềm mại, co giãn nhẹ, mang lại cảm giác thoải mái và linh hoạt khi di chuyển.
-                                Thiết kế Thời Thượng và Tinh Tế
-                                Phong cách hiện đại với form dáng slim-fit hoặc oversize, tôn lên vóc dáng nam tính và mạnh mẽ.
-                                Cổ áo tròn, cổ cao, hoặc cổ gập với chi tiết bo gọn ở tay áo và gấu áo giúp giữ ấm hiệu quả.
-                                Các điểm nhấn như đường may tinh xảo, khóa kéo kim loại sang trọng, hoặc họa tiết tinh tế làm nổi bật gu thẩm mỹ cá nhân.
-                                Chất liệu và Đặc điểm Nổi bật{'\n'}Chất liệu cao cấp, giữ ấm hoàn hảo: len lông cừu, cotton dày dặn hoặc nỉ pha sợi tổng hợp giúp bảo vệ cơ thể khỏi cái lạnh nhưng vẫn thoáng khí.
-                                Bề mặt vải mềm mại, co giãn nhẹ, mang lại cảm giác thoải mái và linh hoạt khi di chuyển.
-                                Thiết kế Thời Thượng và Tinh Tế
-                                Phong cách hiện đại với form dáng slim-fit hoặc oversize, tôn lên vóc dáng nam tính và mạnh mẽ.
-                                Cổ áo tròn, cổ cao, hoặc cổ gập với chi tiết bo gọn ở tay áo và gấu áo giúp giữ ấm hiệu quả.
-                                Các điểm nhấn như đường may tinh xảo, khóa kéo kim loại sang trọng, hoặc họa tiết tinh tế làm nổi bật gu thẩm mỹ cá nhân.
-
+                                {product.description || 'Chưa có mô tả sản phẩm'}
                             </Text>
                         </View>
                     </View>
@@ -99,21 +97,19 @@ function DetailScreen(){
                     <Text>Thêm vào giỏ hàng</Text>
                 </TouchableOpacity>
             </View>
-
-
         </View>
-    )
+    );
 }
-
 
 const styles = StyleSheet.create({
     container:{
         flex:1,
-
     },
     ImageItem:{
-
-    }, btnBackToHome:{
+        width: '100%',
+        height: 300,
+    },
+    btnBackToHome:{
         width:34,
         height:34,
         borderRadius:34,
@@ -124,18 +120,13 @@ const styles = StyleSheet.create({
         alignItems:'center',
         justifyContent:'center'
     },
-
     header:{
         alignItems:'center',
-
     },
     headerChild:{
         flexDirection:'row',
         marginTop:20,
         justifyContent:'space-between'
-    },
-    itemSoSanPham:{
-        marginLeft:80,
     },
     itemLuotBan:{
         marginLeft:10,
@@ -144,20 +135,17 @@ const styles = StyleSheet.create({
     itemPrice:{
         fontWeight:'bold',
         fontSize:24
-
-    }, body:{
+    },
+    body:{
         flexDirection:'row',
         marginTop:10
-
     },
     btnPlus:{
-        borderStyle:'solid',
         backgroundColor:'#D8D8D8',
         borderRadius:15,
         padding:3
     },
     btnMinus:{
-        borderStyle:'solid',
         backgroundColor:'#D8D8D8',
         borderRadius:15,
         padding:3
@@ -166,7 +154,6 @@ const styles = StyleSheet.create({
         marginLeft:15,
         marginRight:15,
         fontSize:16,
-
     },
     bodyChild:{
         flexDirection:'row',
@@ -191,11 +178,8 @@ const styles = StyleSheet.create({
         borderRadius:10,
         justifyContent:'center',
         alignItems:'center',
-        position:'static'
     },
-    ScrollView:{
-
-    },
+    ScrollView:{ },
     btnFooter:{
         justifyContent:'space-between',
         flexDirection:'row',
@@ -210,16 +194,12 @@ const styles = StyleSheet.create({
         borderRadius:10,
         justifyContent:'center',
         alignItems:'center',
-
     },
-    rating:{
-
-    },
+    rating:{ },
     rating_Title:{
         fontWeight:'bold',
         fontSize:17
     }
+});
 
-
-})
 export default DetailScreen;

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, StyleSheet} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import EditAddress from "./EditAddress.tsx";
 
 // Danh sách địa chỉ
 const AddressScreen = () => {
@@ -18,7 +19,7 @@ const AddressScreen = () => {
                 data={addresses}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.addressCard} onPress={() => navigation.navigate("EditAddress", { item })}>
+                    <TouchableOpacity style={styles.addressCard} onPress={() => navigation.navigate(EditAddress, { item })}>
                         <View>
                             <Text style={styles.name}>{item.name}</Text>
                             <Text style={styles.address}>{item.address}</Text>

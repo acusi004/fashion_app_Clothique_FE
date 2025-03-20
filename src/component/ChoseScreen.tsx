@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+// @ts-ignore
 const ChoseScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>

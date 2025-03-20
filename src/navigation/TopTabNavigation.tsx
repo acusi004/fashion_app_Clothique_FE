@@ -3,6 +3,7 @@ import {createMaterialTopTabNavigator} from "@react-navigation/material-top-tabs
 import ShirtScreen from "../component/ShirtScreen.tsx";
 import TrousersScreen from "../component/TrousersScreen.tsx";
 import DressScreen from "../component/DressScreen.tsx";
+import AllProducts from "../component/AllProducts.tsx";
 
 function TopTabNavigation() {
 
@@ -22,6 +23,12 @@ function TopTabNavigation() {
            }}
        >
            <Tab.Screen
+               name="Tất cả"
+               component={AllProducts}
+
+           />
+
+           <Tab.Screen
                name="Áo"
                component={ShirtScreen}
 
@@ -39,7 +46,6 @@ function TopTabNavigation() {
 const styles = StyleSheet.create({
     container: {
         width: "100%",
-        height: 150,
         backgroundColor: "#000",
         borderRadius: 30,
         alignItems: "center",

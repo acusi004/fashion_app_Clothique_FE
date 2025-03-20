@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet } from "react-native";
 
 // Chỉnh sửa địa chỉ
+// @ts-ignore
 const EditAddress = ({ route }) => {
-    
+
     const { item } = route.params;
     const [name, setName] = useState(item.name);
     const [phone, setPhone] = useState("0123456789");

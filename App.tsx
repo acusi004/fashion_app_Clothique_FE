@@ -21,6 +21,7 @@ import EditProfileScreen from './src/component/EditProfileScreen.tsx';
 import CheckOutScreen from './src/component/CheckOutScreen.tsx';
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
+import DetailScreen from "./src/component/DetailScreen.tsx";
 
 function App() {
 
@@ -90,6 +91,10 @@ function App() {
                     name="ProfileScreen"
                     options={{ headerShown: false }}
                     component={ProfileScreen} />
+                <Stack.Screen
+                    name="DetailScreen"
+                    options={{ headerShown: false }}
+                    component={DetailScreen} />
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

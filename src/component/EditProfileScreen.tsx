@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, {useState} from "react";
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image} from "react-native";
+import {useNavigation} from "@react-navigation/native";
 
 const EditProfileScreen = () => {
     const navigation = useNavigation();
@@ -13,30 +13,30 @@ const EditProfileScreen = () => {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Image source={require("../Image/back.png")} style={styles.icon} />
+                    <Image source={require("../Image/back.png")} style={styles.icon}/>
                 </TouchableOpacity>
                 <Text style={styles.title}>Chỉnh sửa hồ sơ</Text>
-                <View style={{ width: 28 }} />
+                <View style={{width: 28}}/>
             </View>
 
             {/* Ảnh đại diện */}
             <View style={styles.avatarContainer}>
-                <Image source={require("../Image/user-out.png")} style={styles.avatar} />
+                <Image source={require("../Image/user-out.png")} style={styles.avatar}/>
                 <TouchableOpacity style={styles.editAvatar}>
-                    <Image source={require("../Image/edit.png")} style={styles.icon} />
+                    <Image source={require("../Image/edit.png")} style={styles.icon}/>
                 </TouchableOpacity>
             </View>
 
             {/* Form chỉnh sửa */}
             <View style={styles.form}>
                 <Text style={styles.label}>Họ và tên</Text>
-                <TextInput style={styles.input} value={name} onChangeText={setName} />
-                
+                <TextInput style={styles.input} value={name} onChangeText={setName}/>
+
                 <Text style={styles.label}>Email</Text>
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
-                
+                <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address"/>
+
                 <Text style={styles.label}>Số điện thoại</Text>
-                <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+                <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad"/>
             </View>
 
             {/* Nút lưu */}

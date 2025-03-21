@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert} from "react-native";
 import BottomNavigation from "../navigation/BottomNavigation.tsx";
 import authService from "../service/authService";
 import {ActivityIndicator} from "react-native-paper";
 
 // @ts-ignore
-function LoginScreen({ navigation }) {
+function LoginScreen({navigation}) {
     const [username, setUsername] = useState('');  // Biến username thay vì email
     const [password, setPassword] = useState('');  // Biến password
     const [secureText, setSecureText] = useState(true);
@@ -19,11 +19,11 @@ function LoginScreen({ navigation }) {
         if (!username || username.trim() === '') {
             Alert.alert('Lỗi', 'Vui lòng nhập email');
             return;
-        }else  if (!password || password.trim() === '') {
+        } else if (!password || password.trim() === '') {
             Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
-            console.log('pass'+password)
+            console.log('pass' + password)
             return;
-        }else {
+        } else {
             try {
                 // Gọi hàm loginUser từ authService
                 const result = await authService.loginUser(username, password);
@@ -45,19 +45,13 @@ function LoginScreen({ navigation }) {
         }
 
 
-
-
-
-
-
-
     }
 
 
     return (
         <View style={styles.container}>
             <View style={styles.logoContainer}>
-                <Image source={require("../Image/logo.png")} style={styles.logo} />
+                <Image source={require("../Image/logo.png")} style={styles.logo}/>
             </View>
             <Text style={styles.title}>Clothique</Text>
 
@@ -80,7 +74,8 @@ function LoginScreen({ navigation }) {
                         onChangeText={text => setPassword(text)}
                     />
                     <TouchableOpacity onPress={() => setSecureText(!secureText)} style={styles.eyeIcon}>
-                        <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")} style={styles.eyeImage} />
+                        <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")}
+                               style={styles.eyeImage}/>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.footerContainer}>
@@ -95,7 +90,7 @@ function LoginScreen({ navigation }) {
 
 
             {loading ? (
-                <ActivityIndicator size="large" color="#000" />
+                <ActivityIndicator size="large" color="#000"/>
             ) : (
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Đăng nhập</Text>

@@ -1,28 +1,29 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 
 function FavoriteScreen() {
 
     return (
         <TouchableOpacity style={styles.container}>
             <View style={styles.btnItem}>
-                <Image style={styles.FvImage} source={require('../Image/QuanAo.png')} />
+                <Image style={styles.FvImage} source={require('../Image/QuanAo.png')}/>
             </View>
-            <View style={{ flexDirection: 'column' }}>
+            <View style={{flexDirection: 'column'}}>
                 <Text style={styles.FvTitle}>Bộ quần áo hình tam giác</Text>
                 <Text style={styles.FvPrice}>200.000 VND</Text>
             </View>
-            <View style={{ flexDirection: 'column', }}>
+            <View style={{flexDirection: 'column',}}>
                 <TouchableOpacity style={styles.btnAddToCart}>
-                    <Image style={styles.btnIconBag} source={require('../Image/shopping-bag.png')} />
+                    <Image style={styles.btnIconBag} source={require('../Image/shopping-bag.png')}/>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.btnDelete}>
-                    <Image style={styles.btnIconBag} source={require('../Image/remove.png')} />
+                    <Image style={styles.btnIconBag} source={require('../Image/remove.png')}/>
                 </TouchableOpacity>
 
             </View>
         </TouchableOpacity>
     )
 }
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
@@ -31,13 +32,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around'
 
 
-    }, btnItem: {
-
-
-    },
-    FvImage: {
-
-    },
+    }, btnItem: {},
+    FvImage: {},
     FvTitle: {
         fontFamily: 'Nunito Sans',
         fontSize: 14,

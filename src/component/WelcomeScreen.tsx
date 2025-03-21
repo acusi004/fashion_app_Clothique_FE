@@ -1,18 +1,19 @@
-import { StyleSheet, View, Image } from "react-native";
-import { useEffect } from "react";
+import {StyleSheet, View, Image} from "react-native";
+import {useEffect} from "react";
 import LoginScreen from "./LoginScreen.tsx";
+import ChoseScreen from "./ChoseScreen.tsx";
 
 // @ts-ignore
-function WelcomeScreen({ navigation }) {
+function WelcomeScreen({navigation}) {
 
     useEffect(() => {
-        // Sau 3 giây, tự động chuyển sang màn hình Home
-        const timer = setTimeout(() => {
-            navigation.navigate(LoginScreen);
-        }, 3000);
+            // Sau 3 giây, tự động chuyển sang màn hình Home
+            const timer = setTimeout(() => {
+                navigation.navigate(ChoseScreen);
+            }, 3000);
 
-        return () => clearTimeout(timer);
-    }
+            return () => clearTimeout(timer);
+        }
     );
 
     return (

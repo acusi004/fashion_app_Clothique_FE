@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 // @ts-ignore
-const ChoseScreen = ({ navigation }) => {
+const ChoseScreen = ({navigation}) => {
     return (
         <View style={styles.container}>
             {/* Phần trên của màn hình */}

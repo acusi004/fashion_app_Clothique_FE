@@ -1,12 +1,12 @@
 // import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 // import { useState } from "react";
-import { TextInput } from "react-native-paper";
+import {TextInput} from "react-native-paper";
 import Swiper from "react-native-swiper";
 import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
 
 // @ts-ignore
-function HomeScreen({ navigation }) {
+function HomeScreen({navigation}) {
 
     // Banner images
     const banner: any[] = [
@@ -52,7 +52,7 @@ function HomeScreen({ navigation }) {
                 <Swiper autoplay={true} autoplayTimeout={3} showsPagination={false}>
                     {banner.map((image, index) => (
                         <View key={index} style={styles.slideBanner}>
-                            <Image source={image} style={styles.imageBanner} />
+                            <Image source={image} style={styles.imageBanner}/>
                         </View>
                     ))}
                 </Swiper>
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 180,
         marginTop: 20,
-        marginBottom:20,
+        marginBottom: 20,
     },
     slideBanner: {
         borderRadius: 20,
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     },
     Body: {
         marginTop: 10,
-        width:"100%",
-        height:'auto'
+        width: "100%",
+        height: 'auto'
     },
 });
 

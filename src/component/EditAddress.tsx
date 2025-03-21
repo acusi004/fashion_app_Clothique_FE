@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet } from "react-native";
+import React, {useState} from "react";
+import {View, Text, TextInput, TouchableOpacity, Switch, StyleSheet} from "react-native";
 
 // Chỉnh sửa địa chỉ
 // @ts-ignore
-const EditAddress = ({ route }) => {
+const EditAddress = ({route}) => {
 
-    const { item } = route.params;
+    const {item} = route.params;
     const [name, setName] = useState(item.name);
     const [phone, setPhone] = useState("0123456789");
     const [address, setAddress] = useState("Quận Nam từ niêm, Mỹ Đình 2, Hà Nội");
@@ -15,13 +15,13 @@ const EditAddress = ({ route }) => {
         <View style={styles.container}>
             <Text style={styles.header}>Chỉnh sửa địa chỉ</Text>
             <Text style={styles.label}>Liên hệ</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} />
-            <TextInput style={styles.input} value={phone} keyboardType="numeric" onChangeText={setPhone} />
+            <TextInput style={styles.input} value={name} onChangeText={setName}/>
+            <TextInput style={styles.input} value={phone} keyboardType="numeric" onChangeText={setPhone}/>
             <Text style={styles.label}>Địa chỉ</Text>
-            <TextInput style={styles.input} value={address} onChangeText={setAddress} />
+            <TextInput style={styles.input} value={address} onChangeText={setAddress}/>
             <View style={styles.switchContainer}>
                 <Text>Đặt làm mặc định</Text>
-                <Switch value={isDefault} onValueChange={setIsDefault} />
+                <Switch value={isDefault} onValueChange={setIsDefault}/>
             </View>
             <TouchableOpacity style={styles.saveButton}>
                 <Text style={styles.saveButtonText}>Lưu</Text>

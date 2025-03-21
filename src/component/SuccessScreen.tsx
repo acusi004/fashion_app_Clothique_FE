@@ -1,14 +1,14 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 
-function SuccessScreen(){
-    return(
+function SuccessScreen() {
+    return (
         <View style={styles.container}>
             {/* Tiêu đề */}
             <Text style={styles.title}>Thành Công!</Text>
 
             {/* Icon Check */}
             <View style={styles.iconContainer}>
-                <Image source={require('../Image/shopping-bag.png')} style={styles.icon} />
+                <Image source={require('../Image/shopping-bag.png')} style={styles.icon}/>
             </View>
 
             {/* Nội dung thông báo */}
@@ -60,9 +60,7 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 16,
         fontWeight: "bold",
-    }, iconContainer: {
-
-    }
+    }, iconContainer: {}
 
 });
 

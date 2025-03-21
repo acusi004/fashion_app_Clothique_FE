@@ -1,15 +1,21 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet} from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, {useState} from "react";
+import {View, Text, TouchableOpacity, FlatList, StyleSheet} from "react-native";
+import {useNavigation} from "@react-navigation/native";
 import EditAddress from "./EditAddress.tsx";
 
 // Danh sách địa chỉ
-const AddressScreen = () => {
-    const navigation = useNavigation();
+// @ts-ignore
+function AddressScreen({navigation}) {
+
     const [addresses, setAddresses] = useState([
-        { id: "1", name: "Đỗ trung Hiếu", address: "Số 55, Ngõ 177, Đường Cầu Diễn, Bắc Từ Liêm, Hà Nội", default: true },
-        { id: "2", name: "Đỗ trung Hiếu", address: "Số 55, Ngõ 177, Đường Cầu Diễn, Bắc Từ Liêm, Hà Nội", default: false },
-        { id: "3", name: "Đỗ trung Hiếu", address: "Số 55, Ngõ 177, Đường Cầu Diễn, Bắc Từ Liêm, Hà Nội", default: false }
+        {id: "1", name: "Đỗ trung Hiếu", address: "Số 55, Ngõ 177, Đường Cầu Diễn, Bắc Từ Liêm, Hà Nội", default: true},
+        {
+            id: "2",
+            name: "Đỗ trung Hiếu",
+            address: "Số 55, Ngõ 177, Đường Cầu Diễn, Bắc Từ Liêm, Hà Nội",
+            default: false
+        },
+        {id: "3", name: "Đỗ trung Hiếu", address: "Số 55, Ngõ 177, Đường Cầu Diễn, Bắc Từ Liêm, Hà Nội", default: false}
     ]);
 
     return (
@@ -18,8 +24,9 @@ const AddressScreen = () => {
             <FlatList
                 data={addresses}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.addressCard} onPress={() => navigation.navigate(EditAddress, { item })}>
+                renderItem={({item}) => (
+                    <TouchableOpacity style={styles.addressCard}
+                                      onPress={() => navigation.navigate(EditAddress, {item})}>
                         <View>
                             <Text style={styles.name}>{item.name}</Text>
                             <Text style={styles.address}>{item.address}</Text>

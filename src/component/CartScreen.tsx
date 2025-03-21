@@ -15,15 +15,14 @@ function CartScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
+            <StatusBar barStyle="dark-content" backgroundColor="#fff"/>
 
 
             {/* Nội dung giỏ hàng */}
-            <View style={{ flex: 1 }}>
+            <View style={{flex: 1}}>
                 <View style={styles.cartItem}>
                     <Image
-                        source={{ uri: "https://cdn0199.cdn4s.com/media/238%20ma%CC%82%CC%83u%20.jpg" }}
+                        source={{uri: "https://cdn0199.cdn4s.com/media/238%20ma%CC%82%CC%83u%20.jpg"}}
                         style={styles.productImage}
                     />
                     <View style={styles.productInfo}>
@@ -33,11 +32,11 @@ function CartScreen() {
                     </View>
                     <View style={styles.quantityContainer}>
                         <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
-                            <Image source={require('../Image/minus.png')} style={{ width: 15, height: 15 }} />
+                            <Image source={require('../Image/minus.png')} style={{width: 15, height: 15}}/>
                         </TouchableOpacity>
                         <Text style={styles.quantityText}>{quantity}</Text>
                         <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
-                            <Image source={require('../Image/add.png')} style={{ width: 15, height: 15 }} />
+                            <Image source={require('../Image/add.png')} style={{width: 15, height: 15}}/>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -47,9 +46,9 @@ function CartScreen() {
             <View style={styles.paymentContainer}>
                 {/* Mã giảm giá */}
                 <View style={styles.discountContainer}>
-                    <TextInput style={styles.discountInput} placeholder="Nhập mã khuyến mãi của bạn" />
+                    <TextInput style={styles.discountInput} placeholder="Nhập mã khuyến mãi của bạn"/>
                     <TouchableOpacity style={styles.applyButton}>
-                        <Image source={require('../Image/next.png')} />
+                        <Image source={require('../Image/next.png')}/>
                     </TouchableOpacity>
                 </View>
 
@@ -149,13 +148,13 @@ const styles = StyleSheet.create({
     discountInput: {
         flex: 1,
         fontSize: 14,
-        backgroundColor:'@null',
+        backgroundColor: '@null',
 
     },
     applyButton: {
         padding: 13,
-        borderRadius:10,
-        backgroundColor:'#C5CCC9',
+        borderRadius: 10,
+        backgroundColor: '#C5CCC9',
 
     },
 

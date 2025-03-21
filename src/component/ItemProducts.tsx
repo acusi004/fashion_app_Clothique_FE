@@ -1,16 +1,12 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import Svg, {Path} from "react-native-svg";
-import {Icon} from "react-native-paper";
 import {useState} from "react";
 
 
-
 // @ts-ignore
-const  ItemProducts=({ product, getRandomImage, onPress })=>{
+const ItemProducts = ({product, getRandomImage, onPress}) => {
 
 
     const [isFavorite, setIsFavorite] = useState(false);
-
 
 
     const handleToggleFavorite = () => {
@@ -19,7 +15,7 @@ const  ItemProducts=({ product, getRandomImage, onPress })=>{
 
     // @ts-ignore
     const getFullImageUrl = (relativePath) => {
-        const baseUrl = 'http://10.0.2.2:5000/uploads'; // Cập nhật lại base URL nếu cần
+        const baseUrl = 'http://10.0.2.2:5000'; // Cập nhật lại base URL nếu cần
         return `${baseUrl}${relativePath}`;
     };
 
@@ -27,12 +23,12 @@ const  ItemProducts=({ product, getRandomImage, onPress })=>{
     const imageUrl = relativeImage ? getFullImageUrl(relativeImage) : 'https://via.placeholder.com/150';
 
 
-    return(
-        <TouchableOpacity style={styles.cardContainer} onPress={product}>
+    return (
+        <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(product)}>
 
             <View style={styles.imageWrapper}>
                 <Image
-                    source={{ uri: imageUrl }}
+                    source={{uri: imageUrl}}
                     style={styles.image}
                     resizeMode="cover"
                 />
@@ -55,6 +51,7 @@ const  ItemProducts=({ product, getRandomImage, onPress })=>{
             {/* Thông tin sản phẩm: tên + giá */}
             <View style={styles.infoContainer}>
                 <Text style={styles.title}>{product.name}</Text>
+
                 <Text style={styles.price}> {`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
         </TouchableOpacity>
@@ -64,15 +61,17 @@ const  ItemProducts=({ product, getRandomImage, onPress })=>{
 
 const styles = StyleSheet.create({
     cardContainer: {
-        height:265,
+        height: 265,
         width: 180,
         backgroundColor: '#fff',
         borderRadius: 18,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 14 },
+        shadowOffset: {width: 0, height: 14},
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        marginTop:10,
+        marginTop: 10,
+        margin: 5,
+        marginLeft: 15
 
     },
     imageWrapper: {
@@ -84,7 +83,7 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: '100%',
-        borderRadius:18,
+        borderRadius: 18,
     },
     waveContainer: {
         position: 'absolute',
@@ -110,7 +109,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         // Thêm shadow cho icon
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.15,
         shadowRadius: 1.5,
 
@@ -120,7 +119,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 0,
-        padding:5
+        padding: 5
     },
     title: {
         fontSize: 16,

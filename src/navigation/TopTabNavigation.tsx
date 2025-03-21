@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import {createMaterialTopTabNavigator} from "@react-navigation/material-top-tabs";
 import ShirtScreen from "../component/ShirtScreen.tsx";
 import TrousersScreen from "../component/TrousersScreen.tsx";
@@ -10,36 +10,36 @@ function TopTabNavigation() {
     const Tab = createMaterialTopTabNavigator();
 
     return (
-       <Tab.Navigator
-           screenOptions={{
+        <Tab.Navigator
+            screenOptions={{
 
-               tabBarStyle: {
-                   backgroundColor: '#F6F6F6' ,
-                   borderRadius:25,
-                   elevation: 0,
-               },
-               tabBarIndicatorStyle: { backgroundColor: '#000' },
-               tabBarBounces:true
-           }}
-       >
-           <Tab.Screen
-               name="Tất cả"
-               component={AllProducts}
+                tabBarStyle: {
+                    backgroundColor: '#F6F6F6',
+                    borderRadius: 25,
+                    elevation: 0,
+                },
+                tabBarIndicatorStyle: {backgroundColor: '#000'},
+                tabBarBounces: true
+            }}
+        >
+            <Tab.Screen
+                name="Tất cả"
+                component={AllProducts}
 
-           />
+            />
 
-           <Tab.Screen
-               name="Áo"
-               component={ShirtScreen}
+            <Tab.Screen
+                name="Áo"
+                component={ShirtScreen}
 
-         />
-           <Tab.Screen
-               name="Quần"
-               component={TrousersScreen}/>
-           <Tab.Screen
-               name="Váy"
-               component={DressScreen}/>
-       </Tab.Navigator>
+            />
+            <Tab.Screen
+                name="Quần"
+                component={TrousersScreen}/>
+            <Tab.Screen
+                name="Váy"
+                component={DressScreen}/>
+        </Tab.Navigator>
     );
 }
 

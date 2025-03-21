@@ -2,7 +2,7 @@ import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} f
 import DetailScreen from "./DetailScreen.tsx";
 import {useState} from "react";
 
-function NotificationScreen(){
+function NotificationScreen() {
 
     const notifications = [
         {
@@ -23,25 +23,25 @@ function NotificationScreen(){
         },
     ];
 
-    return(
-           <View style={styles.container}>
-               <Text style={styles.header}>Thông báo</Text>
+    return (
+        <View style={styles.container}>
+            <Text style={styles.header}>Thông báo</Text>
 
-               <FlatList
-                   data={notifications}
-                   keyExtractor={(item) => item.id}
-                   renderItem={({ item }) => (
-                       <View style={styles.card}>
-                           <Image source={{ uri: item.image }} style={styles.image} />
-                           <View style={styles.textContainer}>
-                               <Text style={styles.title}>{item.title}</Text>
-                               <Text style={styles.description}>{item.description}</Text>
-                           </View>
-                           {item.isNew && <Text style={styles.newBadge}>New</Text>}
-                       </View>
-                   )}
-               />
-           </View>
+            <FlatList
+                data={notifications}
+                keyExtractor={(item) => item.id}
+                renderItem={({item}) => (
+                    <View style={styles.card}>
+                        <Image source={{uri: item.image}} style={styles.image}/>
+                        <View style={styles.textContainer}>
+                            <Text style={styles.title}>{item.title}</Text>
+                            <Text style={styles.description}>{item.description}</Text>
+                        </View>
+                        {item.isNew && <Text style={styles.newBadge}>New</Text>}
+                    </View>
+                )}
+            />
+        </View>
     )
 }
 
@@ -89,8 +89,6 @@ const styles = StyleSheet.create({
         color: "red",
     },
 });
-
-
 
 
 export default NotificationScreen;

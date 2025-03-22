@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert} from "react-native";
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image} from "react-native";
 import RegisterService from "../service/RegisterService";
 import {ActivityIndicator} from "react-native-paper";
 
@@ -11,6 +11,7 @@ function RegisterScreen({navigation}) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading]               = useState(false);
     const [secureText, setSecureText] = useState(true);
+    const [secureText2, setSecureText2] = useState(true);
 
     // Hàm validate email: kiểm tra email có đúng định dạng
     // @ts-ignore
@@ -77,27 +78,43 @@ function RegisterScreen({navigation}) {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Chào mừng đến {"\n"}Clothique</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType={"email-address"}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Mật khẩu"
-                secureTextEntry={secureText}
-                value={password}
-                onChangeText={setPassword}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Nhập lại mật khẩu"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-            />
+
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType={"email-address"}
+                />
+
+
+           <View style={styles.inputContainer}>
+               <TextInput
+                   style={styles.inputPassword}
+                   placeholder="Mật khẩu"
+                   secureTextEntry={secureText}
+                   value={password}
+                   onChangeText={text => setPassword(text)}
+               />
+               <TouchableOpacity onPress={() => setSecureText(!secureText)} style={styles.eyeIcon}>
+                   <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")}
+                          style={styles.eyeImage}/>
+               </TouchableOpacity>
+           </View>
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.inputPassword}
+                    placeholder="Nhập lại Mật khẩu"
+                    secureTextEntry={secureText2}
+                    value={confirmPassword}
+                    onChangeText={text => setConfirmPassword(text)}
+                />
+                <TouchableOpacity onPress={() => setSecureText2(!secureText2)} style={styles.eyeIcon}>
+                    <Image source={secureText2 ? require("../Image/visibility.png") : require("../Image/hide.png")}
+                           style={styles.eyeImage}/>
+                </TouchableOpacity>
+            </View>
+
             {loading ? (
                 <ActivityIndicator size="large" color="#000" />
             ) : (
@@ -133,6 +150,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         marginBottom: 15,
     },
+    inputContainer: {
+        backgroundColor: "#FFFBFB",
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        height: 50,
+        borderColor: "#000",
+        borderWidth: 1,
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+    },
     button: {
         backgroundColor: "#000",
         paddingVertical: 15,
@@ -146,6 +175,25 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+    inputWrapper: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        padding: 20,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#000",
+        marginBottom: 40,
+    },
+    eyeImage: {
+        width: 24,
+        height: 24,
+    },
+    eyeIcon: {
+        padding: 10,
+    },inputPassword: {
+        flex: 1,
+    },
+
 });
 
 

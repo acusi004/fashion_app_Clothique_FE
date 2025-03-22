@@ -1,5 +1,6 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {useState} from "react";
+import {Image, StyleSheet, Text, ToastAndroid, TouchableOpacity, View} from "react-native";
+import {useEffect, useState} from "react";
+import {checkFavorite, toggleFavorite} from "../service/favoriteService";
 
 
 // @ts-ignore
@@ -9,9 +10,37 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
     const [isFavorite, setIsFavorite] = useState(false);
 
 
-    const handleToggleFavorite = () => {
-        setIsFavorite(!isFavorite);
+
+    useEffect(() => {
+        const fetchFavoriteStatus = async () => {
+            try {
+                const result = await checkFavorite(product._id);
+                setIsFavorite(result.favourite);
+            } catch (error) {
+                console.error("Error fetching favorite status:", error);
+            }
+        };
+        fetchFavoriteStatus();
+
+    }, [product]);
+
+    const handleToggleFavorite = async () => {
+        try {
+            const result = await toggleFavorite(product._id);
+            // Dựa vào thông báo trả về từ BE để cập nhật trạng thái
+            if (result.message && result.message.includes("thêm")) {
+                setIsFavorite(true);
+                ToastAndroid.show(`Đã thêm ${product.name} vào danh sách yêu thích`, ToastAndroid.SHORT);
+            } else {
+                setIsFavorite(false);
+                ToastAndroid.show(`Đã xóa ${product.name} khỏi danh sách yêu thích`, ToastAndroid.SHORT);
+            }
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+        }
     };
+
+
 
     // @ts-ignore
     const getFullImageUrl = (relativePath) => {
@@ -51,7 +80,6 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
             {/* Thông tin sản phẩm: tên + giá */}
             <View style={styles.infoContainer}>
                 <Text style={styles.title}>{product.name}</Text>
-
                 <Text style={styles.price}> {`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
         </TouchableOpacity>

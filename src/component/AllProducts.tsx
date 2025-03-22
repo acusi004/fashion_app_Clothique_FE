@@ -5,7 +5,8 @@ import ItemProducts from "./ItemProducts.tsx";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import {ActivityIndicator} from "react-native-paper";
-import DetailScreen from "./DetailScreen.tsx";
+import {getVariantByProductId} from "../service/variantService";
+
 
 // @ts-ignore
 function AllProducts() {
@@ -18,8 +19,10 @@ function AllProducts() {
     useFocusEffect(
         useCallback(() => {
             fetchProducts();
+
         }, [])
     );
+
 
 
 
@@ -46,8 +49,7 @@ function AllProducts() {
             if (!token) {
                 console.log('Chưa đăng nhập, không lấy được dữ liệu sản phẩm');
                 setLoading(false);
-                // Bạn có thể chuyển hướng người dùng sang màn hình đăng nhập nếu cần:
-                // navigation.navigate('Login');
+
                 return;
             }
 

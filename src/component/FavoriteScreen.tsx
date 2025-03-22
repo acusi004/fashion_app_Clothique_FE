@@ -1,69 +1,101 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {
+    Alert,
+    FlatList,
+    Image,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    ToastAndroid,
+    TouchableOpacity,
+    View
+} from "react-native";
+import React, {useEffect, useState} from "react";
+import {checkFavorite, getUserFavorites, removeFavorite} from "../service/favoriteService";
+import FavoriteItem from "./FavoriteItem.tsx";
+import {getVariantByProductId} from "../service/variantService";
 
 function FavoriteScreen() {
 
-    return (
-        <TouchableOpacity style={styles.container}>
-            <View style={styles.btnItem}>
-                <Image style={styles.FvImage} source={require('../Image/QuanAo.png')}/>
-            </View>
-            <View style={{flexDirection: 'column'}}>
-                <Text style={styles.FvTitle}>Bộ quần áo hình tam giác</Text>
-                <Text style={styles.FvPrice}>200.000 VND</Text>
-            </View>
-            <View style={{flexDirection: 'column',}}>
-                <TouchableOpacity style={styles.btnAddToCart}>
-                    <Image style={styles.btnIconBag} source={require('../Image/shopping-bag.png')}/>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnDelete}>
-                    <Image style={styles.btnIconBag} source={require('../Image/remove.png')}/>
-                </TouchableOpacity>
+    const [favorites, setFavorites] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
-            </View>
-        </TouchableOpacity>
+
+    const fetchFavorites = async () => {
+        try {
+            const response = await getUserFavorites();
+            // Giả sử BE trả về { favourites: [...] }
+            setFavorites(response.favourites);
+            ToastAndroid.show(`Data: ${JSON.stringify(response.favourites)}`, ToastAndroid.SHORT);
+        } catch (error) {
+            console.error("Error fetching favorites:", error);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchFavorites()
+        setRefreshing(false);
+    };
+    // Xử lý xóa sản phẩm khỏi danh sách yêu thích
+    // @ts-ignore
+    const handleRemoveFavorite = async (productId) => {
+        try {
+            const result = await removeFavorite(productId);
+            Alert.alert("Thông báo", result.message);
+            // Cập nhật lại danh sách sau khi xóa
+            fetchFavorites();
+        } catch (error) {
+            console.error("Error removing favorite:", error);
+        }
+    };
+
+    // Xử lý thêm sản phẩm vào giỏ hàng (có thể gọi navigation hoặc dịch vụ giỏ hàng)
+    // @ts-ignore
+    const handleAddToCart = (item) => {
+        // Ví dụ: chuyển sang màn hình chi tiết hoặc gọi API thêm vào giỏ
+        // navigation.navigate('Cart', { product: item.productId });
+    };
+
+    // @ts-ignore
+    const renderItem = ({ item }) => (
+        <FavoriteItem
+            item={item}
+            onAddToCart={() => handleAddToCart(item)}
+            onRemove={() => handleRemoveFavorite(item.productId._id)}
+        />
+    );
+
+
+    useEffect(() => {
+        // Khi màn hình được focus, cập nhật danh sách yêu thích
+        fetchFavorites();
+    }, []);
+
+
+
+    return (
+        <View style={styles.screenContainer}>
+            <FlatList
+                data={favorites}
+                keyExtractor={(item) => item._id}
+                renderItem={renderItem}
+                contentContainerStyle={styles.listContainer}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+                }
+            />
+
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        flex: 1,
-        padding: 20,
-        justifyContent: 'space-around'
-
-
-    }, btnItem: {},
-    FvImage: {},
-    FvTitle: {
-        fontFamily: 'Nunito Sans',
-        fontSize: 14,
-        color: '#606060',
-
-
+    screenContainer: {
+        flex:1
     },
-    FvPrice: {
-        fontWeight: 'bold',
-        marginTop: 5
+    listContainer: {
+        padding: 10,
     },
-    btnAddToCart: {
-        width: 34,
-        height: 34,
-        borderRadius: 10,
-        backgroundColor: '#E0E0E0',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    btnIconBag: {
-        width: 18,
-        height: 18,
-    },
-    btnDelete: {
-        width: 34,
-        height: 34,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20
-    }
 
 
 });

@@ -12,7 +12,7 @@ import {
 import React, {useEffect, useState} from "react";
 import {checkFavorite, getUserFavorites, removeFavorite} from "../service/favoriteService";
 import FavoriteItem from "./FavoriteItem.tsx";
-import {getVariantByProductId} from "../service/variantService";
+
 
 function FavoriteScreen() {
 
@@ -25,7 +25,6 @@ function FavoriteScreen() {
             const response = await getUserFavorites();
             // Giả sử BE trả về { favourites: [...] }
             setFavorites(response.favourites);
-            ToastAndroid.show(`Data: ${JSON.stringify(response.favourites)}`, ToastAndroid.SHORT);
         } catch (error) {
             console.error("Error fetching favorites:", error);
         }
@@ -52,7 +51,7 @@ function FavoriteScreen() {
     // Xử lý thêm sản phẩm vào giỏ hàng (có thể gọi navigation hoặc dịch vụ giỏ hàng)
     // @ts-ignore
     const handleAddToCart = (item) => {
-        // Ví dụ: chuyển sang màn hình chi tiết hoặc gọi API thêm vào giỏ
+
         // navigation.navigate('Cart', { product: item.productId });
     };
 

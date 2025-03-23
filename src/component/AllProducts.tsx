@@ -5,7 +5,8 @@ import ItemProducts from "./ItemProducts.tsx";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import {ActivityIndicator} from "react-native-paper";
-import {getVariantByProductId} from "../service/variantService";
+import {fetchProducts} from "../service/productService.";
+
 
 
 // @ts-ignore
@@ -15,10 +16,11 @@ function AllProducts() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
+    const [error, setError] = useState(null);
     // Tự động gọi lại API khi màn hình được focus
     useFocusEffect(
         useCallback(() => {
-            fetchProducts();
+            loadProducts()
 
         }, [])
     );
@@ -29,45 +31,20 @@ function AllProducts() {
     // Hỗ trợ pull-to-refresh
     const onRefresh = async () => {
         setRefreshing(true);
-        await fetchProducts();
+        await loadProducts()
         setRefreshing(false);
     };
 
 
-    const getToken = async () => {
+    const loadProducts = async () => {
         try {
-            return await AsyncStorage.getItem('accessToken');
-        } catch (error) {
-            console.error('Lỗi khi lấy token:', error);
-            return null;
-        }
-    };
-
-    const fetchProducts = async () => {
-        try {
-            const token = await getToken();
-            if (!token) {
-                console.log('Chưa đăng nhập, không lấy được dữ liệu sản phẩm');
-                setLoading(false);
-
-                return;
+            const data = await fetchProducts();
+            if (data) {
+                setProducts(data);
             }
-
-            const response = await axios.get('http://10.0.2.2:5000/v1/product', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-
-
-            setProducts(response.data);
-            setLoading(false);
-        } catch (error) {
-
-            console.error(
-                'Lỗi khi lấy dữ liệu sản phẩm:', error
-            );
+        } catch (err) {
+            console.error(err)
+        } finally {
             setLoading(false);
         }
     };
@@ -90,7 +67,6 @@ function AllProducts() {
     const handlePressItem = (product) => {
         // @ts-ignore
         navigation.navigate('DetailScreen', {product});
-
     };
 
     // @ts-ignore

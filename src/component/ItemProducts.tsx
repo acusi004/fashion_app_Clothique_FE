@@ -51,7 +51,6 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
             {/* Thông tin sản phẩm: tên + giá */}
             <View style={styles.infoContainer}>
                 <Text style={styles.title}>{product.name}</Text>
-
                 <Text style={styles.price}> {`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
         </TouchableOpacity>

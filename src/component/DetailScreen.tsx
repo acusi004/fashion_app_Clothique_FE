@@ -1,6 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-
+import axios from 'axios';
+import tokenService from '../service/tokenService';
 
 // @ts-ignore
 const DetailScreen = ({route, navigation}) => {
@@ -35,7 +36,57 @@ const DetailScreen = ({route, navigation}) => {
         return `${baseUrl}${relativePath}`;
     };
 
+    const addCart = async (productId, variantId, quantity) => {
+        const token = await tokenService.getToken();
+        try {
+          const response = await axios.post('http://10.0.2.2:5000/v1/cart/add-to-cart', {
+            productId,
+            variantId,
+            quantity
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` // Thay bằng token thực tế nếu có xác thực
+            }
+          });
+      
+          console.log('Thêm vào giỏ hàng thành công:', response.data);
+          return response.data;
+        } catch (error) {
+          console.error('Lỗi khi thêm vào giỏ hàng:', error.response?.data || error.message);
+        }
+      };
 
+      const handleAddToCart = async () => {
+        if (!size) {
+            alert('Vui lòng chọn kích cỡ!');
+            return;
+        }
+        console.log("Dữ liệu sản phẩm nhận được:", product);
+        console.log("Danh sách biến thể:", product?.variants);
+        
+        console.log("Danh sách biến thể:", product.variants); // Debug dữ liệu variants
+        console.log("Kích cỡ đã chọn:", size); // Debug kích cỡ đã chọn
+    
+        const selectedVariant = product.variants.find(
+            (v) => v.size.trim().toLowerCase() === size.trim().toLowerCase()
+        );
+    
+        if (!selectedVariant) {
+            alert('Không tìm thấy biến thể phù hợp!');
+            return;
+        }
+    
+        const response = await addCart(product._id, selectedVariant._id, quantity);
+        if (response?.error) {
+            alert(response.error);
+        } else {
+            alert('Thêm vào giỏ hàng thành công!');
+        }
+    };
+    
+      
+      
     // Xác định URL ảnh cần hiển thị:
     // Nếu product.imageUrls có dữ liệu, dùng phần tử đầu tiên.
     // Nếu không, kiểm tra product.variants[0].images
@@ -43,6 +94,7 @@ const DetailScreen = ({route, navigation}) => {
         ? getFullImageUrl(product.imageUrls[0]) : product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images.length > 0
             ? getFullImageUrl(product.variants[0].images[0])
             : 'https://via.placeholder.com/300';
+
 
     return (
         <View style={styles.container}>
@@ -125,7 +177,7 @@ const DetailScreen = ({route, navigation}) => {
                 <TouchableOpacity style={styles.btnWithList}>
                     <Image source={require('../Image/wishlist.png')}/>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.btnAddtoCart}>
+                <TouchableOpacity style={styles.btnAddtoCart} onPress={handleAddToCart}>
                     <Text>Thêm vào giỏ hàng</Text>
                 </TouchableOpacity>
             </View>

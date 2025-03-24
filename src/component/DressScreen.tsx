@@ -1,7 +1,8 @@
 import {FlatList, RefreshControl, StyleSheet, Text, View} from "react-native";
 
 
-function DressScreen() {
+// @ts-ignore
+function DressScreen({product, getRandomImage, onPress}) {
 
 
     return (

@@ -7,8 +7,13 @@ const FavoriteItem = ({ item, onAddToCart, onRemove }) => {
     // Lấy dữ liệu sản phẩm từ trường productId
     const product = item.productId;
 
+    const getImage = ()=>{
+        const baseUrl = 'http://10.0.2.2:5000';
+        return `${baseUrl}${product.variants[0]?.images[0]}`;
+    }
+
     useEffect(() => {
-        ToastAndroid.show(`Data: ${product.images}`, ToastAndroid.SHORT);
+       // ToastAndroid.show(`Data: ${ product.variants[0]?.images[0]}`, ToastAndroid.SHORT);
     }, []);
 
     return (
@@ -16,12 +21,12 @@ const FavoriteItem = ({ item, onAddToCart, onRemove }) => {
             <View style={styles.btnItem}>
                 <Image
                     style={styles.FvImage}
-
+                    source={{ uri: getImage() }}
                 />
             </View>
             <View style={styles.infoContainer}>
                 <Text style={styles.FvTitle}>{product.name}</Text>
-                <Text style={styles.FvPrice}>{`${product[0]?.price} VND`}</Text>
+                <Text style={styles.FvPrice}>{`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
             <View style={styles.actionContainer}>
                 <TouchableOpacity style={styles.btnAddToCart} onPress={onAddToCart}>

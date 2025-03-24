@@ -3,7 +3,7 @@ import AllProducts from "./AllProducts.tsx";
 
 
 // @ts-ignore
-function TrousersScreen({navigation}) {
+function TrousersScreen({product, getRandomImage, onPress}) {
 
 
     return (

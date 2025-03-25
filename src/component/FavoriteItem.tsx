@@ -3,7 +3,7 @@ import {TouchableOpacity, View, Text, Image, StyleSheet, Alert, ToastAndroid} fr
 import getVariantByProductId from "../service/variantService";
 
 // @ts-ignore
-const FavoriteItem = ({ item, onAddToCart, onRemove }) => {
+const FavoriteItem = ({ item, onAddToCart, onRemove, onPress }) => {
     // Lấy dữ liệu sản phẩm từ trường productId
     const product = item.productId;
 
@@ -17,7 +17,7 @@ const FavoriteItem = ({ item, onAddToCart, onRemove }) => {
     }, []);
 
     return (
-        <TouchableOpacity style={styles.container}>
+        <TouchableOpacity style={styles.container} onPress={() => onPress(product)}>
             <View style={styles.btnItem}>
                 <Image
                     style={styles.FvImage}

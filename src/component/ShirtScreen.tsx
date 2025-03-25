@@ -19,7 +19,7 @@ function ShirtScreen({navigation}) {
     useFocusEffect(
         useCallback(() => {
             loadProducts();
-
+            ToastAndroid.show(`Data: ${ products}`, ToastAndroid.SHORT);
         }, [])
     );
 

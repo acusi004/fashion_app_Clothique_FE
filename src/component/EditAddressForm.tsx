@@ -44,18 +44,23 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
     // Load quận khi chọn tỉnh
     useEffect(() => {
         if (province) {
-            getDistrictsByProvinceId(province).then(data => setDistricts(data || []));
-            setDistrict("");
-            setWards([]);
-            setWard("");
+            getDistrictsByProvinceId(province).then(data => {
+                setDistricts(data || []);
+                if (!address || !address.district?.id) { // Chỉ reset khi không có giá trị cũ
+                    setDistrict("");
+                }
+            });
         }
     }, [province]);
 
-    // Load xã khi chọn quận
     useEffect(() => {
         if (district) {
-            getWardsByDistrictId(district).then(data => setWards(data || []));
-            setWard("");
+            getWardsByDistrictId(district).then(data => {
+                setWards(data || []);
+                if (!address || !address.ward?.id) { // Chỉ reset khi không có giá trị cũ
+                    setWard("");
+                }
+            });
         }
     }, [district]);
 
@@ -65,11 +70,16 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
-
+        console.log("📌 Kiểm tra trước khi gửi:", { province, district, ward });
+        if (!province || !district || !ward) {
+            Alert.alert("Lỗi", "Vui lòng chọn đầy đủ Tỉnh/Quận/Xã!");
+            return;
+        }
         const token = await tokenService.getToken();
         const decodedToken = jwtDecode(token);
         const userEmail = decodedToken?.email;
-        const addressId = address?._id?.toString() || "";
+        const addressId = address?._id || "";
+        console.log("📌 Address ID khi gửi API:", addressId);
 
         if (!addressId) {
             Alert.alert("Lỗi", "Không tìm thấy ID của địa chỉ cần cập nhật!");
@@ -94,6 +104,8 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             isDefault,
         });
 
+
+
         try {
             const response = await axios.post("http://10.0.2.2:5000/v1/user/update-address", {
                 email: userEmail,
@@ -109,6 +121,7 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
+            console.log("📌 Danh sách địa chỉ nhận được:", response.data);
             console.log("✅ API Response:", response.data);
             Alert.alert("Thành công", "Địa chỉ đã được cập nhật!");
             refreshAddresses();
@@ -130,23 +143,44 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} keyboardType="phone-pad" maxLength={10} />
 
             <Text style={styles.label}>Tỉnh/Thành phố</Text>
-            <Picker selectedValue={province} onValueChange={setProvince} style={styles.picker}>
-                {provinces.map(p => <Picker.Item key={p.ProvinceID} label={p.ProvinceName} value={p.ProvinceID} />)}
+            <Picker selectedValue={province} onValueChange={(value) => {
+                console.log("✅ Province changed:", value);
+                setProvince(value);
+            }} style={styles.picker}>
+                <Picker.Item label="Chọn Tỉnh/Thành phố" value="" />
+                {provinces.map((p) => (
+                    <Picker.Item key={p.ProvinceID} label={p.ProvinceName} value={p.ProvinceID} />
+                ))}
             </Picker>
 
             <Text style={styles.label}>Quận/Huyện</Text>
-            <Picker selectedValue={district} onValueChange={setDistrict} style={styles.picker} enabled={!!province}>
-                {districts.map(d => <Picker.Item key={d.DistrictID} label={d.DistrictName} value={d.DistrictID} />)}
+            <Picker selectedValue={district} onValueChange={(value) => {
+                console.log("✅ District changed:", value);
+                setDistrict(value);
+            }} style={styles.picker} enabled={!!province}>
+                <Picker.Item label="Chọn Quận/Huyện" value="" />
+                {districts.map((d) => (
+                    <Picker.Item key={d.DistrictID} label={d.DistrictName} value={d.DistrictID} />
+                ))}
             </Picker>
 
             <Text style={styles.label}>Phường/Xã</Text>
-            <Picker selectedValue={ward} onValueChange={setWard} style={styles.picker} enabled={!!district}>
-                {wards.map(w => <Picker.Item key={w.WardCode} label={w.WardName} value={w.WardCode} />)}
+            <Picker selectedValue={ward} onValueChange={(value) => {
+                console.log("📌 Ward chọn:", value);
+                setWard(value);
+            }} style={styles.picker} enabled={!!district}>
+                <Picker.Item label="Chọn Phường/Xã" value="" />
+                {wards.map((w) => (
+                    <Picker.Item key={w.WardCode} label={w.WardName} value={w.WardCode} />
+                ))}
             </Picker>
 
             <Text style={styles.label}>Địa chỉ cụ thể</Text>
             <TextInput style={styles.input} value={detail} onChangeText={setDetail} />
-
+            <View style={styles.switchContainer}>
+                <Text>Đặt làm mặc định</Text>
+                <Switch value={isDefault} onValueChange={setIsDefault} />
+            </View>
             <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
                 <Text style={styles.saveButtonText}>Lưu</Text>
             </TouchableOpacity>
@@ -164,7 +198,10 @@ const styles = StyleSheet.create({
     input: { borderWidth: 1, padding: 10, marginBottom: 10 },
     picker: { height: 50, marginBottom: 10 },
     saveButton: { backgroundColor: "black", padding: 15, borderRadius: 10, alignItems: "center", marginTop: 15 },
-    saveButtonText: { color: "white", fontSize: 16, fontWeight: "bold" }
+    saveButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+    cancelButton: { backgroundColor: "gray", padding: 15, borderRadius: 10, alignItems: "center", marginTop: 10 },
+    cancelButtonText: { color: "white", fontSize: 16 },
+    switchContainer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 15 },
 });
 
 export default EditAddressForm;

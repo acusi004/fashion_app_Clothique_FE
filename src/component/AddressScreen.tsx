@@ -51,6 +51,15 @@ const AddressScreen = () => {
                 params: { email: userEmail }
             });
 
+            const normalized = response.data.addresses.map(addr => ({
+                ...addr,
+                province: { id: addr.provinceId, name: addr.provinceName },
+                district: { id: addr.districtId, name: addr.districtName },
+                ward: { id: addr.wardCode, name: addr.wardName },
+            }));
+            setAddresses(normalized);
+
+            console.log("📌 API trả về danh sách địa chỉ:", response.data);
             console.log("✅ Danh sách địa chỉ nhận được:", response.data);
             setAddresses(response.data.addresses);
         } catch (error) {
@@ -89,18 +98,16 @@ const AddressScreen = () => {
     };
 
     const handleEditAddress = (selected) => {
-        if (!selected) {
-            console.error("⚠️ Không có địa chỉ nào được chọn để chỉnh sửa!");
+        console.log("📌 Địa chỉ được chọn để chỉnh sửa:", selected);
+
+        if (!selected || !selected._id) {
+            console.error("❌ Không có ID hợp lệ!", selected);
+            Alert.alert("Lỗi", "Dữ liệu địa chỉ bị thiếu ID!");
             return;
         }
-        console.log("📌 Địa chỉ được chọn để chỉnh sửa:", selected);
         setSelectedAddress(selected);
         setEditModalVisible(true);
     };
-
-    if (!addresses || addresses.length === 0) {
-        return <Text>ISLOADING!!</Text>;
-    }
 
     return (
         <View style={styles.container}>
@@ -117,7 +124,10 @@ const AddressScreen = () => {
                         <View style={styles.addressCard}>
                             <Text style={styles.name}>{item?.name || "Không có tên"}</Text>
                             <Text style={styles.address}>
-                                {item?.addressDetail || "Không có địa chỉ"}, {item?.province?.name || "Không có tỉnh"}, {item?.district?.name || "Không có huyện"}, {item?.ward?.name || "Không có xã"}
+                                {item?.addressDetail || "Không có địa chỉ"},{" "}
+                                {item?.province?.name || item?.provinceName || "Không có tỉnh"},{" "}
+                                {item?.district?.name || item?.districtName || "Không có huyện"},{" "}
+                                {item?.ward?.name || item?.wardName || "Không có xã"}
                             </Text>
                         </View>
                     </TouchableOpacity>

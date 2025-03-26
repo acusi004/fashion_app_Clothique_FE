@@ -52,7 +52,12 @@ export const searchProducts = async (keyword) => {
         if (!keyword.trim()) return []; // Nếu query rỗng trả về mảng rỗng
         try {
             const response = await fetch(
-                `${API_URL}/product/search?keyword=${encodeURIComponent(keyword)}`
+                `${API_URL}/product/search?keyword=${encodeURIComponent(keyword)}`,{
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
             );
             if (!response.ok) {
                 console.log("Response status:", response.status, response.statusText);

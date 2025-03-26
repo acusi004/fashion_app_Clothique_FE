@@ -7,7 +7,7 @@ import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
 import {useEffect, useState} from "react";
 import {searchProducts} from "../service/productService.";
 import ItemSearchProducts from "./ItemSearchProducts.tsx";
-
+import FilterDrawer from "../styles/FilterDrawer";
 // @ts-ignore
 function HomeScreen({navigation}) {
 
@@ -15,12 +15,14 @@ function HomeScreen({navigation}) {
     const [productSearch, setProductSearch] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-
+    const [filterActive, setFilterActive] = useState(false);
+    const [showFilter, setShowFilter] = useState(false);
     // Banner images
     const banner: any[] = [
         require('../Image/banner.png'),
         require('../Image/banner2.png')
     ];
+
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -29,6 +31,27 @@ function HomeScreen({navigation}) {
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
+
+
+    // Mở Drawer
+    const handleOpenFilter = () => {
+        setShowFilter(true);
+
+    };
+
+    // Đóng Drawer
+    const handleCloseFilter = () => {
+        setShowFilter(false);
+    };
+
+    // Khi người dùng bấm "Áp dụng" trong Drawer
+
+    // @ts-ignore
+    const handleApplyFilter = (filters) => {
+        console.log("Filters:", filters);
+        // Ở đây bạn có thể gọi hàm search kèm filters hoặc tuỳ logic
+        setShowFilter(false);
+    };
 
     //  Hàm gọi API tìm kiếm sản phẩm (sử dụng hàm từ productService)
     const handleSearch = async () => {
@@ -82,7 +105,7 @@ function HomeScreen({navigation}) {
             {/* Search Input */}
             <View style={styles.searchContainer}>
                 <TextInput
-                    style={styles.TextInputHeader}
+                    style={[styles.TextInputHeader]}
                     mode="outlined"
                     placeholder="Bạn đang tìm kiếm gì?"
                     outlineColor="#F6F6F6"
@@ -91,7 +114,25 @@ function HomeScreen({navigation}) {
                     onSubmitEditing={handleSearch}
                     activeOutlineColor="#F6F6F6"
                     cursorColor="#000"
+
                 />
+                <TouchableOpacity
+                    style={styles.filterButton}
+                    onPress={() => {
+                        setFilterActive(!filterActive);
+                        handleOpenFilter()
+                    }}
+                >
+                    <Image
+                        style={styles.filterImage}
+                        source={
+                            filterActive
+                                ? require("../Image/filter_Bold.png")
+                                : require("../Image/filter.png")
+                        }
+                    />
+
+                </TouchableOpacity>
             </View>
             {searchQuery.trim().length > 0 ? (
                 <View style={styles.resultsContainer}>
@@ -126,12 +167,15 @@ function HomeScreen({navigation}) {
 
 
                     <TopTabNavigation/>
+
+                    <FilterDrawer
+                        visible={showFilter}
+                        onClose={handleCloseFilter}
+                        onApply={handleApplyFilter}
+                    />
                 </>
+
             )}
-
-
-
-
 
         </View>
     );
@@ -164,10 +208,12 @@ const styles = StyleSheet.create({
         resizeMode: "contain",
     },
     searchContainer: {
+        flexDirection: "row",
+        alignItems: "center",
         marginTop: 10,
     },
     TextInputHeader: {
-        width: '100%',
+        width: '90%',
         height: 45,
         borderRadius: 30,
         backgroundColor: '#F6F6F6',
@@ -223,6 +269,14 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
         resizeMode: "cover",
+    },
+    filterButton: {
+        marginLeft:17
+    },
+    filterImage: {
+        width: 24,
+        height: 24,
+        resizeMode: "contain",
     },
 });
 

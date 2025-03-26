@@ -1,16 +1,19 @@
 // components/SearchItem.js
-import React from "react";
-import { TouchableOpacity, Image, View, Text, StyleSheet } from "react-native";
+import React, {useEffect} from "react";
+import {TouchableOpacity, Image, View, Text, StyleSheet, ToastAndroid} from "react-native";
 
 // @ts-ignore
 const ItemSearchProducts = ({ item, onPress }) => {
 
-    const product = item.productId;
+    const product = item;
 
     const getImage = ()=>{
         const baseUrl = 'http://10.0.2.2:5000';
         return `${baseUrl}${product.variants[0]?.images[0]}`;
     }
+    useEffect(() => {
+      //   ToastAndroid.show(`Data: ${product.variants[0]?.price.toLocaleString()} VND`, ToastAndroid.SHORT);
+    }, []);
 
     return (
         <TouchableOpacity
@@ -18,12 +21,16 @@ const ItemSearchProducts = ({ item, onPress }) => {
             onPress={() => onPress(item)}
         >
             <Image
-                // source={{ uri: getImage() }}
+                 source={{ uri: getImage() }}
                 style={styles.image}
             />
             <View style={styles.textContainer}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.price}> </Text>
+                <Text style={styles.name}>{product.name}</Text>
+                {product.variants && product.variants.length > 0 && (
+                    <Text style={styles.price}>
+                        {product.variants[0].price.toLocaleString()} VND
+                    </Text>
+                )}
             </View>
         </TouchableOpacity>
     );

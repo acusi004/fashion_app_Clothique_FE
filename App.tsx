@@ -21,6 +21,7 @@ import EditProfileScreen from './src/component/EditProfileScreen.tsx';
 import CheckOutScreen from './src/component/CheckOutScreen.tsx';
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
+import PaymentScreen from './src/component/PaymentScreen.tsx'
 import DetailScreen from "./src/component/DetailScreen.tsx";
 
 function App() {
@@ -36,6 +37,10 @@ function App() {
                     name="WelcomeScreen"
                     options={{ headerShown: false }}
                     component={WelcomeScreen} />
+                 <Stack.Screen
+                    name="PaymentScreen"
+                    options={{ headerShown: false }}
+                    component={PaymentScreen} />
                 <Stack.Screen
                     name="ChoseScreen"
                     options={{ headerShown: false }}

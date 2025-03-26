@@ -3,12 +3,14 @@ import { Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, Vie
 import { Checkbox, TextInput } from "react-native-paper";
 import tokenService from "../service/tokenService";
 import { SwipeListView } from "react-native-swipe-list-view";
+import { useNavigation } from "@react-navigation/native";
 
 function CartScreen() {
     const [cartData, setCartData] = useState([]); // Dữ liệu giỏ hàng từ API
     const [quantities, setQuantities] = useState({}); // Số lượng sản phẩm
     const BASE_URL = "http://10.0.2.2:5000"; // API local
     const [selectedItems, setSelectedItems] = useState([]);
+const navigation = useNavigation();
 
     useEffect(() => {
         const fetchCart = async () => {
@@ -144,6 +146,12 @@ function CartScreen() {
         );
     };
 
+    const handleCheckout = () => {
+        const selectedProducts = cartData.filter(item => selectedItems.includes(item._id));
+        navigation.navigate('PaymentScreen', { selectedProducts });
+        console.log("thông tin ",selectedProducts);
+        
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -213,7 +221,10 @@ function CartScreen() {
             </View>
             <TouchableOpacity
                 style={styles.checkoutButton}
-                onPress={() => console.log("Sản phẩm chọn để thanh toán:", selectedItems)}
+                onPress={() => {
+                  handleCheckout()
+                }
+            }
             >
                 <Text style={styles.checkoutText}>Thanh toán ({selectedItems.length})</Text>
             </TouchableOpacity>

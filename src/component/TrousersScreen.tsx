@@ -5,7 +5,7 @@ import {useFocusEffect} from "@react-navigation/native";
 import DetailScreen from "./DetailScreen.tsx";
 import ItemProducts from "./ItemProducts.tsx";
 import {ActivityIndicator} from "react-native-paper";
-import {getRandomImage, handlePressItem, loadProducts} from "../service/categoryService";
+import {getRandomImage, loadProducts} from "../service/categoryService";
 
 
 
@@ -42,7 +42,11 @@ function TrousersScreen({navigation}) {
     };
 
     // @ts-ignore
+    const handlePressItem = (product) => {
+        // @ts-ignore
+        navigation.navigate('DetailScreen', {product});
 
+    };
 
     // @ts-ignore
     const renderItem = ({ item }) => (

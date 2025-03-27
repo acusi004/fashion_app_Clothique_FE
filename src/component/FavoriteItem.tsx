@@ -29,12 +29,7 @@ const FavoriteItem = ({ item, onAddToCart, onRemove, onPress }) => {
                 <Text style={styles.FvPrice}>{`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
             <View style={styles.actionContainer}>
-                <TouchableOpacity style={styles.btnAddToCart} onPress={onAddToCart}>
-                    <Image
-                        style={styles.btnIconBag}
-                        source={require('../Image/shopping-bag.png')}
-                    />
-                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.btnDelete} onPress={onRemove}>
                     <Image
                         style={styles.btnIconBag}

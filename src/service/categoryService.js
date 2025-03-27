@@ -26,9 +26,7 @@ export const getRandomImage = (variants) => {
 };
 
 
-export const handlePressItem = (product) => {
-    navigation.navigate(DetailScreen, { product });
-};
+
 export const loadProducts = async (categoryID) => {
     const token = await getToken();
     try {

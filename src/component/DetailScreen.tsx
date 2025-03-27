@@ -1,83 +1,70 @@
+// DetailScreen.js
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import axios from 'axios';
-import tokenService from '../service/tokenService';
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {addToCartAPI} from "../service/cartService";
+
 
 // @ts-ignore
 const DetailScreen = ({ route, navigation }) => {
-    // Lấy dữ liệu sản phẩm được truyền qua navigation
     const { product } = route.params;
     const [quantity, setQuantity] = useState(1);
-
-    // Đảm bảo product.variants luôn là một mảng hợp lệ
     const variantsList = product.variants || [];
 
-    // State cho biến thể hiện tại, kích cỡ (theo variant hiện tại), tồn kho và kích cỡ được chọn
+    // Khởi tạo state cho biến thể hiện tại và kích cỡ, tồn kho
     const [currentVariant, setCurrentVariant] = useState(variantsList[0] || {});
     const [sizes, setSizes] = useState(
         variantsList[0]?.size ? (Array.isArray(variantsList[0].size) ? variantsList[0].size : [variantsList[0].size]) : []
     );
     const [stock, setStock] = useState(variantsList[0]?.stock || 0);
-    const [selectedSize, setSelectedSize] = useState(variantsList[0]?.size || "");
+    const [selectedSize, setSelectedSize] = useState(variantsList[0]?.size || '');
 
-    // Cập nhật dữ liệu mặc định khi product.variants thay đổi
+    // Cập nhật dữ liệu mặc định khi danh sách variants thay đổi
     useEffect(() => {
-        const variantsArr = product.variants || [];
-        if (variantsArr.length > 0) {
-            setCurrentVariant(variantsArr[0]);
+        if (variantsList.length > 0) {
+            setCurrentVariant(variantsList[0]);
             setSizes(
-                variantsArr[0].size ? (Array.isArray(variantsArr[0].size) ? variantsArr[0].size : [variantsArr[0].size]) : []
+                variantsList[0].size
+                    ? Array.isArray(variantsList[0].size)
+                        ? variantsList[0].size
+                        : [variantsList[0].size]
+                    : []
             );
-            setStock(variantsArr[0].stock || 0);
-            setSelectedSize(variantsArr[0].size || "");
+            setStock(variantsList[0].stock || 0);
+            setSelectedSize(variantsList[0].size || '');
         }
-    }, [product.variants]);
+    }, [variantsList]);
 
-    // Sử dụng useCallback để tránh tạo lại hàm không cần thiết
-    const increaseQuantity = useCallback(() => {
-        setQuantity(prev => prev + 1);
-    }, []);
+    const increaseQuantity = useCallback(() => setQuantity(q => q + 1), []);
+    const decreaseQuantity = useCallback(() => setQuantity(q => (q > 1 ? q - 1 : 1)), []);
 
-    const decreaseQuantity = useCallback(() => {
-        setQuantity(prev => (prev > 1 ? prev - 1 : 1));
-    }, []);
 
-    // Hàm chuyển đổi đường dẫn ảnh
-    // @ts-ignore
-    const getFullImageUrl = useCallback((relativePath) => {
-        const baseUrl = 'http://10.0.2.2:5000';
-        return `${baseUrl}${relativePath}`;
-    }, []);
+    const getFullImageUrl = useCallback(
+        (relativePath: string) => `http://10.0.2.2:5000${relativePath}`,
+        []
+    );
 
-    // Sử dụng useMemo để tính toán imageUri chỉ khi product.imageUrls hoặc variantsList thay đổi
     const imageUri = useMemo(() => {
-        if (product.imageUrls && product.imageUrls[0]) {
-            return getFullImageUrl(product.imageUrls[0]);
-        } else if (variantsList[0] && variantsList[0].images && variantsList[0].images[0]) {
+        if (product.imageUrls && product.imageUrls[0]) return getFullImageUrl(product.imageUrls[0]);
+        if (variantsList[0] && variantsList[0].images && variantsList[0].images[0])
             return getFullImageUrl(variantsList[0].images[0]);
-        }
         return 'https://via.placeholder.com/300';
     }, [product.imageUrls, variantsList, getFullImageUrl]);
 
-    // Lấy ra tất cả các kích cỡ có trong các variant và loại bỏ trùng lặp
+    // Lấy tất cả các kích cỡ có trong variants, loại bỏ trùng lặp
     const allSizes = useMemo(() => {
-        // @ts-ignore
-        const sizesArray = variantsList.flatMap(variant => {
-            if (variant.size) {
-                return Array.isArray(variant.size) ? variant.size : [variant.size];
-            }
-            return [];
-        });
+        const sizesArray = variantsList.flatMap((variant: { size?: string | string[] }) =>
+            variant.size ? (Array.isArray(variant.size) ? variant.size : [variant.size]) : []
+        );
         return [...new Set(sizesArray)];
     }, [variantsList]);
 
-    // Xử lý thêm vào giỏ hàng
+    // Xử lý thêm sản phẩm vào giỏ hàng
     const handleAddToCart = useCallback(async () => {
         if (!selectedSize) {
             Alert.alert('Vui lòng chọn kích cỡ!');
             return;
         }
-        // Tìm biến thể có kích cỡ khớp
+        // Tìm biến thể có kích cỡ khớp (so sánh không phân biệt chữ hoa chữ thường)
         const matchedVariant = product.variants.find(
             (v: { size: string }) => v.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
         );
@@ -85,25 +72,15 @@ const DetailScreen = ({ route, navigation }) => {
             Alert.alert('Không tìm thấy biến thể phù hợp!');
             return;
         }
-        const token = await tokenService.getToken();
         try {
-            await axios.post(
-                'http://10.0.2.2:5000/v1/cart/add-to-cart',
-                {
-                    productId: product._id,
-                    variantId: matchedVariant._id,
-                    quantity,
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            await addToCartAPI(product._id, matchedVariant._id, quantity);
             Alert.alert('Thêm vào giỏ hàng thành công!');
         } catch (error) {
-            Alert.alert('Lỗi khi thêm vào giỏ hàng: ' + ((error as any).response?.data || (error as Error).message));
+            const errorMessage =
+                error instanceof Error
+                    ? (error as any).response?.data || error.message
+                    : 'Đã xảy ra lỗi không xác định.';
+            Alert.alert('Lỗi khi thêm vào giỏ hàng: ' + errorMessage);
         }
     }, [product, quantity, selectedSize]);
 
@@ -136,9 +113,9 @@ const DetailScreen = ({ route, navigation }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Danh sách các biến thể (màu sắc) */}
+                    {/* Danh sách các biến thể (theo màu sắc) */}
                     <View style={styles.bodyChild}>
-                        {variantsList.map((item: { size: string | string[]; color: string; stock: number }, index: number) => (
+                        {variantsList.map((item: { size?: string | string[]; stock?: number; color?: string }, index: number) => (
                             <TouchableOpacity
                                 key={index}
                                 onPress={() => {
@@ -153,20 +130,15 @@ const DetailScreen = ({ route, navigation }) => {
                         ))}
                     </View>
 
-                    {/* Danh sách kích cỡ: hiển thị tất cả kích cỡ có trong các variant */}
+                    {/* Danh sách kích cỡ (tất cả kích cỡ có trong variants) */}
                     <View style={styles.bodyChild}>
                         {allSizes.map((item, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                onPress={() => setSelectedSize(item)}
-                                style={styles.sizeButton}
-                            >
+                            <TouchableOpacity key={index} onPress={() => setSelectedSize(item)} style={styles.sizeButton}>
                                 <Text style={styles.sizeButtonText}>{String(item)}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
 
-                    {/* Hiển thị số lượng tồn kho */}
                     <Text style={styles.itemTitle}>Số lượng còn lại: {stock}</Text>
 
                     <View style={styles.footer}>

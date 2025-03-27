@@ -1,50 +1,54 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { Checkbox } from 'react-native-paper';
+// CartItem.js
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import { Checkbox } from "react-native-paper";
 
-// Component CartItem nhận các props cần thiết
 // @ts-ignore
-const CartItem = ({item, selectedItems, quantities, getFullImageUrl, onDecrease, onIncrease,}) => {
+const CartItem = ({item, quantity, isSelected, onIncrease, onDecrease, onToggleSelect, getFullImageUrl,}) => {
     return (
         <View style={styles.cartItem}>
             <Checkbox
-                status={selectedItems.includes(item._id) ? "checked" : "unchecked"}
+                status={isSelected ? "checked" : "unchecked"}
+                onPress={() => onToggleSelect(item._id)}
             />
             <Image
                 source={{
                     uri:
-                        item.variantId?.images && item.variantId.images.length > 0
+                        item.variantId.images && item.variantId.images.length > 0
                             ? getFullImageUrl(item.variantId.images[0])
                             : "https://via.placeholder.com/300",
                 }}
                 style={styles.productImage}
             />
-
             <View style={styles.productInfo}>
-                <Text style={styles.productTitle}>{item._id}</Text>
-                <Text style={styles.productSize}>Size {item.variantId?.size || "N/A"}</Text>
+                <Text style={styles.productTitle}>{item.productId.name}</Text>
+                <Text style={styles.productSize}>Size {item.variantId.size}</Text>
                 <Text style={styles.productPrice}>
                     {item.variantId?.price
-                        ? ((item.variantId.price * (item.quantity || 1)) || 0).toLocaleString()
-                        : "Chưa có giá"} đ
+                        ? (item.variantId.price * item.quantity).toLocaleString()
+                        : "Chưa có giá"}{" "}
+                    đ
                 </Text>
             </View>
-
             <View style={styles.quantityContainer}>
                 <TouchableOpacity
-                    onPress={() => onDecrease(item._id)}
+                    onPress={() => onDecrease(item.productId._id, item._id)}
                     style={styles.quantityButton}
                 >
-                    <Image source={require("../Image/minus.png")} style={{ width: 15, height: 15 }} />
+                    <Image
+                        source={require("../Image/minus.png")}
+                        style={styles.quantityIcon}
+                    />
                 </TouchableOpacity>
-                <Text style={styles.quantityText}>
-                    {quantities[item._id] || item.quantity}
-                </Text>
+                <Text style={styles.quantityText}>{quantity || item.quantity}</Text>
                 <TouchableOpacity
-                    onPress={() => onIncrease(item._id)}
+                    onPress={() => onIncrease(item.productId._id, item._id)}
                     style={styles.quantityButton}
                 >
-                    <Image source={require("../Image/add.png")} style={{ width: 15, height: 15 }} />
+                    <Image
+                        source={require("../Image/add.png")}
+                        style={styles.quantityIcon}
+                    />
                 </TouchableOpacity>
             </View>
         </View>
@@ -57,6 +61,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#fff",
         marginBottom: 20,
+        padding: 8,
     },
     productImage: {
         width: 80,
@@ -94,6 +99,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#000",
         backgroundColor: "#fff",
+    },
+    quantityIcon: {
+        width: 15,
+        height: 15,
     },
     quantityText: {
         fontSize: 16,

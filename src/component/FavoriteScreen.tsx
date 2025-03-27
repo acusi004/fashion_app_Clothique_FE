@@ -12,13 +12,14 @@ import {
 import React, {useEffect, useState} from "react";
 import {checkFavorite, getUserFavorites, removeFavorite} from "../service/favoriteService";
 import FavoriteItem from "./FavoriteItem.tsx";
+import {useNavigation} from "@react-navigation/native";
 
 
 function FavoriteScreen() {
 
     const [favorites, setFavorites] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
-
+    const navigation = useNavigation();
 
     const fetchFavorites = async () => {
         try {
@@ -56,11 +57,19 @@ function FavoriteScreen() {
     };
 
     // @ts-ignore
+    const handlePressItem = (product) => {
+        // @ts-ignore
+         navigation.navigate('DetailScreen', {product});
+
+    };
+
+    // @ts-ignore
     const renderItem = ({ item }) => (
         <FavoriteItem
             item={item}
             onAddToCart={() => handleAddToCart(item)}
             onRemove={() => handleRemoveFavorite(item.productId._id)}
+            onPress={handlePressItem}
         />
     );
 

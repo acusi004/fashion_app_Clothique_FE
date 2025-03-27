@@ -67,6 +67,7 @@ function AllProducts() {
     const handlePressItem = (product) => {
         // @ts-ignore
         navigation.navigate('DetailScreen', {product});
+        ToastAndroid.show(`Data: ${ product}`, ToastAndroid.SHORT);
     };
 
     // @ts-ignore

@@ -7,7 +7,7 @@ import { Image, StyleSheet } from "react-native";
 
 function BottomNavigation() {
     const Tab = createBottomTabNavigator();
-    
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -24,6 +24,7 @@ function BottomNavigation() {
                 },
                 tabBarLabel: () => null, // Ẩn nhãn tab
                 tabBarStyle: styles.tabBarStyle,
+                tabBarHideOnKeyboard: true,
             })}
         >
             <Tab.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />

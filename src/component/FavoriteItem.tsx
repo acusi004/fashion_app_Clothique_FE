@@ -3,12 +3,21 @@ import { TouchableOpacity, View, Text, Image, StyleSheet, Alert, ToastAndroid } 
 import getVariantByProductId from "../service/variantService";
 
 // @ts-ignore
-const FavoriteItem = ({ item, onAddToCart, onRemove }) => {
+const FavoriteItem = ({ item, onAddToCart, onRemove, onPress }) => {
     // Lấy dữ liệu sản phẩm từ trường productId
     const product = item.productId;
 
+    const getImage = ()=>{
+        const baseUrl = 'http://10.0.2.2:5000';
+        return `${baseUrl}${product.variants[0]?.images[0]}`;
+    }
+
+    useEffect(() => {
+       // ToastAndroid.show(`Data: ${ product.variants[0]?.images[0]}`, ToastAndroid.SHORT);
+    }, []);
+
     return (
-        <TouchableOpacity style={styles.container}>
+        <TouchableOpacity style={styles.container} onPress={() => onPress(product)}>
             <View style={styles.btnItem}>
                 <Image
                     style={styles.FvImage}
@@ -17,12 +26,14 @@ const FavoriteItem = ({ item, onAddToCart, onRemove }) => {
                             ? `http://10.0.2.2:5000${product.variants[0].images[0]}`
                             : 'https://i.pinimg.com/564x/7b/12/2b/7b122bfb0391eea8a55c6b331471b7db.jpg'
                     }}
+                    source={{ uri: getImage() }}
                 />
             </View>
             <View style={styles.infoContainer}>
                 <Text style={styles.FvTitle}>{product.name}</Text>
                 <Text style={styles.FvPrice}>{`${product?.variants?.[0]?.price || 0} VND`}</Text>
 
+                <Text style={styles.FvPrice}>{`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
             <View style={styles.actionContainer}>
                 <TouchableOpacity style={styles.btnAddToCart} onPress={onAddToCart}>

@@ -61,7 +61,7 @@ export const checkFavorite = async (productId) => {
 export const getUserFavorites = async () => {
     const token = await tokenService.getToken();
     try {
-        const response = await axios.get(`http://10.0.2.2:5000/v1/favourite/`, {
+        const response = await axios.get(`http://10.0.2.2:5000/v1/favourite`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

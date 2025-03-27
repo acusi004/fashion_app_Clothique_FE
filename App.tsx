@@ -16,7 +16,6 @@ import CartScreen from "./src/component/CartScreen.tsx";
 import SuccessScreen from "./src/component/SuccessScreen.tsx";
 import ChoseScreen from './src/component/ChoseScreen.tsx';
 import AddressScreen from './src/component/AddressScreen.tsx';
-import EditAddress from './src/component/EditAddress.tsx';
 import EditProfileScreen from './src/component/EditProfileScreen.tsx';
 import CheckOutScreen from './src/component/CheckOutScreen.tsx';
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
@@ -60,10 +59,6 @@ function App() {
                     name="AddressScreen"
                     options={{ title: "Address" }}
                     component={AddressScreen} />
-                <Stack.Screen
-                    name="EditAddress"
-                    options={{ title: "Address" }}
-                    component={EditAddress} />
                 <Stack.Screen
                     name="EditProfileScreen"
                     options={{ headerShown: false }}

@@ -115,6 +115,15 @@ function RegisterScreen({navigation}) {
                 </TouchableOpacity>
             </View>
 
+            <View style={styles.footerContainer}>
+                <TouchableOpacity>
+                    <Text style={styles.footerText}>Quên mật khẩu?</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
+                    <Text style={styles.footerText}>Đã có tài khoản.</Text>
+                </TouchableOpacity>
+            </View>
+
             {loading ? (
                 <ActivityIndicator size="large" color="#000" />
             ) : (
@@ -190,8 +199,20 @@ const styles = StyleSheet.create({
     },
     eyeIcon: {
         padding: 10,
-    },inputPassword: {
+    },
+    inputPassword: {
         flex: 1,
+    },
+    footerContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        marginTop: 15,
+    },
+    footerText: {
+        color: "#000",
+        fontSize: 14,
+        fontWeight: "bold"
     },
 
 });

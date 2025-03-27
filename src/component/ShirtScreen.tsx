@@ -6,6 +6,7 @@ import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ItemProducts from "./ItemProducts.tsx";
 import DetailScreen from "./DetailScreen.tsx";
+import {getRandomImage, handlePressItem, loadProducts} from "../service/categoryService";
 
 
 // @ts-ignore
@@ -18,60 +19,30 @@ function ShirtScreen({navigation}) {
 
     useFocusEffect(
         useCallback(() => {
-            loadProducts();
-            ToastAndroid.show(`Data: ${ products}`, ToastAndroid.SHORT);
+            loadShirt()
         }, [])
     );
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await loadProducts();
+        await loadShirt()
         setRefreshing(false);
     };
 
-    // Hàm lấy token từ AsyncStorage
-    const getToken = async () => {
+    const loadShirt = async () => {
         try {
-            return await AsyncStorage.getItem('accessToken');
+            const data = await loadProducts(shirtName);
+            setProducts(data);
         } catch (error) {
-            console.error('Lỗi khi lấy token:', error);
-            return null;
-        }
-    };
-
-    const loadProducts = async () => {
-
-        const token = await getToken();
-        try {
-            const response = await axios.get(`http://10.0.2.2:5000/v1/product/search?categoryId=${shirtName}`,{
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            })
-            ToastAndroid.show(`Data: ${products }`, ToastAndroid.SHORT);
-            setProducts(response.data);
-        } catch (err) {
-            console.error("Lỗi khi lấy sản phẩm Áo:", err);
-
+            console.error("Lỗi khi lấy sản phẩm Áo:", error);
         } finally {
             setLoading(false);
         }
     };
-    // @ts-ignore
-    const getRandomImage = (variants) => {
-        if (variants && variants.length > 0) {
-            const randomVariant = variants[Math.floor(Math.random() * variants.length)];
-            return randomVariant.images && randomVariant.images.length > 0
-                ? randomVariant.images[0]
-                : null;
-        }
-        return null;
-    };
 
-    // @ts-ignore
-    const handlePressItem = (product) => {
-        navigation.navigate(DetailScreen, { product });
-    };
+
+
+
 
     // @ts-ignore
     const renderItem = ({ item }) => (
@@ -84,21 +55,21 @@ function ShirtScreen({navigation}) {
 
     return (
         <View style={styles.container}>
-            {/*{loading ? (*/}
-            {/*    <ActivityIndicator size="large" color="#000" />*/}
-            {/*) : products.length > 0 ? (*/}
-            {/*    <FlatList*/}
-            {/*        data={products}*/}
-            {/*        keyExtractor={(item) => item._id}*/}
-            {/*        renderItem={renderItem}*/}
-            {/*        numColumns={2}*/}
-            {/*        refreshControl={*/}
-            {/*            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />*/}
-            {/*        }*/}
-            {/*    />*/}
-            {/*) : (*/}
-            {/*    <Text style={styles.noData}>Không có sản phẩm nào</Text>*/}
-            {/*)}*/}
+            {loading ? (
+                <ActivityIndicator size="large" color="#000" />
+            ) : products.length > 0 ? (
+                <FlatList
+                    data={products}
+                    keyExtractor={(item) => item._id}
+                    renderItem={renderItem}
+                    numColumns={2}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                />
+            ) : (
+                <Text style={styles.noData}>Không có sản phẩm nào</Text>
+            )}
         </View>
     );
 }

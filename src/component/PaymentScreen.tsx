@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet, SafeAreaView, FlatList } from "react-native";
 import { RadioButton } from "react-native-paper";
 
@@ -10,29 +10,23 @@ const CheckoutScreen = () => {
     const { selectedProducts } = route.params || { selectedProducts: [] };
     const BASE_URL = "http://10.0.2.2:5000"; // API local
    
+    useEffect(()=>{
+        console.log(selectedProducts);
+        
+    },[])
+    // Lấy đường dẫn ảnh sản phẩm
     const getFullImageUrl = (imagePath) => {
         return imagePath.startsWith("/uploads/") ? `${BASE_URL}${imagePath}` : imagePath;
+        
     };
+
+    const totalPrice = selectedProducts.reduce((total, item) => {
+        return total + (item.variantId.price * item.quantity);
+      }, 0);
     return (
         <SafeAreaView style={styles.container}>
              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-             {/* <FlatList
-    data={selectedProducts}
-    keyExtractor={(item) => item._id.toString()}
-    renderItem={({ item }) => (
-        <View style={styles.productItem}>
-            <Image
-                source={{
-                    uri: item.variantId.images?.length > 0
-                        ? getFullImageUrl(item.variantId.images[0])
-                        : "https://via.placeholder.com/100"
-                }}
-                style={styles.productImage}
-            />
-        </View>
-    )}
-/> */}
-
+                <Image source={require('../Image/back.png')}/>
             </TouchableOpacity>
             <Text style={styles.header}>Thanh toán</Text>
 
@@ -45,30 +39,34 @@ const CheckoutScreen = () => {
             </View>
             
             {selectedProducts.length > 0 ? (
-                <FlatList
-                    data={selectedProducts}
-                    keyExtractor={(item) => item._id.toString()}
-                    renderItem={({ item }) => (
-                        <View style={styles.productItem}>
-                            <Image
-                                source={{
-                                    uri: item.variantId.images?.length > 0
-                                        ? item.variantId.images[0]
-                                        : "https://via.placeholder.com/100"
-                                }}
-                                style={styles.productImage}
-                            />
-                            <View style={styles.productInfo}>
-                                <Text style={styles.productName}>{item.productId.name}</Text>
-                                <Text style={styles.productSize}>Size: {item.variantId.size}</Text>
-                                <Text style={styles.productPrice}>
-                                    {item.variantId?.price ? (item.variantId.price * item.quantity).toLocaleString() : "Chưa có giá"} đ
-                                </Text>
-                                <Text style={styles.productQuantity}>Số lượng: {item.quantity}</Text>
-                            </View>
-                        </View>
-                    )}
-                />
+              <View style={{ width: "100%", paddingHorizontal: 10 }}>
+              <FlatList
+                  data={selectedProducts}
+                  keyExtractor={(item) => item._id.toString()}
+                  renderItem={({ item }) => (
+                      <View style={styles.productItem}>
+                          <Image
+                              source={{
+                                  uri:
+                                      item.variantId.images && item.variantId.images.length > 0
+                                          ? getFullImageUrl(item.variantId.images[0])
+                                          : "https://via.placeholder.com/300",
+                              }}
+                              style={styles.productImage}
+                          />
+                          <View style={styles.productInfo}>
+                              <Text style={styles.productName}>{item.productId.name}</Text>
+                              <Text style={styles.productSize}>Size: {item.variantId.size}</Text>
+                              <Text style={styles.productPrice}>
+                                  {item.variantId?.price ? (item.variantId.price * item.quantity).toLocaleString() : "Chưa có giá"} đ
+                              </Text>
+                              <Text style={styles.productQuantity}>Số lượng: {item.quantity}</Text>
+                          </View>
+                      </View>
+                  )}
+              />
+          </View>
+          
             ) : (
                 <Text style={styles.emptyText}>Không có sản phẩm nào được chọn.</Text>
             )}
@@ -112,7 +110,7 @@ const CheckoutScreen = () => {
                 </View>
                 <View style={styles.priceRowTotal}>
                     <Text style={styles.totalLabel}>Tổng:</Text>
-                    <Text style={styles.totalValue}>$100</Text>
+                    <Text style={styles.totalValue}>{totalPrice.toLocaleString()} đ</Text>
                 </View>
             </View>
 

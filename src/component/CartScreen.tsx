@@ -38,6 +38,8 @@ const navigation = useNavigation();
                 setCartData(data.cart || []);
 
                 // Cập nhật số lượng ban đầu của từng sản phẩm
+                console.log(cartData);
+                
                 const initialQuantities = {};
                 data.cart.forEach((item) => {
                     initialQuantities[item.productId._id] = item.quantity;
@@ -117,19 +119,43 @@ const navigation = useNavigation();
     };
     
 
-    const increaseQuantity = (productId, cartId) => {
-        const newQuantity = (quantities[productId] || 1) + 1;
-        setQuantities(prev => ({ ...prev, [productId]: newQuantity }));
-        updateCartItem(cartId, newQuantity);
+    const increaseQuantity = (productId, variantId, cartId) => {
+        setCartData(prevCart =>
+            prevCart.map(item =>
+                item.productId._id === productId && item.variantId._id === variantId
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item
+            )
+        );
+    
+        setQuantities(prevQuantities => ({
+            ...prevQuantities,
+            [cartId]: (prevQuantities[cartId] || 1) + 1, // ✅ Cập nhật số lượng hiển thị
+        }));
+    
+        updateCartItem(cartId, (quantities[cartId] || 1) + 1);
     };
-
-    const decreaseQuantity = (productId, cartId) => {
-        if (quantities[productId] > 1) {
-            const newQuantity = quantities[productId] - 1;
-            setQuantities(prev => ({ ...prev, [productId]: newQuantity }));
-            updateCartItem(cartId, newQuantity);
+    
+    const decreaseQuantity = (productId, variantId, cartId) => {
+        if ((quantities[cartId] || 1) > 1) {
+            setCartData(prevCart =>
+                prevCart.map(item =>
+                    item.productId._id === productId && item.variantId._id === variantId
+                        ? { ...item, quantity: Math.max(1, item.quantity - 1) }
+                        : item
+                )
+            );
+    
+            setQuantities(prevQuantities => ({
+                ...prevQuantities,
+                [cartId]: Math.max(1, (prevQuantities[cartId] || 1) - 1), // ✅ Cập nhật số lượng hiển thị
+            }));
+    
+            updateCartItem(cartId, Math.max(1, (quantities[cartId] || 1) - 1));
         }
     };
+    
+    
     // Xóa sản phẩm khỏi giỏ hàng
     const removeItem = (productId) => {
         setCartData((prevCart) => prevCart.filter((item) => item.productId._id !== productId));
@@ -186,20 +212,14 @@ const navigation = useNavigation();
                             </View>
 
                             <View style={styles.quantityContainer}>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                       decreaseQuantity(item.productId._id, item._id)
-                                        
-                                    }}
-                                    style={styles.quantityButton}
-                                >
+                            <TouchableOpacity onPress={() => decreaseQuantity(item.productId._id, item.variantId._id, item._id)}>
+
                                     <Image source={require("../Image/minus.png")} style={{ width: 15, height: 15 }} />
                                 </TouchableOpacity>
-                                <Text style={styles.quantityText}>{quantities[item.productId._id] || item.quantity}</Text>
-                                <TouchableOpacity
-                                    onPress={() => increaseQuantity(item.productId._id, item._id)}
-                                    style={styles.quantityButton}
-                                >
+                                <Text style={styles.quantityText}>{quantities[item._id] ?? item.quantity}</Text>
+
+                                <TouchableOpacity onPress={() => increaseQuantity(item.productId._id, item.variantId._id, item._id)}>
+
                                     <Image source={require("../Image/add.png")} style={{ width: 15, height: 15 }} />
                                 </TouchableOpacity>
                             </View>

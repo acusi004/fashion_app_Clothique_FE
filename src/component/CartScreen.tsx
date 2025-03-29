@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Checkbox, TextInput } from "react-native-paper";
 import tokenService from "../service/tokenService";
 import { SwipeListView } from "react-native-swipe-list-view";
@@ -35,7 +35,8 @@ const navigation = useNavigation();
                 }
 
                 const data = await response.json();
-                setCartData(data.cart || []);
+                setCartData(data.cart || []); // Đảm bảo dữ liệu chính xác
+                
 
                 // Cập nhật số lượng ban đầu của từng sản phẩm
                 console.log(cartData);
@@ -118,48 +119,45 @@ const navigation = useNavigation();
         }
     };
     
-
-    const increaseQuantity = (productId, variantId, cartId) => {
+    const increaseQuantity = (cartId, sl, stock) => {
+        if (sl >= stock) { // Dừng ngay nếu đã đạt số lượng tối đa
+            Alert.alert('Bạn đã đạt đến số lượng tối đa của sản phẩm này.');
+            return; 
+        }
+    
+        const newQuantity = sl + 1;
+        
+        setQuantities(prevQuantities => ({
+            ...prevQuantities, 
+            [cartId]: newQuantity
+        }));
+    
         setCartData(prevCart =>
             prevCart.map(item =>
-                item.productId._id === productId && item.variantId._id === variantId
-                    ? { ...item, quantity: item.quantity + 1 }
-                    : item
+                item._id === cartId ? { ...item, quantity: newQuantity } : item
             )
         );
     
-        setQuantities(prevQuantities => ({
-            ...prevQuantities,
-            [cartId]: (prevQuantities[cartId] || 1) + 1, // ✅ Cập nhật số lượng hiển thị
-        }));
-    
-        updateCartItem(cartId, (quantities[cartId] || 1) + 1);
+        updateCartItem(cartId, newQuantity); // Gọi API cập nhật
     };
     
-    const decreaseQuantity = (productId, variantId, cartId) => {
-        if ((quantities[cartId] || 1) > 1) {
+    
+    const decreaseQuantity = ( cartId,sl,stock) => {
+        setQuantities(prevQuantities => {
+            const newQuantity = sl - 1;
+            
             setCartData(prevCart =>
                 prevCart.map(item =>
-                    item.productId._id === productId && item.variantId._id === variantId
-                        ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-                        : item
+                    item._id === cartId ? { ...item, quantity: newQuantity } : item
                 )
             );
-    
-            setQuantities(prevQuantities => ({
-                ...prevQuantities,
-                [cartId]: Math.max(1, (prevQuantities[cartId] || 1) - 1), // ✅ Cập nhật số lượng hiển thị
-            }));
-    
-            updateCartItem(cartId, Math.max(1, (quantities[cartId] || 1) - 1));
-        }
+        
+            updateCartItem(cartId, newQuantity); // Gọi API cập nhật
+            return { ...prevQuantities, [cartId]: newQuantity }; 
+        });
+        
     };
     
-    
-    // Xóa sản phẩm khỏi giỏ hàng
-    const removeItem = (productId) => {
-        setCartData((prevCart) => prevCart.filter((item) => item.productId._id !== productId));
-    };
 
     // Lấy đường dẫn ảnh sản phẩm
     const getFullImageUrl = (imagePath) => {
@@ -212,13 +210,13 @@ const navigation = useNavigation();
                             </View>
 
                             <View style={styles.quantityContainer}>
-                            <TouchableOpacity onPress={() => decreaseQuantity(item.productId._id, item.variantId._id, item._id)}>
+                            <TouchableOpacity onPress={() => decreaseQuantity( item._id,item.quantity,item.variantId.stock)}>
 
                                     <Image source={require("../Image/minus.png")} style={{ width: 15, height: 15 }} />
                                 </TouchableOpacity>
                                 <Text style={styles.quantityText}>{quantities[item._id] ?? item.quantity}</Text>
 
-                                <TouchableOpacity onPress={() => increaseQuantity(item.productId._id, item.variantId._id, item._id)}>
+                                <TouchableOpacity onPress={() => increaseQuantity( item._id,item.quantity,item.variantId.stock)}>
 
                                     <Image source={require("../Image/add.png")} style={{ width: 15, height: 15 }} />
                                 </TouchableOpacity>

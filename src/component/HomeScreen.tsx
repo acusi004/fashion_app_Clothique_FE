@@ -4,10 +4,13 @@ import {FlatList, Image, StyleSheet, Text, ToastAndroid, TouchableOpacity, View}
 import {ActivityIndicator, TextInput} from "react-native-paper";
 import Swiper from "react-native-swiper";
 import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {searchProducts} from "../service/productService.";
 import ItemSearchProducts from "./ItemSearchProducts.tsx";
 import FilterDrawer from "../styles/FilterDrawer";
+import {useFocusEffect} from "@react-navigation/native";
+import {getSearchHistory, saveSearchHistory} from "../service/searchHistoryService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // @ts-ignore
 function HomeScreen({navigation}) {
 
@@ -17,21 +20,39 @@ function HomeScreen({navigation}) {
     const [error, setError] = useState("");
     const [filterActive, setFilterActive] = useState(false);
     const [showFilter, setShowFilter] = useState(false);
+    const SEARCH_HISTORY_KEY = 'searchHistory';
+    const [searchHistory, setSearchHistory] = useState([]);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+
+
+
     // Banner images
     const banner: any[] = [
         require('../Image/banner.png'),
         require('../Image/banner2.png')
     ];
 
-
+    //chỉ chạy khi searchQuery thay đổi
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             handleSearch();
         }, 500);
-
+        getSearchHistory().then(setSearchHistory);
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
 
+
+    //chạy khi màn hình quay trở lại
+    useFocusEffect(
+        React.useCallback(() => {
+            return () => {
+                setSearchQuery("");
+                setProductSearch([]);
+                setError("");
+            };
+        }, [])
+    );
 
     // Mở Drawer
     const handleOpenFilter = () => {
@@ -57,16 +78,28 @@ function HomeScreen({navigation}) {
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
         setIsLoading(true);
+
         setError("");
         try {
             const data = await searchProducts(searchQuery);
             // ToastAndroid.show(`Data: ${data}`, ToastAndroid.SHORT);
             setProductSearch(data);
+            const updatedHistory = await saveSearchHistory(searchQuery);
+            setSearchHistory(updatedHistory); // cập nhật UI
+
         } catch (error) {
             // @ts-ignore
             setError(error.message);
         } finally {
             setIsLoading(false);
+        }
+    };
+    const handleClearHistory = async () => {
+        try {
+            await AsyncStorage.removeItem('searchHistory');
+            setSearchHistory([]);
+        } catch (err) {
+            console.error("Lỗi khi xoá lịch sử:", err);
         }
     };
 
@@ -109,13 +142,22 @@ function HomeScreen({navigation}) {
                     mode="outlined"
                     placeholder="Bạn đang tìm kiếm gì?"
                     outlineColor="#F6F6F6"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={handleSearch}
                     activeOutlineColor="#F6F6F6"
                     cursorColor="#000"
-
+                    value={searchQuery}
+                    onSubmitEditing={handleSearch}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onChangeText={(text) => {
+                        setSearchQuery(text);
+                        // Chỉ hiện lịch sử khi người dùng chưa gõ gì
+                        if (text.trim() === "") {
+                            setIsSearchFocused(true);
+                        } else {
+                            setIsSearchFocused(false);
+                        }
+                    }}
                 />
+
                 <TouchableOpacity
                     style={styles.filterButton}
                     onPress={() => {
@@ -153,6 +195,22 @@ function HomeScreen({navigation}) {
                         />
                     )}
                 </View>
+            )   : isSearchFocused && searchHistory.length > 0 ? (
+                    <>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Lịch sử tìm kiếm:</Text>
+                            <TouchableOpacity onPress={handleClearHistory}>
+                                <Text style={{ color: 'red', fontSize: 14 }}>Xoá</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {searchHistory.map((item, index) => (
+                            <TouchableOpacity key={index} onPress={() => setSearchQuery(item)}>
+                                <Text style={{ paddingVertical: 6, fontSize: 16 }}>{item}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </>
+
             ) : (
                 <>
                     <View style={styles.Banner}>

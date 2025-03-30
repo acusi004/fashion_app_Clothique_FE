@@ -81,6 +81,7 @@ const DetailScreen = ({ route, navigation }) => {
                     ? (error as any).response?.data || error.message
                     : 'Đã xảy ra lỗi không xác định.';
             Alert.alert('Lỗi khi thêm vào giỏ hàng: ' + errorMessage);
+            console.log(errorMessage)
         }
     }, [product, quantity, selectedSize]);
 

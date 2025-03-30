@@ -73,10 +73,10 @@ const AddressScreen = () => {
                 district: { id: addr.districtId, name: addr.districtName },
                 ward: { id: addr.wardCode, name: addr.wardName },
             }));
-            setAddresses(normalized);
 
             console.log("📌 API trả về danh sách địa chỉ:", response.data);
             console.log("✅ Danh sách địa chỉ nhận được:", response.data);
+            setAddresses(normalized);
             setAddresses(response.data.addresses);
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -102,7 +102,7 @@ const AddressScreen = () => {
                 return Alert.alert("Lỗi", "Bạn chưa đăng nhập!");
             }
             const decodedToken = jwtDecode<CustomJwtPayload>(token);
-            const userEmail = decodedToken.email;
+            const userEmail = decodedToken?.email;
 
             if (!userEmail) {
                 return Alert.alert("Lỗi", "Không tìm thấy email!");
@@ -144,7 +144,55 @@ const AddressScreen = () => {
             return;
         }
         setSelectedAddress(selected);
-        setEditModalVisible(true);
+        setTimeout(() => setEditModalVisible(true), 100);
+    };
+
+    // @ts-ignore
+    const handleDeleteAddress = async (addressId) => {
+        Alert.alert(
+            "Xác nhận xóa",
+            "Bạn có chắc muốn xóa địa chỉ này không?",
+            [
+                { text: "Hủy", style: "cancel" },
+                {
+                    text: "Xóa",
+                    onPress: async () => {
+                        try {
+                            const token = await tokenService.getToken();
+                            if (!token) {
+                                console.error("❌ Không tìm thấy token!");
+                                return Alert.alert("Lỗi", "Bạn chưa đăng nhập!");
+                            }
+                            const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                            const userEmail = decodedToken?.email;
+
+                            if (!userEmail) {
+                                return Alert.alert("Lỗi", "Không tìm thấy email!");
+                            }
+
+                            const response = await axios.post(
+                                "http://10.0.2.2:5000/v1/user/remove-address",
+                                { email: userEmail, addressId },
+                                { headers: { Authorization: `Bearer ${token}` } }
+                            );
+
+                            console.log("✅ Xóa thành công:", response.data);
+                            Alert.alert("Thành công", "Địa chỉ đã được xóa!");
+                            setAddresses(response.data.addresses);
+                        } catch (error) {
+                            if (axios.isAxiosError(error)) {
+                                console.error("❌ Lỗi khi xóa địa chỉ:", error.response?.data || error.message);
+                            } else if (error instanceof Error) {
+                                console.error("❌ Lỗi khi xóa địa chỉ:", error.message);
+                            } else {
+                                console.error("❌ Lỗi khi xóa địa chỉ:", error);
+                            }
+                            Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     return (
@@ -168,6 +216,13 @@ const AddressScreen = () => {
                                 {item?.ward?.name || item?.wardName || "Không có xã"}
                             </Text>
                         </View>
+                        {/* Nút xóa */}
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => handleDeleteAddress(item._id)}
+                        >
+                            <Text style={styles.deleteIcon}>🗑</Text>
+                        </TouchableOpacity>
                     </TouchableOpacity>
                 )}
             />
@@ -187,6 +242,7 @@ const AddressScreen = () => {
                     />
                 </Modal>
             )}
+
         </View>
     );
 };
@@ -198,7 +254,28 @@ const styles = StyleSheet.create({
     name: { fontSize: 16, fontWeight: "bold" },
     address: { fontSize: 14, color: "gray" },
     addButton: { position: "absolute", bottom: 20, right: 20, backgroundColor: "black", padding: 15, borderRadius: 30 },
-    addButtonText: { color: "white", fontSize: 20 }
+    addButtonText: { color: "white", fontSize: 20 },
+    defaultText: {
+        fontSize: 14,
+        color: "red", // ✅ Mặc định màu đỏ
+        fontWeight: "bold",
+        textAlign: "right",
+        marginTop: 5,
+    },
+    deleteButton: {
+        backgroundColor: "gray",
+        width: 40, // Nhỏ gọn hơn
+        height: 40,
+        borderRadius: 20, // Bo tròn hoàn toàn
+        justifyContent: "center",
+        alignItems: "center",
+        marginLeft: 300,
+    },
+    deleteIcon: {
+        color: "black",
+        fontSize: 20, // Biểu tượng lớn hơn
+        fontWeight: "bold",
+    },
 });
 
 export default AddressScreen;

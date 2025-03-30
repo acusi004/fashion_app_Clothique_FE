@@ -13,7 +13,6 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
     const [district, setDistrict] = useState("");
     const [ward, setWard] = useState("");
     const [detail, setDetail] = useState("");
-    const [isDefault, setIsDefault] = useState(false);
 
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -28,7 +27,6 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             setDistrict(address.district?.id?.toString() || "");
             setWard(address.ward?.id?.toString() || "");
             setDetail(address.addressDetail || "");
-            setIsDefault(address.isDefault || false);
             console.log("📌 Dữ liệu address nhận vào:", address);
         } else {
             console.log("⚠️ Không có dữ liệu address khi mở form!");
@@ -70,29 +68,18 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
-        console.log("📌 Kiểm tra trước khi gửi:", { province, district, ward });
-        if (!province || !district || !ward) {
-            Alert.alert("Lỗi", "Vui lòng chọn đầy đủ Tỉnh/Quận/Xã!");
-            return;
-        }
+
         const token = await tokenService.getToken();
         const decodedToken = jwtDecode(token);
         const userEmail = decodedToken?.email;
         const addressId = address?._id || "";
-        console.log("📌 Address ID khi gửi API:", addressId);
-
-        if (!addressId) {
-            Alert.alert("Lỗi", "Không tìm thấy ID của địa chỉ cần cập nhật!");
-            return;
-        }
-        console.log("📌 Address ID khi gửi API:", addressId);
 
         if (!userEmail || !addressId) {
             Alert.alert("Lỗi", "Dữ liệu không hợp lệ!");
             return;
         }
 
-        console.log("📌 Dữ liệu trước khi gửi:", {
+        const updateData = {
             email: userEmail,
             addressId,
             name,
@@ -101,27 +88,13 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             districtId: district,
             wardCode: ward,
             addressDetail: detail.trim(),
-            isDefault,
-        });
-
-
+        };
 
         try {
-            const response = await axios.post("http://10.0.2.2:5000/v1/user/update-address", {
-                email: userEmail,
-                addressId,
-                name,
-                phoneNumber,
-                provinceId: province,
-                districtId: district,
-                wardCode: ward,
-                addressDetail: detail.trim(),
-                isDefault,
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
+            const response = await axios.post("http://10.0.2.2:5000/v1/user/update-address", updateData, {
+                headers: { Authorization: `Bearer ${token}` },
             });
 
-            console.log("📌 Danh sách địa chỉ nhận được:", response.data);
             console.log("✅ API Response:", response.data);
             Alert.alert("Thành công", "Địa chỉ đã được cập nhật!");
             refreshAddresses();
@@ -131,6 +104,49 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             Alert.alert("Lỗi", error.response?.data?.message || "Không thể cập nhật địa chỉ. Vui lòng thử lại!");
         }
     };
+
+
+    // const handleToggleDefault = async () => {
+    //     try {
+    //         const token = await tokenService.getToken();
+    //         const decodedToken = jwtDecode(token);
+    //         const userEmail = decodedToken?.email;
+
+    //         if (!userEmail || !address?._id) {
+    //             Alert.alert("Lỗi", "Thông tin không hợp lệ! Hãy kiểm tra lại.");
+    //             return;
+    //         }
+    //         console.log("📌 Gửi request set-default-address với dữ liệu:", {
+    //             email: userEmail,
+    //             addressId: address?._id
+    //         });
+    //         console.log("Token: ", token);
+
+    //         console.log("📌 Gửi yêu cầu đặt địa chỉ mặc định với:");
+    //         console.log("📌 Email:", userEmail);
+    //         console.log("📌 Address ID:", address?._id);
+
+    //         const response = await axios.post(
+    //             `http://10.0.2.2:5000/v1/user/set-default-address`,
+    //             { email: userEmail, addressId: address?._id },
+    //             { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
+
+    //         );
+
+    //         console.log("✅ API Response:", response.data);
+    //         if (response.data?.message === "Đã cập nhật địa chỉ mặc định.") {
+
+    //             setIsDefault(true);
+    //             Alert.alert("Thành công", "Địa chỉ đã được đặt làm mặc định!");
+    //         } else {
+    //             Alert.alert("Lỗi", "Cập nhật không thành công!");
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Lỗi cập nhật địa chỉ mặc định:", error.response?.data || error.message);
+    //         Alert.alert("Lỗi", error.response?.data?.message || "Không thể đặt địa chỉ mặc định!");
+    //     }
+    // };
+
 
     return (
         <View style={styles.container}>
@@ -177,10 +193,12 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
 
             <Text style={styles.label}>Địa chỉ cụ thể</Text>
             <TextInput style={styles.input} value={detail} onChangeText={setDetail} />
-            <View style={styles.switchContainer}>
-                <Text>Đặt làm mặc định</Text>
-                <Switch value={isDefault} onValueChange={setIsDefault} />
-            </View>
+            {/* {!isDefault && (
+                <View style={styles.switchContainer}>
+                    <Text>Đặt làm mặc định</Text>
+                    <Switch value={isDefault} onValueChange={handleToggleDefault} />
+                </View>
+            )} */}
             <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
                 <Text style={styles.saveButtonText}>Lưu</Text>
             </TouchableOpacity>

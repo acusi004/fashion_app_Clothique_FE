@@ -23,6 +23,7 @@ import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
 import PaymentScreen from './src/component/PaymentScreen.tsx'
 import DetailScreen from "./src/component/DetailScreen.tsx";
+import ChoiceAddress from './src/component/ChoiceAddress.tsx'
 
 function App() {
 
@@ -41,6 +42,10 @@ function App() {
                     name="PaymentScreen"
                     options={{ headerShown: false }}
                     component={PaymentScreen} />
+                      <Stack.Screen
+                    name="ChoiceAddress"
+                    options={{ headerShown: true }}
+                    component={ChoiceAddress} />
                 <Stack.Screen
                     name="ChoseScreen"
                     options={{ headerShown: false }}

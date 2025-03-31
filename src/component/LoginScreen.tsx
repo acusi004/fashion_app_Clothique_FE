@@ -1,8 +1,13 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert} from "react-native";
-import BottomNavigation from "../navigation/BottomNavigation.tsx";
+import { Checkbox } from "react-native-paper";
+
 import authService from "../service/authService";
 import {ActivityIndicator} from "react-native-paper";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 // @ts-ignore
 function LoginScreen({navigation}) {
@@ -10,6 +15,7 @@ function LoginScreen({navigation}) {
     const [password, setPassword] = useState('');  // Biến password
     const [secureText, setSecureText] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [isSelected, setIsSelected] = useState(false);
 
     const handleLogin = async () => {
         console.log('Username:', username);  // Log giá trị username
@@ -28,12 +34,25 @@ function LoginScreen({navigation}) {
                 // Gọi hàm loginUser từ authService
                 const result = await authService.loginUser(username, password);
 
+                // ✅ Lưu tài khoản nếu nhớ mật khẩu
+                if (isSelected) {
+                    await AsyncStorage.setItem('savedUsername', username);
+                    await AsyncStorage.setItem('savedPassword', password);
+                } else {
+                    await AsyncStorage.removeItem('savedUsername');
+                    await AsyncStorage.removeItem('savedPassword');
+                }
+                await AsyncStorage.setItem('hasLoggedInBefore', 'true');
+
+
                 // Nếu thành công điều hướng sang màn hình Home
                 setLoading(true);
                 setTimeout(() => {
                     setLoading(false);
                     navigation.navigate('BottomNavigation'); // chuyển sang màn hình chính sau 3 giây
+
                 }, 3000);
+
 
 
             } catch (error) {
@@ -46,6 +65,26 @@ function LoginScreen({navigation}) {
 
 
     }
+
+
+    useEffect(() => {
+        const loadCredentials = async () => {
+            try {
+                const savedUsername = await AsyncStorage.getItem('savedUsername');
+                const savedPassword = await AsyncStorage.getItem('savedPassword');
+
+                if (savedUsername && savedPassword) {
+                    setUsername(savedUsername);
+                    setPassword(savedPassword);
+                    setIsSelected(true);
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải thông tin đăng nhập:", error);
+            }
+        };
+
+        loadCredentials();
+    }, []);
 
 
     return (
@@ -78,8 +117,16 @@ function LoginScreen({navigation}) {
                                style={styles.eyeImage}/>
                     </TouchableOpacity>
                 </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <Checkbox
+                        status={isSelected ? "checked" : "unchecked"}
+                        onPress={() => setIsSelected(!isSelected)}
+                    />
+                    <Text style={{ marginLeft: 8 }}>Ghi nhớ đăng nhập</Text>
+                </View>
+
                 <View style={styles.footerContainer}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() =>navigation.navigate("ChangePassScreen")}>
                         <Text style={styles.footerText}>Quên mật khẩu?</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen")}>

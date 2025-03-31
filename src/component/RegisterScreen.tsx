@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image} from "react-native";
 import RegisterService from "../service/RegisterService";
 import {ActivityIndicator} from "react-native-paper";
+import CheckBox from "@react-native-community/checkbox";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // @ts-ignore
 function RegisterScreen({navigation}) {
@@ -63,6 +65,8 @@ function RegisterScreen({navigation}) {
         try {
             const result = await RegisterService.register({ email, password });
 
+            await AsyncStorage.setItem('hasLoggedInBefore', 'true');
+
             setLoading(true)
             setTimeout(() => {
                 setLoading(false);
@@ -77,6 +81,7 @@ function RegisterScreen({navigation}) {
 
     return (
         <View style={styles.container}>
+
             <Text style={styles.title}>Chào mừng đến {"\n"}Clothique</Text>
 
                 <TextInput

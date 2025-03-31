@@ -21,6 +21,9 @@ import CheckOutScreen from './src/component/CheckOutScreen.tsx';
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
 import DetailScreen from "./src/component/DetailScreen.tsx";
+import ChangePassScreen from "./src/component/ChangePassScreen.tsx";
+import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
+import ResetPasswordScreen from "./src/component/ResetPasswordScreen.tsx";
 
 function App() {
 
@@ -55,6 +58,18 @@ function App() {
                     name="LoginScreen"
                     options={{ headerShown: false }}
                     component={LoginScreen} />
+                <Stack.Screen
+                    name="ChangePassScreen"
+                    options={{ headerShown: false }}
+                    component={ChangePassScreen} />
+                <Stack.Screen
+                    name="VerifyOtpScreen"
+                    options={{ headerShown: false }}
+                    component={VerifyOtpScreen} />
+                <Stack.Screen
+                    name="ResetPasswordScreen"
+                    options={{ headerShown: false }}
+                    component={ResetPasswordScreen} />
                 <Stack.Screen
                     name="AddressScreen"
                     options={{ title: "Address" }}

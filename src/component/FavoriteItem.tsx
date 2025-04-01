@@ -30,7 +30,6 @@ const FavoriteItem = ({ item, onAddToCart, onRemove, onPress }) => {
             </View>
             <View style={styles.infoContainer}>
                 <Text style={styles.FvTitle}>{product.name}</Text>
-                <Text style={styles.FvPrice}>{`${product?.variants?.[0]?.price || 0} VND`}</Text>
 
                 <Text style={styles.FvPrice}>{`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>

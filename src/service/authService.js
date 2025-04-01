@@ -6,10 +6,16 @@ import tokenService from './tokenService'; // file tokenService.js bạn đã c�
 const loginUser = async (email, password) => {
     try {
         const response = await axios.post('http://10.0.2.2:5000/v1/auth/login', { email, password });
-        const { accessToken } = response.data;
+        console.log("📌 Response từ API login:", response.data); // Debug
 
-        console.log("✅ Token nhận được sau login:", accessToken); // Kiểm tra token
+        const { accessToken } = response.data;
+        if (!accessToken) throw new Error("Không nhận được accessToken!");
+
         await tokenService.setToken(accessToken);
+
+        // Debug kiểm tra lại token sau khi lưu
+        const checkToken = await tokenService.getToken();
+        console.log("✅ Token sau khi lưu:", checkToken);
 
         return response.data;
     } catch (error) {
@@ -17,6 +23,7 @@ const loginUser = async (email, password) => {
         throw error;
     }
 };
+
 
 export default {
     loginUser,

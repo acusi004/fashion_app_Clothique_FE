@@ -13,22 +13,34 @@ const ResetPasswordScreen = () => {
     const [token, setToken] = useState("");
 
     const handleSendOTP = async () => {
+        if (!email || email.trim() === "") {
+            Alert.alert("Lỗi", "Vui lòng nhập email hợp lệ");
+            return;
+        }
+
+        console.log("Email gửi đi:", email); // Kiểm tra email trước khi gửi
+
         try {
             const response = await axios.post("http://10.0.2.2:5000/v1/auth/send-otp", { email });
             Alert.alert("Thành công", response.data.message);
             setStep(2);
         } catch (error) {
-            Alert.alert("Lỗi", error.response?.data?.message || "Gửi OTP thất bại");
+            console.log("Lỗi gửi OTP:", error.response?.data);
+            Alert.alert("Lỗi", error.response?.data?.error || "Gửi OTP thất bại");
         }
     };
 
     const handleVerifyOTP = async () => {
+        console.log("Email:", email);
+        console.log("OTP nhập vào:", code);
+
         try {
-            const response = await axios.post("http://10.0.2.2:5000/v1/verify-otp", { email, otp: code });
+            const response = await axios.post("http://10.0.2.2:5000/v1/auth/verify-otp", { email, otp: code });
             Alert.alert("Thành công", response.data.message);
             setToken(response.data.token);
             setStep(3);
         } catch (error) {
+            console.log("Lỗi xác thực OTP:", error.response?.data || error);
             Alert.alert("Lỗi", error.response?.data?.message || "Xác thực OTP thất bại");
         }
     };
@@ -40,7 +52,7 @@ const ResetPasswordScreen = () => {
         }
 
         try {
-            const response = await axios.post("http://10.0.2.2:5000/v1/reset-password", { token, newPassword });
+            const response = await axios.post("http://10.0.2.2:5000/v1/auth/reset-password", { token, newPassword });
             Alert.alert("Thành công", response.data.message);
             navigation.goBack();
         } catch (error) {
@@ -54,7 +66,7 @@ const ResetPasswordScreen = () => {
                 <Image source={require("../Image/back.png")} />
             </TouchableOpacity>
             <Text style={styles.title}>Đổi mật khẩu</Text>
-            
+
             {step === 1 && (
                 <>
                     <TextInput
@@ -68,7 +80,7 @@ const ResetPasswordScreen = () => {
                     </TouchableOpacity>
                 </>
             )}
-            
+
             {step === 2 && (
                 <>
                     <TextInput
@@ -82,7 +94,7 @@ const ResetPasswordScreen = () => {
                     </TouchableOpacity>
                 </>
             )}
-            
+
             {step === 3 && (
                 <>
                     <TextInput

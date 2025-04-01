@@ -19,22 +19,28 @@ const setToken = async (token, expiresIn = 3600) => {
 const getToken = async () => {
     try {
         const token = await AsyncStorage.getItem(TOKEN_KEY);
+        console.log("🔍 Token lấy được từ AsyncStorage:", token);
+
         const expirationTime = await AsyncStorage.getItem(TOKEN_EXPIRATION_KEY);
+        console.log("⏳ Thời gian hết hạn token:", expirationTime);
+
         if (token && expirationTime) {
             const currentTime = Date.now();
             if (currentTime < parseInt(expirationTime)) {
                 return token;
             } else {
-                // Nếu token đã hết hạn, xóa nó
+                console.error("⏳ Token đã hết hạn!");
                 await removeToken();
-                console.error('Token has expired');
+                return null;
             }
         }
         return null;
     } catch (error) {
-        console.error('Failed to fetch the token', error);
+        console.error("❌ Lỗi khi lấy token:", error);
+        return null;
     }
 };
+
 
 const removeToken = async () => {
     try {
@@ -49,18 +55,29 @@ const removeToken = async () => {
 const getUserIdFromToken = async () => {
     try {
         const token = await getToken();
-        if (!token) return null;
+        if (!token) {
+            console.error("🚨 Không có token!");
+            return null;
+        }
 
+        console.log("🔍 Token trước khi decode:", token);
         const decodedPayload = jwtDecode(token);
-        console.log("Decoded Token:", decodedPayload);
+        console.log("✅ Decoded Token:", decodedPayload);
 
-        // Kiểm tra nếu không có userId, thử lấy id
-        return decodedPayload.userId || decodedPayload.id || null;
+        const userId = decodedPayload.userId || decodedPayload.id;
+        if (!userId) {
+            console.error("🚨 Không tìm thấy userId hoặc id trong token!");
+            return null;
+        }
+
+        console.log("✅ Lấy được userId:", userId);
+        return { userId: decodedPayload.id, username: decodedPayload.email.split("@")[0] };
     } catch (error) {
-        console.error("Lỗi giải mã token:", error);
+        console.error("❌ Lỗi giải mã token:", error);
         return null;
     }
 };
+
 
 export default {
     setToken,

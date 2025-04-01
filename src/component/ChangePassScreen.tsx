@@ -1,13 +1,13 @@
-import {Alert, Image, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View} from "react-native";
-import {ActivityIndicator} from "react-native-paper";
-import React, {useState} from "react";
-import {stylesChange} from "../styles/FilterDrawer";
+import { Alert, Image, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import React, { useState } from "react";
+import { stylesChange } from "../styles/FilterDrawer";
 
 import axios from "axios";
 import CustomAlert from "../styles/CustomAlert.tsx";
 
 // @ts-ignore
-function ChangePassScreen({navigation}){
+function ChangePassScreen({ navigation }) {
 
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ function ChangePassScreen({navigation}){
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertHeader, setAlertHeader] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
-    const [goToVerifyAfterAlert, setGoToVerifyAfterAlert] = useState(false); // ✅ cờ kiểm soát điều hướng
+    const [goToVerifyAfterAlert, setGoToVerifyAfterAlert] = useState(false);
 
     // @ts-ignore
     const showAlert = (header, message, shouldNavigate = false) => {
@@ -55,17 +55,17 @@ function ChangePassScreen({navigation}){
 
 
 
-    return(
-        <View style={{ justifyContent:'center', flex:1, padding:10 }}>
+    return (
+        <View style={{ justifyContent: 'center', flex: 1, padding: 10 }}>
 
-           <View style={styles.inputContainer}>
-               <TextInput
-                   style={styles.input}
-                   placeholder="Email"
-                   value={email}
-                   onChangeText={text => setEmail(text)}
-               />
-           </View>
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={text => setEmail(text)}
+                />
+            </View>
 
 
             <TouchableOpacity style={styles.button} onPress={handleSendEmail} >
@@ -82,7 +82,7 @@ function ChangePassScreen({navigation}){
     )
 }
 
-const  styles = StyleSheet.create({
+const styles = StyleSheet.create({
     button: {
         backgroundColor: "#000",
         paddingVertical: 15,
@@ -110,8 +110,16 @@ const  styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-    }
-
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    backButton: {
+        padding: 10,
+        marginRight: 10,
+    },
 })
 
 export default ChangePassScreen;

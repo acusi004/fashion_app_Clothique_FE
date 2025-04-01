@@ -22,7 +22,6 @@ import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
 import DetailScreen from "./src/component/DetailScreen.tsx";
 import SettingScreen from './src/component/SettingScreen.tsx';
-import ResetPasswordScreen from './src/component/ResetPasswordScreen.tsx';
 import ChatScreen from './src/component/ChatScreen.tsx';
 import ChangePassScreen from "./src/component/ChangePassScreen.tsx";
 import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
@@ -74,10 +73,6 @@ function App() {
                     name="VerifyOtpScreen"
                     options={{ headerShown: false }}
                     component={VerifyOtpScreen} />
-                <Stack.Screen
-                    name="ResetPasswordScreen"
-                    options={{ headerShown: false }}
-                    component={ResetPasswordScreen} />
                 <Stack.Screen
                     name="AddressScreen"
                     options={{ title: "Address" }}

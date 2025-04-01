@@ -6,17 +6,12 @@ import { jwtDecode } from "jwt-decode";
 import { ActivityIndicator, TextInput } from "react-native-paper";
 import Swiper from "react-native-swiper";
 import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
-import { useEffect, useState } from "react";
 import { searchProducts } from "../service/productService.";
 import ItemSearchProducts from "./ItemSearchProducts.tsx";
 import FilterDrawer from "../styles/FilterDrawer";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import React, {useEffect, useState} from "react";
-import {searchProducts} from "../service/productService.";
-import ItemSearchProducts from "./ItemSearchProducts.tsx";
-import FilterDrawer from "../styles/FilterDrawer";
-import {useFocusEffect} from "@react-navigation/native";
 import {getSearchHistory, saveSearchHistory} from "../service/searchHistoryService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // @ts-ignore

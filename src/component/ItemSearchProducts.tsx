@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: "#ccc",
         alignItems: "center",
+        padding:10
     },
     image: {
         width: 80,

@@ -24,6 +24,10 @@ import DetailScreen from "./src/component/DetailScreen.tsx";
 import SettingScreen from './src/component/SettingScreen.tsx';
 import ResetPasswordScreen from './src/component/ResetPasswordScreen.tsx';
 import ChatScreen from './src/component/ChatScreen.tsx';
+import ChangePassScreen from "./src/component/ChangePassScreen.tsx";
+import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
+import ResetPasswordScreen from "./src/component/ResetPasswordScreen.tsx";
+import SearchScreen from "./src/component/SearchScreen.tsx";
 
 function App() {
 
@@ -43,6 +47,10 @@ function App() {
                     options={{ headerShown: false }}
                     component={ChoseScreen} />
                 <Stack.Screen
+                    name="SearchScreen"
+                    options={{ headerShown: false }}
+                    component={SearchScreen} />
+                <Stack.Screen
                     name="CheckOutScreen"
                     options={{ headerShown: false }}
                     component={CheckOutScreen} />
@@ -58,6 +66,18 @@ function App() {
                     name="LoginScreen"
                     options={{ headerShown: false }}
                     component={LoginScreen} />
+                <Stack.Screen
+                    name="ChangePassScreen"
+                    options={{ headerShown: false }}
+                    component={ChangePassScreen} />
+                <Stack.Screen
+                    name="VerifyOtpScreen"
+                    options={{ headerShown: false }}
+                    component={VerifyOtpScreen} />
+                <Stack.Screen
+                    name="ResetPasswordScreen"
+                    options={{ headerShown: false }}
+                    component={ResetPasswordScreen} />
                 <Stack.Screen
                     name="AddressScreen"
                     options={{ title: "Address" }}

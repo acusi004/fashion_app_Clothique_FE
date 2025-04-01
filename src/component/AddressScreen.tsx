@@ -3,11 +3,27 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, Modal, Alert } from
 import AddressForm from "./AddressForm.tsx";
 import EditAddressForm from "./EditAddressForm.tsx"; // 🔹 Import form sửa địa chỉ
 import tokenService from '../service/tokenService';
-import { jwtDecode } from "jwt-decode";
-import axios from "axios";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+
+interface CustomJwtPayload extends JwtPayload {
+    email?: string;
+}
+import axios, { AxiosError } from "axios";
 
 const AddressScreen = () => {
-    const [addresses, setAddresses] = useState([]);
+    interface Address {
+        _id: string;
+        name?: string;
+        addressDetail?: string;
+        province?: { id: number; name: string };
+        district?: { id: number; name: string };
+        ward?: { id: number; name: string };
+        provinceName?: string;
+        districtName?: string;
+        wardName?: string;
+    }
+
+    const [addresses, setAddresses] = useState<Address[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
@@ -29,9 +45,9 @@ const AddressScreen = () => {
                 return Alert.alert("Lỗi", "Bạn chưa đăng nhập!");
             }
 
-            let decodedToken;
+            let decodedToken: CustomJwtPayload;
             try {
-                decodedToken = jwtDecode(token);
+                decodedToken = jwtDecode<CustomJwtPayload>(token);
             } catch (err) {
                 console.error("❌ Lỗi giải mã token:", err);
                 return Alert.alert("Lỗi", "Token không hợp lệ!");
@@ -51,7 +67,7 @@ const AddressScreen = () => {
                 params: { email: userEmail }
             });
 
-            const normalized = response.data.addresses.map(addr => ({
+            const normalized = response.data.addresses.map((addr: any) => ({
                 ...addr,
                 province: { id: addr.provinceId, name: addr.provinceName },
                 district: { id: addr.districtId, name: addr.districtName },
@@ -63,16 +79,29 @@ const AddressScreen = () => {
             setAddresses(normalized);
             setAddresses(response.data.addresses);
         } catch (error) {
-            console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error.response?.data || error.message);
-            Alert.alert("Lỗi", error.response?.data?.message || "Không thể tải danh sách địa chỉ.");
+            if (axios.isAxiosError(error)) {
+                console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error.response?.data || error.message);
+                Alert.alert("Lỗi", error.response?.data?.message || "Không thể tải danh sách địa chỉ.");
+            } else if (error instanceof Error) {
+                console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error.message);
+                Alert.alert("Lỗi", error.message);
+            } else {
+                console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error);
+                Alert.alert("Lỗi", "Không thể tải danh sách địa chỉ.");
+            }
         }
     };
 
 
+    // @ts-ignore
     const handleAddAddress = async (newAddress) => {
         try {
             const token = await tokenService.getToken();
-            const decodedToken = jwtDecode(token);
+            if (!token) {
+                console.error("❌ Không tìm thấy token!");
+                return Alert.alert("Lỗi", "Bạn chưa đăng nhập!");
+            }
+            const decodedToken = jwtDecode<CustomJwtPayload>(token);
             const userEmail = decodedToken?.email;
 
             if (!userEmail) {
@@ -92,11 +121,20 @@ const AddressScreen = () => {
             setAddresses(response.data.addresses);
             setModalVisible(false);
         } catch (error) {
-            console.error("❌ Lỗi khi thêm địa chỉ:", error.response?.data || error.message);
-            Alert.alert("Lỗi", "Không thể thêm địa chỉ.");
+            if (axios.isAxiosError(error)) {
+                console.error("❌ Lỗi khi thêm địa chỉ:", error.response?.data || error.message);
+                Alert.alert("Lỗi", error.response?.data?.message || "Không thể thêm địa chỉ.");
+            } else if (error instanceof Error) {
+                console.error("❌ Lỗi khi thêm địa chỉ:", error.message);
+                Alert.alert("Lỗi", error.message);
+            } else {
+                console.error("❌ Lỗi khi thêm địa chỉ:", error);
+                Alert.alert("Lỗi", "Không thể thêm địa chỉ.");
+            }
         }
     };
 
+    // @ts-ignore
     const handleEditAddress = (selected) => {
         console.log("📌 Địa chỉ được chọn để chỉnh sửa:", selected);
 
@@ -109,6 +147,7 @@ const AddressScreen = () => {
         setTimeout(() => setEditModalVisible(true), 100);
     };
 
+    // @ts-ignore
     const handleDeleteAddress = async (addressId) => {
         Alert.alert(
             "Xác nhận xóa",
@@ -120,7 +159,11 @@ const AddressScreen = () => {
                     onPress: async () => {
                         try {
                             const token = await tokenService.getToken();
-                            const decodedToken = jwtDecode(token);
+                            if (!token) {
+                                console.error("❌ Không tìm thấy token!");
+                                return Alert.alert("Lỗi", "Bạn chưa đăng nhập!");
+                            }
+                            const decodedToken = jwtDecode<CustomJwtPayload>(token);
                             const userEmail = decodedToken?.email;
 
                             if (!userEmail) {
@@ -137,7 +180,13 @@ const AddressScreen = () => {
                             Alert.alert("Thành công", "Địa chỉ đã được xóa!");
                             setAddresses(response.data.addresses);
                         } catch (error) {
-                            console.error("❌ Lỗi khi xóa địa chỉ:", error.response?.data || error.message);
+                            if (axios.isAxiosError(error)) {
+                                console.error("❌ Lỗi khi xóa địa chỉ:", error.response?.data || error.message);
+                            } else if (error instanceof Error) {
+                                console.error("❌ Lỗi khi xóa địa chỉ:", error.message);
+                            } else {
+                                console.error("❌ Lỗi khi xóa địa chỉ:", error);
+                            }
                             Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
                         }
                     },

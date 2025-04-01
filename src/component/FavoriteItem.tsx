@@ -26,22 +26,15 @@ const FavoriteItem = ({ item, onAddToCart, onRemove, onPress }) => {
                             ? `http://10.0.2.2:5000${product.variants[0].images[0]}`
                             : 'https://i.pinimg.com/564x/7b/12/2b/7b122bfb0391eea8a55c6b331471b7db.jpg'
                     }}
-                    source={{ uri: getImage() }}
                 />
             </View>
             <View style={styles.infoContainer}>
                 <Text style={styles.FvTitle}>{product.name}</Text>
-                <Text style={styles.FvPrice}>{`${product?.variants?.[0]?.price || 0} VND`}</Text>
 
                 <Text style={styles.FvPrice}>{`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
             <View style={styles.actionContainer}>
-                <TouchableOpacity style={styles.btnAddToCart} onPress={onAddToCart}>
-                    <Image
-                        style={styles.btnIconBag}
-                        source={require('../Image/shopping-bag.png')}
-                    />
-                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.btnDelete} onPress={onRemove}>
                     <Image
                         style={styles.btnIconBag}

@@ -1,77 +1,121 @@
-import React, { useState } from "react";
+import React, {useRef, useState} from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image} from "react-native";
 import RegisterService from "../service/RegisterService";
 import {ActivityIndicator} from "react-native-paper";
+import CheckBox from "@react-native-community/checkbox";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 // @ts-ignore
 function RegisterScreen({navigation}) {
 
-    const [email, setEmail]                   = useState('');
-    const [password, setPassword]             = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [loading, setLoading]               = useState(false);
+    const [loading, setLoading] = useState(false);
     const [secureText, setSecureText] = useState(true);
     const [secureText2, setSecureText2] = useState(true);
+    const [passwordStrength, setPasswordStrength] = useState('');
 
-    // Hàm validate email: kiểm tra email có đúng định dạng
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+
+    const emailRef = useRef<TextInput>(null);
+    const passwordRef = useRef<TextInput>(null);
+    const confirmRef = useRef<TextInput>(null);
+
+    const showAlert = (header: string, message: string, focusRef: React.RefObject<TextInput> | null = null) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+
+        if (focusRef) {
+            setTimeout(() => {
+                focusRef.current?.focus();
+            }, 500);
+        }
+    };
+
     // @ts-ignore
     const validateEmail = (mail) => {
-        // Regex đơn giản kiểm tra định dạng email: có ký tự trước @, sau @, và sau dấu chấm
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(mail);
     };
 
-    // Hàm validate mật khẩu:
-    // - Ít nhất 8 ký tự
-    // - Ký tự đầu tiên phải là chữ cái in hoa
-    // - Có ít nhất 1 số và 1 ký tự đặc biệt (ví dụ: !@#$%^&*)
     // @ts-ignore
-    const validatePassword = (pwd) => {
-        const regex = /^(?=.{8,})(?=.*\d)(?=.*[!@#$%^&*])[A-Z][A-Za-z0-9!@#$%^&*]+$/;
-        return regex.test(pwd);
+    const getPasswordStrength = (pwd) => {
+        let strength = 0;
+        if (pwd.length >= 8) strength++;
+        if (/[A-Z]/.test(pwd)) strength++;
+        if (/\d/.test(pwd)) strength++;
+        if (/[!@#$%^&*]/.test(pwd)) strength++;
+
+        if (strength <= 1) return "Yếu";
+        if (strength === 2 || strength === 3) return "Trung bình";
+        return "Mạnh";
     };
 
+    // @ts-ignore
+    const handlePasswordChange = (text) => {
+        setPassword(text);
+        setPasswordStrength(getPasswordStrength(text));
+    };
 
     const handleRegister = async () => {
-        // Kiểm tra các trường thông tin đã được nhập chưa
-        if ( !email || !password || !confirmPassword) {
-            Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin!');
+        if (!email || !password || !confirmPassword) {
+            // @ts-ignore
+            showAlert("Lỗi", "Vui lòng điền đầy đủ thông tin!", !email ? emailRef : !password ? passwordRef : confirmRef);
             return;
         }
 
-        // Kiểm tra định dạng email
         if (!validateEmail(email)) {
-            Alert.alert('Lỗi', 'Email không hợp lệ, vui lòng kiểm tra lại!');
+            // @ts-ignore
+            showAlert("Lỗi", "Email không hợp lệ! Ví dụ: abc@gmail.com", emailRef);
             return;
         }
 
-        // Kiểm tra mật khẩu và xác nhận mật khẩu có khớp không
-        if (password !== confirmPassword) {
-            Alert.alert('Lỗi', 'Mật khẩu không khớp!');
+        if (password.length < 8) {
+            // @ts-ignore
+            showAlert("Lỗi", "Mật khẩu phải có ít nhất 8 ký tự!", passwordRef);
             return;
         }
-        // Kiểm tra định dạng mật khẩu
-        if (!validatePassword(password)) {
-            Alert.alert(
-                'Lỗi',
-                'Mật khẩu phải có ít nhất 8 ký tự, ký tự đầu viết hoa, có ít nhất 1 số và 1 ký tự đặc biệt (ví dụ: !@#$%^&*).'
-            );
+
+        if (!/^[A-Z]/.test(password)) {
+            // @ts-ignore
+            showAlert("Lỗi", "Mật khẩu phải bắt đầu bằng chữ in hoa!", passwordRef);
+            return;
+        }
+
+        if (!/\d/.test(password)) {
+            // @ts-ignore
+            showAlert("Lỗi", "Mật khẩu phải chứa ít nhất 1 số!", passwordRef);
+            return;
+        }
+
+        if (!/[!@#$%^&*]/.test(password)) {
+            // @ts-ignore
+            showAlert("Lỗi", "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*)", passwordRef);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            // @ts-ignore
+            showAlert("Lỗi", "Mật khẩu nhập lại không khớp!", confirmRef);
             return;
         }
 
         setLoading(true);
         try {
-            const result = await RegisterService.register({ email, password });
-
-            setLoading(true)
+            await RegisterService.register({ email, password });
+            await AsyncStorage.setItem('hasLoggedInBefore', 'true');
             setTimeout(() => {
                 setLoading(false);
-                navigation.navigate('LoginScreen'); // chuyển sang màn hình login sau 3 giây
-            }, 3000);
-
+                navigation.navigate("LoginScreen");
+            }, 2000);
         } catch (error) {
-
-            console.error(error)
+            showAlert("Đăng ký thất bại", "Email đã tồn tại hoặc có lỗi xảy ra.");
+            setLoading(false);
         }
     };
 
@@ -79,50 +123,52 @@ function RegisterScreen({navigation}) {
         <View style={styles.container}>
             <Text style={styles.title}>Chào mừng đến {"\n"}Clothique</Text>
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType={"email-address"}
-                />
+            <TextInput
+                ref={emailRef}
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+            />
 
-
-           <View style={styles.inputContainer}>
-               <TextInput
-                   style={styles.inputPassword}
-                   placeholder="Mật khẩu"
-                   secureTextEntry={secureText}
-                   value={password}
-                   onChangeText={text => setPassword(text)}
-               />
-               <TouchableOpacity onPress={() => setSecureText(!secureText)} style={styles.eyeIcon}>
-                   <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")}
-                          style={styles.eyeImage}/>
-               </TouchableOpacity>
-           </View>
             <View style={styles.inputContainer}>
                 <TextInput
+                    ref={passwordRef}
+                    style={styles.inputPassword}
+                    placeholder="Mật khẩu"
+                    secureTextEntry={secureText}
+                    value={password}
+                    onChangeText={handlePasswordChange}
+                />
+                <TouchableOpacity onPress={() => setSecureText(!secureText)} style={styles.eyeIcon}>
+                    <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")} style={styles.eyeImage} />
+                </TouchableOpacity>
+            </View>
+
+            {password !== '' && (
+                <Text style={{ alignSelf: 'flex-start', color: passwordStrength === 'Mạnh' ? 'green' : passwordStrength === 'Trung bình' ? 'orange' : 'red', marginBottom: 5 }}>
+                    Độ mạnh mật khẩu: {passwordStrength}
+                </Text>
+            )}
+
+            <View style={styles.inputContainer}>
+                <TextInput
+                    ref={confirmRef}
                     style={styles.inputPassword}
                     placeholder="Nhập lại Mật khẩu"
                     secureTextEntry={secureText2}
                     value={confirmPassword}
-                    onChangeText={text => setConfirmPassword(text)}
+                    onChangeText={setConfirmPassword}
                 />
                 <TouchableOpacity onPress={() => setSecureText2(!secureText2)} style={styles.eyeIcon}>
-                    <Image source={secureText2 ? require("../Image/visibility.png") : require("../Image/hide.png")}
-                           style={styles.eyeImage}/>
+                    <Image source={secureText2 ? require("../Image/visibility.png") : require("../Image/hide.png")} style={styles.eyeImage} />
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.footerContainer}>
-                <TouchableOpacity>
-                    <Text style={styles.footerText}>Quên mật khẩu?</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
-                    <Text style={styles.footerText}>Đã có tài khoản.</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
+                <Text style={styles.footerText}>Đã có tài khoản?</Text>
+            </TouchableOpacity>
 
             {loading ? (
                 <ActivityIndicator size="large" color="#000" />
@@ -131,6 +177,13 @@ function RegisterScreen({navigation}) {
                     <Text style={styles.buttonText}>Đăng ký</Text>
                 </TouchableOpacity>
             )}
+
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 }

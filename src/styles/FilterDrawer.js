@@ -138,6 +138,88 @@ const FilterDrawer = ({ visible, onClose, onApply }) => {
     );
 };
 
+export const stylesChange = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        padding: 20,
+    },
+    title: {
+        textAlign: "left",
+        fontSize: 40,
+        fontWeight: "bold",
+        marginBottom: 200,
+    },
+    input: {
+        backgroundColor: "#FFFBFB",
+        width: "100%",
+        height: 50,
+        borderColor: "#000",
+        borderWidth: 1,
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+    },
+    inputContainer: {
+        backgroundColor: "#FFFBFB",
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        height: 50,
+        borderColor: "#000",
+        borderWidth: 1,
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+    },
+    button: {
+        backgroundColor: "#000",
+        paddingVertical: 15,
+        width: "100%",
+        alignItems: "center",
+        borderRadius: 25,
+        marginTop: 70,
+    },
+    buttonText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    inputWrapper: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        padding: 20,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#000",
+        marginBottom: 40,
+    },
+    eyeImage: {
+        width: 24,
+        height: 24,
+    },
+    eyeIcon: {
+        padding: 10,
+    },
+    inputPassword: {
+        flex: 1,
+    },
+    footerContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        marginTop: 15,
+    },
+    footerText: {
+        color: "#000",
+        fontSize: 14,
+        fontWeight: "bold"
+    },
+
+});
+
 export default FilterDrawer;
 
 const styles = StyleSheet.create({

@@ -12,6 +12,13 @@ import ItemSearchProducts from "./ItemSearchProducts.tsx";
 import FilterDrawer from "../styles/FilterDrawer";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import React, {useEffect, useState} from "react";
+import {searchProducts} from "../service/productService.";
+import ItemSearchProducts from "./ItemSearchProducts.tsx";
+import FilterDrawer from "../styles/FilterDrawer";
+import {useFocusEffect} from "@react-navigation/native";
+import {getSearchHistory, saveSearchHistory} from "../service/searchHistoryService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // @ts-ignore
 function HomeScreen({ navigation }) {
     const [userName, setUserName] = useState("Đang tải...");
@@ -21,6 +28,13 @@ function HomeScreen({ navigation }) {
     const [error, setError] = useState("");
     const [filterActive, setFilterActive] = useState(false);
     const [showFilter, setShowFilter] = useState(false);
+    const SEARCH_HISTORY_KEY = 'searchHistory';
+    const [searchHistory, setSearchHistory] = useState([]);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+
+
+
     // Banner images
     const banner: any[] = [
         require('../Image/banner.png'),
@@ -69,14 +83,26 @@ function HomeScreen({ navigation }) {
         }
     };
 
+    //chỉ chạy khi searchQuery thay đổi
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             handleSearch();
         }, 500);
-
+        getSearchHistory().then(setSearchHistory);
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
 
+
+    //chạy khi màn hình quay trở lại
+    useFocusEffect(
+        React.useCallback(() => {
+            return () => {
+                setSearchQuery("");
+                setProductSearch([]);
+                setError("");
+            };
+        }, [])
+    );
 
     // Mở Drawer
     const handleOpenFilter = () => {
@@ -102,16 +128,28 @@ function HomeScreen({ navigation }) {
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
         setIsLoading(true);
+
         setError("");
         try {
             const data = await searchProducts(searchQuery);
             // ToastAndroid.show(`Data: ${data}`, ToastAndroid.SHORT);
             setProductSearch(data);
+            const updatedHistory = await saveSearchHistory(searchQuery);
+            setSearchHistory(updatedHistory); // cập nhật UI
+
         } catch (error) {
             // @ts-ignore
             setError(error.message);
         } finally {
             setIsLoading(false);
+        }
+    };
+    const handleClearHistory = async () => {
+        try {
+            await AsyncStorage.removeItem('searchHistory');
+            setSearchHistory([]);
+        } catch (err) {
+            console.error("Lỗi khi xoá lịch sử:", err);
         }
     };
 
@@ -148,37 +186,14 @@ function HomeScreen({ navigation }) {
             </View>
 
             {/* Search Input */}
-            <View style={styles.searchContainer}>
-                <TextInput
-                    style={[styles.TextInputHeader]}
-                    mode="outlined"
-                    placeholder="Bạn đang tìm kiếm gì?"
-                    outlineColor="#F6F6F6"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={handleSearch}
-                    activeOutlineColor="#F6F6F6"
-                    cursorColor="#000"
+            <TouchableOpacity
+                onPress={() => navigation.navigate("SearchScreen")}
+                style={styles.fakeSearchBox}
+            >
+                <Text style={styles.placeholderText}>Bạn đang tìm kiếm gì?</Text>
+                <Image source={require('../Image/search.png')} style={styles.searchIcon} />
+            </TouchableOpacity>
 
-                />
-                <TouchableOpacity
-                    style={styles.filterButton}
-                    onPress={() => {
-                        setFilterActive(!filterActive);
-                        handleOpenFilter()
-                    }}
-                >
-                    <Image
-                        style={styles.filterImage}
-                        source={
-                            filterActive
-                                ? require("../Image/filter_Bold.png")
-                                : require("../Image/filter.png")
-                        }
-                    />
-
-                </TouchableOpacity>
-            </View>
             {searchQuery.trim().length > 0 ? (
                 <View style={styles.resultsContainer}>
                     {isLoading ? (
@@ -198,6 +213,22 @@ function HomeScreen({ navigation }) {
                         />
                     )}
                 </View>
+            )   : isSearchFocused && searchHistory.length > 0 ? (
+                    <>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Lịch sử tìm kiếm:</Text>
+                            <TouchableOpacity onPress={handleClearHistory}>
+                                <Text style={{ color: 'red', fontSize: 14 }}>Xoá</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {searchHistory.map((item, index) => (
+                            <TouchableOpacity key={index} onPress={() => setSearchQuery(item)}>
+                                <Text style={{ paddingVertical: 6, fontSize: 16 }}>{item}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </>
+
             ) : (
                 <>
                     <View style={styles.Banner}>
@@ -322,6 +353,28 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         resizeMode: "contain",
+    },
+        fakeSearchBox: {
+            width: '100%',
+            height: 45,
+            borderRadius: 8,
+            backgroundColor: '#F6F6F6',
+            paddingHorizontal: 15,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
+    placeholderText: {
+        color: '#999',
+        fontSize: 16,
+    },
+
+    searchIcon: {
+        width: 20,
+        height: 20,
+        tintColor: '#000', // nếu bạn dùng icon trắng
+        padding: 10,
+        borderRadius: 0,
     },
 });
 

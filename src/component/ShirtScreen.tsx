@@ -6,7 +6,7 @@ import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ItemProducts from "./ItemProducts.tsx";
 import DetailScreen from "./DetailScreen.tsx";
-import {getRandomImage, handlePressItem, loadProducts} from "../service/categoryService";
+import {getRandomImage, loadProducts} from "../service/categoryService";
 
 
 // @ts-ignore
@@ -41,7 +41,12 @@ function ShirtScreen({navigation}) {
     };
 
 
+    // @ts-ignore
+    const handlePressItem = (product) => {
+        // @ts-ignore
+        navigation.navigate('DetailScreen', {product});
 
+    };
 
 
     // @ts-ignore

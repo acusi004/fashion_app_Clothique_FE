@@ -2,19 +2,27 @@ import {StyleSheet, View, Image} from "react-native";
 import {useEffect} from "react";
 import LoginScreen from "./LoginScreen.tsx";
 import ChoseScreen from "./ChoseScreen.tsx";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // @ts-ignore
 function WelcomeScreen({navigation}) {
 
     useEffect(() => {
-            // Sau 3 giây, tự động chuyển sang màn hình Home
-            const timer = setTimeout(() => {
-                navigation.navigate(ChoseScreen);
-            }, 3000);
+        const checkLoginStatus = async () => {
+            const hasLoggedInBefore = await AsyncStorage.getItem('hasLoggedInBefore');
 
-            return () => clearTimeout(timer);
-        }
-    );
+            setTimeout(() => {
+                if (hasLoggedInBefore === 'true') {
+                    navigation.navigate("LoginScreen"); // 👉 Chuyển thẳng vào Login nếu đã từng login
+                } else {
+                    navigation.navigate("ChoseScreen"); // 👉 Nếu chưa thì vào màn hình chọn
+                }
+            }, 3000);
+        };
+
+        checkLoginStatus();
+    }, []);
+
 
     return (
         <View style={styles.container}>

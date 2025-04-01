@@ -1,6 +1,6 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, SafeAreaView, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, SafeAreaView, FlatList, Alert } from "react-native";
 import { RadioButton } from "react-native-paper";
 import tokenService from "../service/tokenService";
 
@@ -29,9 +29,9 @@ const CheckoutScreen = () => {
 
       const thanhtoan = async () => {
         if (!address) {
-            alert("Vui lòng chọn địa chỉ giao hàng!");
-            return;
-        }
+            console.log("⛔ Address đang rỗng hoặc null!");
+        } 
+        
     
         try {
              const token = await tokenService.getToken();
@@ -56,18 +56,26 @@ const CheckoutScreen = () => {
                     paymentMethod: paymentMethod
                 }),
             });
-    
+            console.log("Dữ liệu gửi lên API:", JSON.stringify({
+                shippingAddress: address,
+                items: selectedProducts.map(item => ({
+                    productId: item.productId._id, 
+                    variantId: item.variantId._id,
+                    quantity: item.quantity
+                })),
+                paymentMethod: paymentMethod
+            }));
             const data = await response.json();
     
             if (response.ok) {
-                alert("Đặt hàng thành công!");
+                Alert.alert("Đặt hàng thành công!");
                 
             } else {
-                alert(data.message || "Đặt hàng thất bại!");
+                Alert.alert(data.message || "Đặt hàng thất bại!");
             }
         } catch (error) {
             console.error("Lỗi khi đặt hàng:", error);
-            alert("Đã xảy ra lỗi, vui lòng thử lại!");
+            Alert.alert("Đã xảy ra lỗi, vui lòng thử lại!");
         }
     };
     
@@ -135,9 +143,9 @@ const CheckoutScreen = () => {
                 <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
                 <View style={styles.paymentOption}>
                     <RadioButton.Android
-                        value="MoMoMoMo"
+                        value="MoMo"
                         status={paymentMethod === "MoMo" ? "checked" : "unchecked"}
-                        onPress={() => setPaymentMethod("ZaloPay")}
+                        onPress={() => setPaymentMethod("MoMo")}
                     />
                     <Text style={styles.paymentText}>ZaloPay</Text>
                 </View>
@@ -177,9 +185,9 @@ const CheckoutScreen = () => {
             <TouchableOpacity 
     style={styles.orderButton} 
     onPress={() => {
-        console.log("🟢 Nhấn nút Đặt hàng");
+     
         thanhtoan();
-        alert("Vui lòng chọn địa chỉ giao hàng!");
+        
     }}
 >
     <Text style={styles.orderText}>Đặt hàng</Text>

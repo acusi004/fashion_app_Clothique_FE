@@ -21,6 +21,9 @@ import CheckOutScreen from './src/component/CheckOutScreen.tsx';
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
 import DetailScreen from "./src/component/DetailScreen.tsx";
+import SettingScreen from './src/component/SettingScreen.tsx';
+import ResetPasswordScreen from './src/component/ResetPasswordScreen.tsx';
+import ChatScreen from './src/component/ChatScreen.tsx';
 
 function App() {
 
@@ -90,6 +93,18 @@ function App() {
                     name="DetailScreen"
                     options={{ headerShown: false }}
                     component={DetailScreen} />
+                <Stack.Screen
+                    name="SettingScreen"
+                    options={{ headerShown: false }}
+                    component={SettingScreen} />
+                <Stack.Screen
+                    name="ResetPasswordScreen"
+                    options={{ headerShown: false }}
+                    component={ResetPasswordScreen} />
+                <Stack.Screen
+                    name="ChatScreen"
+                    options={{ headerShown: false }}
+                    component={ChatScreen} />
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

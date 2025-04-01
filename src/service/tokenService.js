@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const TOKEN_KEY = 'accessToken';
 const TOKEN_EXPIRATION_KEY = 'accessTokenExpiration';
@@ -49,13 +49,15 @@ const removeToken = async () => {
 const getUserIdFromToken = async () => {
     try {
         const token = await getToken();
-        if (token) {
-            const decodedPayload = jwt_decode(token);
-            return decodedPayload.id; // giả sử payload chứa thuộc tính `id`
-        }
-        return null;
+        if (!token) return null;
+
+        const decodedPayload = jwtDecode(token);
+        console.log("Decoded Token:", decodedPayload);
+
+        // Kiểm tra nếu không có userId, thử lấy id
+        return decodedPayload.userId || decodedPayload.id || null;
     } catch (error) {
-        console.error('Failed to decode token:', error);
+        console.error("Lỗi giải mã token:", error);
         return null;
     }
 };

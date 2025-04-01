@@ -8,6 +8,7 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
 
 
     const [isFavorite, setIsFavorite] = useState(false);
+    const [randomDiscount, setRandomDiscount] = useState(0);
 
 
 
@@ -21,7 +22,7 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
             }
         };
         fetchFavoriteStatus();
-
+        setRandomDiscount(Math.floor(Math.random() * 50) + 1);
     }, [product]);
 
     const handleToggleFavorite = async () => {
@@ -56,12 +57,15 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
         <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(product)}>
 
             <View style={styles.imageWrapper}>
+
                 <Image
                     source={{uri: imageUrl}}
                     style={styles.image}
                     resizeMode="cover"
                 />
-
+                <View style={styles.discountBadge}>
+                    <Text style={styles.discountText}>-{randomDiscount}%</Text>
+                </View>
 
                 <TouchableOpacity style={styles.heartIconContainer} onPress={handleToggleFavorite}>
                     <Image
@@ -79,7 +83,10 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
 
             {/* Thông tin sản phẩm: tên + giá */}
             <View style={styles.infoContainer}>
-                <Text style={styles.title}>{product.name}</Text>
+                <Text style={styles.title}  numberOfLines={1} ellipsizeMode="tail">{product.name}</Text>
+                <View style={styles.bestPriceTag}>
+                    <Text style={styles.bestPriceText}>Rẻ Vô Địch</Text>
+                </View>
                 <Text style={styles.price}> {`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
             </View>
         </TouchableOpacity>
@@ -89,17 +96,17 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
 
 const styles = StyleSheet.create({
     cardContainer: {
-        height: 265,
-        width: 180,
+        height: 275,
+        width: 190,
         backgroundColor: '#fff',
-        borderRadius: 18,
+        borderRadius: 5,
         shadowColor: '#000',
         shadowOffset: {width: 0, height: 14},
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 5,
         marginTop: 10,
         margin: 5,
-        marginLeft: 15
+
 
     },
     imageWrapper: {
@@ -111,7 +118,7 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: '100%',
-        borderRadius: 18,
+        borderRadius: 5,
     },
     waveContainer: {
         position: 'absolute',
@@ -144,20 +151,49 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
         paddingVertical: 0,
-        padding: 5
+        padding: 8
     },
     title: {
         fontSize: 16,
-        fontWeight: '600',
         color: '#000',
         marginBottom: 4,
+        marginTop:8
     },
     price: {
         fontSize: 14,
         color: '#666',
+    },
+    discountText: {
+        color: '#B45A35',
+        fontWeight: 'bold',
+        fontSize: 13,
+    },
+
+    bestPriceTag: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderWidth: 1,
+        borderColor: '#F85A27',
+        borderRadius: 4,
+        marginBottom: 4,
+    },
+    bestPriceText: {
+        color: '#F85A27',
+        fontWeight: 'bold',
+        fontSize: 12,
+    },
+    discountBadge: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        backgroundColor: '#FDE8E4',
+        borderRadius: 5,
+        paddingVertical: 2,
+        paddingHorizontal: 6,
+        zIndex: 10,          // ✅ đảm bảo nổi lên
+        elevation: 3,        // ✅ Android
     },
 });
 

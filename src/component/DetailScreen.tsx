@@ -1,7 +1,9 @@
 // DetailScreen.js
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {Alert, Image, ScrollView, StyleSheet, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
 import {addToCartAPI} from "../service/cartService";
+import {toggleFavorite} from "../service/favoriteService";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 
 // @ts-ignore
@@ -17,6 +19,18 @@ const DetailScreen = ({ route, navigation }) => {
     );
     const [stock, setStock] = useState(variantsList[0]?.stock || 0);
     const [selectedSize, setSelectedSize] = useState(variantsList[0]?.size || '');
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+
+    // @ts-ignore
+    const showAlert = (header, message) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+    };
 
     // Cập nhật dữ liệu mặc định khi danh sách variants thay đổi
     useEffect(() => {
@@ -37,6 +51,22 @@ const DetailScreen = ({ route, navigation }) => {
     const increaseQuantity = useCallback(() => setQuantity(q => q + 1), []);
     const decreaseQuantity = useCallback(() => setQuantity(q => (q > 1 ? q - 1 : 1)), []);
 
+
+    const handleToggleFavorite = async () => {
+        try {
+            const result = await toggleFavorite(product._id);
+            // Dựa vào thông báo trả về từ BE để cập nhật trạng thái
+            if (result.message && result.message.includes("thêm")) {
+                setIsFavorite(true);
+                ToastAndroid.show(`Đã thêm ${product.name} vào danh sách yêu thích`, ToastAndroid.SHORT);
+            } else {
+                setIsFavorite(false);
+                ToastAndroid.show(`Đã xóa ${product.name} khỏi danh sách yêu thích`, ToastAndroid.SHORT);
+            }
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+        }
+    };
 
     const getFullImageUrl = useCallback(
         (relativePath: string) => `http://10.0.2.2:5000${relativePath}`,
@@ -61,30 +91,45 @@ const DetailScreen = ({ route, navigation }) => {
     // Xử lý thêm sản phẩm vào giỏ hàng
     const handleAddToCart = useCallback(async () => {
         if (!selectedSize) {
-            Alert.alert('Vui lòng chọn kích cỡ!');
+            setAlertHeader('Thông báo');
+            setAlertMessage('Vui lòng chọn kích cỡ!');
+            setAlertVisible(true);
             return;
         }
-        // Tìm biến thể có kích cỡ khớp (so sánh không phân biệt chữ hoa chữ thường)
+
         const matchedVariant = product.variants.find(
-            (v: { size: string }) => v.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
-        );
+                    (v: { _id: string; size: string }) => v.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
+                );
         if (!matchedVariant) {
-            Alert.alert('Không tìm thấy biến thể phù hợp!');
+            setAlertHeader('Lỗi');
+            setAlertMessage('Không tìm thấy biến thể phù hợp!');
+            setAlertVisible(true);
             return;
         }
+
         try {
             await addToCartAPI(product._id, matchedVariant._id, quantity);
-            Alert.alert('Thêm vào giỏ hàng thành công!');
+            setAlertHeader('Thành công');
+            setAlertMessage('Sản phẩm đã được thêm vào giỏ hàng!');
+            setAlertVisible(true);
         } catch (error) {
-            const errorMessage =
+            setAlertHeader('Lỗi');
+            setAlertMessage(
                 error instanceof Error
                     ? (error as any).response?.data || error.message
-                    : 'Đã xảy ra lỗi không xác định.';
-            Alert.alert('Lỗi khi thêm vào giỏ hàng: ' + errorMessage);
-            console.log(errorMessage)
+                    : 'Đã xảy ra lỗi không xác định.'
+            );
+            setAlertVisible(true);
         }
     }, [product, quantity, selectedSize]);
 
+
+    const handleCloseAlert = () => {
+        setAlertVisible(false);
+        if (alertHeader === 'Thành công' ) {
+            navigation.navigate('CartScreen');
+        }
+    };
     return (
         <View style={styles.container}>
             <ScrollView style={styles.ScrollView}>
@@ -151,13 +196,20 @@ const DetailScreen = ({ route, navigation }) => {
             </ScrollView>
 
             <View style={styles.btnFooter}>
-                <TouchableOpacity style={styles.btnWithList}>
+                <TouchableOpacity style={styles.btnWithList} onPress={handleToggleFavorite}>
                     <Image source={require('../Image/wishlist.png')} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.btnAddtoCart} onPress={handleAddToCart}>
                     <Text>Thêm vào giỏ hàng</Text>
                 </TouchableOpacity>
             </View>
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={handleCloseAlert} // ✅ điều hướng chỉ khi thành công
+            />
+
         </View>
     );
 };

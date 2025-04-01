@@ -136,46 +136,14 @@ function HomeScreen({navigation}) {
             </View>
 
             {/* Search Input */}
-            <View style={styles.searchContainer}>
-                <TextInput
-                    style={[styles.TextInputHeader]}
-                    mode="outlined"
-                    placeholder="Bạn đang tìm kiếm gì?"
-                    outlineColor="#F6F6F6"
-                    activeOutlineColor="#F6F6F6"
-                    cursorColor="#000"
-                    value={searchQuery}
-                    onSubmitEditing={handleSearch}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onChangeText={(text) => {
-                        setSearchQuery(text);
-                        // Chỉ hiện lịch sử khi người dùng chưa gõ gì
-                        if (text.trim() === "") {
-                            setIsSearchFocused(true);
-                        } else {
-                            setIsSearchFocused(false);
-                        }
-                    }}
-                />
+            <TouchableOpacity
+                onPress={() => navigation.navigate("SearchScreen")}
+                style={styles.fakeSearchBox}
+            >
+                <Text style={styles.placeholderText}>Bạn đang tìm kiếm gì?</Text>
+                <Image source={require('../Image/search.png')} style={styles.searchIcon} />
+            </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.filterButton}
-                    onPress={() => {
-                        setFilterActive(!filterActive);
-                        handleOpenFilter()
-                    }}
-                >
-                    <Image
-                        style={styles.filterImage}
-                        source={
-                            filterActive
-                                ? require("../Image/filter_Bold.png")
-                                : require("../Image/filter.png")
-                        }
-                    />
-
-                </TouchableOpacity>
-            </View>
             {searchQuery.trim().length > 0 ? (
                 <View style={styles.resultsContainer}>
                     {isLoading ? (
@@ -335,6 +303,28 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         resizeMode: "contain",
+    },
+        fakeSearchBox: {
+            width: '100%',
+            height: 45,
+            borderRadius: 8,
+            backgroundColor: '#F6F6F6',
+            paddingHorizontal: 15,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
+    placeholderText: {
+        color: '#999',
+        fontSize: 16,
+    },
+
+    searchIcon: {
+        width: 20,
+        height: 20,
+        tintColor: '#000', // nếu bạn dùng icon trắng
+        padding: 10,
+        borderRadius: 0,
     },
 });
 

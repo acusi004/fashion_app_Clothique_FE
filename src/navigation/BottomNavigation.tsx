@@ -4,6 +4,7 @@ import FavoriteScreen from "../component/FavoriteScreen.tsx";
 import NotificationScreen from "../component/NotificationScreen.tsx";
 import ProfileScreen from "../component/ProfileScreen.tsx";
 import { Image, StyleSheet } from "react-native";
+import SearchScreen from "../component/SearchScreen.tsx";
 
 function BottomNavigation() {
     const Tab = createBottomTabNavigator();
@@ -31,6 +32,7 @@ function BottomNavigation() {
             <Tab.Screen name="FavoriteScreen" component={FavoriteScreen} options={{ headerShown: false }} />
             <Tab.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: false }} />
             <Tab.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
+
         </Tab.Navigator>
     );
 }

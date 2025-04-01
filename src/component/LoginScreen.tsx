@@ -6,6 +6,7 @@ import authService from "../service/authService";
 import {ActivityIndicator} from "react-native-paper";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 
 
@@ -16,6 +17,16 @@ function LoginScreen({navigation}) {
     const [secureText, setSecureText] = useState(true);
     const [loading, setLoading] = useState(false);
     const [isSelected, setIsSelected] = useState(false);
+
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+
+    const showAlert = (header: string, message: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+    };
 
     const handleLogin = async () => {
         console.log('Username:', username);  // Log giá trị username
@@ -55,11 +66,14 @@ function LoginScreen({navigation}) {
 
 
 
-            } catch (error) {
-                // Tuỳ vào error trả về từ backend, bạn hiển thị phù hợp
-                Alert.alert('Đăng nhập thất bại');
+            } catch (error: any) {
+                const message =
+                    error?.response?.data?.message ||
+                    error?.response?.data?.error ||
+                    'Tài khoản hoặc mật khẩu không đúng';
 
-                console.error(error);
+                showAlert('Đăng nhập thất bại', message);
+
             }
         }
 
@@ -144,7 +158,12 @@ function LoginScreen({navigation}) {
                 </TouchableOpacity>
             )}
 
-
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 }

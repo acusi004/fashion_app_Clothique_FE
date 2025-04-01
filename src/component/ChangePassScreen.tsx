@@ -4,6 +4,7 @@ import React, {useState} from "react";
 import {stylesChange} from "../styles/FilterDrawer";
 
 import axios from "axios";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 // @ts-ignore
 function ChangePassScreen({navigation}){
@@ -13,14 +14,34 @@ function ChangePassScreen({navigation}){
 
     const API_URL = "http://10.0.2.2:5000/v1/auth/send-otp"
 
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+    const [goToVerifyAfterAlert, setGoToVerifyAfterAlert] = useState(false); // ✅ cờ kiểm soát điều hướng
+
+    // @ts-ignore
+    const showAlert = (header, message, shouldNavigate = false) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setGoToVerifyAfterAlert(shouldNavigate); // ✅ gắn cờ
+        setAlertVisible(true);
+    };
+
+    const handleCloseAlert = () => {
+        setAlertVisible(false);
+        if (goToVerifyAfterAlert) {
+            navigation.navigate('VerifyOtpScreen', { email });
+            ToastAndroid.show(`emaiL: ${email}`, ToastAndroid.SHORT);
+        }
+    };
+
     const handleSendEmail = async () => {
-        ToastAndroid.show(`emaiL: ${email}`, ToastAndroid.SHORT);
+
         if (!email) return Alert.alert('Thông báo', 'Vui lòng nhập email');
         setLoading(true);
         try {
             const res = await axios.post(API_URL, { email });
-            Alert.alert('Thành công', res.data.message);
-             navigation.navigate('VerifyOtpScreen', { email });
+            showAlert('Thành công', res.data.message, true);
         } catch (error: any) {
             Alert.alert(
                 'Lỗi',
@@ -51,6 +72,12 @@ function ChangePassScreen({navigation}){
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>Gửi mã OTP</Text>}
             </TouchableOpacity>
 
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={handleCloseAlert} // ✅ xử lý khi bấm OK
+            />
         </View>
     )
 }

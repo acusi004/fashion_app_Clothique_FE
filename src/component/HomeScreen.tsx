@@ -1,9 +1,17 @@
 // import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import {FlatList, Image, StyleSheet, Text, ToastAndroid, TouchableOpacity, View} from "react-native";
-// import { useState } from "react";
-import {ActivityIndicator, TextInput} from "react-native-paper";
+import { FlatList, Image, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
+import axios from "axios";
+import tokenService from "../service/tokenService";
+import { jwtDecode } from "jwt-decode";
+import { ActivityIndicator, TextInput } from "react-native-paper";
 import Swiper from "react-native-swiper";
 import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
+import { useEffect, useState } from "react";
+import { searchProducts } from "../service/productService.";
+import ItemSearchProducts from "./ItemSearchProducts.tsx";
+import FilterDrawer from "../styles/FilterDrawer";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import React, {useEffect, useState} from "react";
 import {searchProducts} from "../service/productService.";
 import ItemSearchProducts from "./ItemSearchProducts.tsx";
@@ -12,8 +20,8 @@ import {useFocusEffect} from "@react-navigation/native";
 import {getSearchHistory, saveSearchHistory} from "../service/searchHistoryService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // @ts-ignore
-function HomeScreen({navigation}) {
-
+function HomeScreen({ navigation }) {
+    const [userName, setUserName] = useState("Đang tải...");
     const [searchQuery, setSearchQuery] = useState("");
     const [productSearch, setProductSearch] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +40,48 @@ function HomeScreen({navigation}) {
         require('../Image/banner.png'),
         require('../Image/banner2.png')
     ];
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchUserInfo(); // Gọi lại API khi quay lại HomeScreen
+        }, [])
+    );
+
+    const fetchUserInfo = async () => {
+        try {
+            const token = await tokenService.getToken();
+            if (!token) {
+                console.error("❌ Không tìm thấy token!");
+                return;
+            }
+
+            let decodedToken;
+            try {
+                decodedToken = jwtDecode(token);
+            } catch (error) {
+                console.error("❌ Lỗi khi giải mã token:", error);
+                return;
+            }
+
+            const userEmail = decodedToken?.email;
+            if (!userEmail) {
+                console.error("❌ Không lấy được email từ token!");
+                return;
+            }
+
+            // Gọi API để lấy thông tin user
+            const response = await axios.get("http://10.0.2.2:5000/v1/user/info", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { email: userEmail }
+            });
+
+            // Cập nhật tên người dùng
+            setUserName(response.data.name || "Người dùng");
+        } catch (error) {
+            console.error("❌ Lỗi khi lấy thông tin user:", error);
+            setUserName("Lỗi tải tên");
+        }
+    };
 
     //chỉ chạy khi searchQuery thay đổi
     useEffect(() => {
@@ -108,7 +158,7 @@ function HomeScreen({navigation}) {
         <ItemSearchProducts
             item={item}
             onPress={(item: any) => {
-                return navigation.navigate("DetailScreen", {product: item});
+                return navigation.navigate("DetailScreen", { product: item });
             }
             }
         />
@@ -125,7 +175,7 @@ function HomeScreen({navigation}) {
             <View style={styles.Header}>
                 <Text style={styles.welcomeText}>
                     Chào,{'\n'}
-                    <Text style={styles.boldText}>Hieu</Text>
+                    <Text style={styles.boldText}>{userName}</Text>
                 </Text>
                 <TouchableOpacity onPress={navigateCart}>
                     <Image
@@ -185,14 +235,14 @@ function HomeScreen({navigation}) {
                         <Swiper autoplay={true} autoplayTimeout={3} showsPagination={false}>
                             {banner.map((image, index) => (
                                 <View key={index} style={styles.slideBanner}>
-                                    <Image source={image} style={styles.imageBanner}/>
+                                    <Image source={image} style={styles.imageBanner} />
                                 </View>
                             ))}
                         </Swiper>
                     </View>
 
 
-                    <TopTabNavigation/>
+                    <TopTabNavigation />
 
                     <FilterDrawer
                         visible={showFilter}
@@ -297,7 +347,7 @@ const styles = StyleSheet.create({
         resizeMode: "cover",
     },
     filterButton: {
-        marginLeft:17
+        marginLeft: 17
     },
     filterImage: {
         width: 24,

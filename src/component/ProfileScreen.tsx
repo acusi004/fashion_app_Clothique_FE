@@ -1,57 +1,86 @@
-import {useNavigation} from "@react-navigation/native";
-import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import axios from "axios";
+import tokenService from '../service/tokenService';
+import React, { useEffect, useState, useCallback } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+
 
 // Component MenuItem tái sử dụng
-// @ts-ignore
-function MenuItem({title, subtitle, iconSource, onPress}) {
+function MenuItem({ title, subtitle, iconSource, onPress }) {
     return (
         <TouchableOpacity style={styles.menuItem} onPress={onPress}>
             <View>
                 <Text style={styles.menuText}>{title}</Text>
                 <Text style={styles.subText}>{subtitle}</Text>
             </View>
-            <Image source={iconSource} style={styles.icon}/>
+            <Image source={iconSource} style={styles.icon} />
         </TouchableOpacity>
     );
 }
 
-// @ts-ignore
-function ProfileScreen({navigation}) {
+function ProfileScreen({ navigation }) {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
+    useFocusEffect(
+        useCallback(() => {
+            fetchUserProfile(); // Load lại dữ liệu khi màn hình được focus
+        }, [])
+    );
+    const fetchUserProfile = async () => {
+        try {
+            const token = await tokenService.getToken();
+            console.log("🔑 Token gửi đi:", token);
+
+            if (!token) {
+                console.error("❌ Token không tồn tại");
+                return;
+            }
+
+            const response = await axios.get("http://10.0.2.2:5000/v1/profile", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setUser(response.data.user);
+        } catch (error) {
+            console.error("❌ Lỗi khi lấy dữ liệu user:", error.response?.data || error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="blue" style={styles.loader} />;
+    }
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                {/* <TouchableOpacity onPress={() => alert("Chức năng thêm mới")}>
-                    <Image source={require("../Image/add.png")} style={styles.icon} />
-                </TouchableOpacity> */}
                 <Text style={styles.title}>Hồ sơ cá nhân</Text>
-                <TouchableOpacity onPress={() => navigation.navigate("EditProfileScreen")}>
-                    <Image source={require("../Image/edit.png")} style={styles.icon}/>
+            </View>
+
+            <View style={styles.profileContainer}>
+                <Image
+                    source={user?.avatar ? { uri: user.avatar } : require("../Image/user-out.png")}
+                    style={styles.avatar}
+                />
+                <View style={styles.userInfo}>
+                    <Text style={styles.userName}>{user?.name || "Người dùng"}</Text>
+                    <Text style={styles.email}>{user?.email || "Chưa có email"}</Text>
+                </View>
+                <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate("EditProfileScreen", { user })}>
+                    <Image source={require("../Image/edit.png")} style={styles.editIcon} />
                 </TouchableOpacity>
             </View>
 
-            {/* Thông tin người dùng */}
-            <View style={styles.profileContainer}>
-                <Image source={require("../Image/user-out.png")} style={styles.avatar}/>
-                <View>
-                    <Text style={styles.userName}>Đỗ Trung Hiếu</Text>
-                    <Text style={styles.email}>hieudtph35761@fpt.edu.vn</Text>
-                </View>
-            </View>
-
             {/* Danh sách menu */}
-            <MenuItem title="Đơn hàng của tôi" subtitle="Đã có 10 đơn hàng" iconSource={require("../Image/frame.png")}
-                      onPress={() => navigation.navigate("OrderScreen")}/>
-            <MenuItem title="Địa chỉ giao hàng" subtitle="Địa chỉ cá nhân" iconSource={require("../Image/frame.png")}
-                      onPress={() => navigation.navigate("AddressScreen")}/>
-            <MenuItem title="Đánh giá của tôi" subtitle="Đã đánh giá 5 mục" iconSource={require("../Image/frame.png")}
-                      onPress={() => navigation.navigate("FavoriteScreen")}/>
-            <MenuItem title="Cài đặt" subtitle="Thông báo, Mật khẩu, FAQ" iconSource={require("../Image/frame.png")}
-                      onPress={() => navigation.navigate("SettingsScreen")}/>
-            <MenuItem title="Đăng xuất" subtitle="Đăng xuất tài khoản" iconSource={require("../Image/frame.png")}
-                      onPress={() => navigation.replace("ChoseScreen")}/>
+            <MenuItem title="Đơn hàng của tôi" subtitle="Đơn hàng đã có sẵn" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("OrderScreen")} />
+            <MenuItem title="Địa chỉ giao hàng" subtitle="Địa chỉ cá nhân" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("AddressScreen")} />
+            <MenuItem title="Đánh giá của tôi" subtitle="Đã đánh giá sản phẩm" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("FavoriteScreen")} />
+            <MenuItem title="Cài đặt" subtitle="Mật khẩu, FAQ, Chatting" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("SettingScreen")} />
+            <MenuItem title="Đăng xuất" subtitle="Đăng xuất tài khoản" iconSource={require("../Image/frame.png")} onPress={() => navigation.replace("ChoseScreen")} />
         </View>
     );
 }
@@ -63,24 +92,22 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 40,
     },
+    loader: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     header: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         marginBottom: 20,
+        marginLeft: 20,
     },
     title: {
         marginLeft: 100,
         fontSize: 22,
         fontWeight: "bold",
-    },
-    profileContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 15,
-        backgroundColor: "#f5f5f5",
-        borderRadius: 15,
-        marginBottom: 20,
     },
     avatar: {
         width: 70,
@@ -117,6 +144,35 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+    },
+    profileContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 15,
+        backgroundColor: "#f5f5f5",
+        borderRadius: 15,
+        marginBottom: 20,
+        justifyContent: "space-between",
+    },
+    userInfo: {
+        flex: 1,
+        marginLeft: 10,
+    },
+    editButton: {
+        width: 35,
+        height: 35,
+        backgroundColor: "#e0e0e0",
+        borderRadius: 20,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    editIcon: {
+        width: 18,
+        height: 18,
+        tintColor: "#555",
     },
 });
 

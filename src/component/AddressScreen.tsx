@@ -263,7 +263,6 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     deleteButton: {
-        backgroundColor: "gray",
         width: 40, // Nhỏ gọn hơn
         height: 40,
         borderRadius: 20, // Bo tròn hoàn toàn

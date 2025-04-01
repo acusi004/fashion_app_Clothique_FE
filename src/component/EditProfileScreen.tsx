@@ -1,46 +1,77 @@
-import React, {useState} from "react";
-import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image} from "react-native";
-import {useNavigation} from "@react-navigation/native";
+import axios from "axios";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import tokenService from '../service/tokenService';
 
-const EditProfileScreen = () => {
+const EditProfileScreen = ({route}) => {
     const navigation = useNavigation();
-    const [name, setName] = useState("Đỗ Trung Hiếu");
-    const [email, setEmail] = useState("hieudtph35761@fpt.edu.vn");
-    const [phone, setPhone] = useState("0123456789");
+    // const [name, setName] = useState("");
+    // const [avatar, setAvatar] = useState("");
+    const { user } = route.params || {}; 
+
+    const [name, setName] = useState(user?.name || "");
+    const [avatar, setAvatar] = useState(user?.avatar || "");
+
+    // Hàm gửi dữ liệu cập nhật
+    const handleSave = async () => {
+        const token = await tokenService.getToken();
+
+        if (!name || !avatar) {
+            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin.");
+            return;
+        }
+
+        try {
+            const response = await axios.put("http://10.0.2.2:5000/v1/profile", {
+                name,
+                avatar
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            Alert.alert("Thành công", "Cập nhật thông tin thành công!");
+            navigation.goBack();
+        } catch (error) {
+            Alert.alert("Lỗi", error.response?.data?.message || "Không thể kết nối với máy chủ!");
+        }
+    };
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Image source={require("../Image/back.png")} style={styles.icon}/>
+                    <Image source={require("../Image/back.png")} style={styles.icon} />
                 </TouchableOpacity>
                 <Text style={styles.title}>Chỉnh sửa hồ sơ</Text>
-                <View style={{width: 28}}/>
+                <View style={{ width: 28 }} />
             </View>
 
             {/* Ảnh đại diện */}
             <View style={styles.avatarContainer}>
-                <Image source={require("../Image/user-out.png")} style={styles.avatar}/>
-                <TouchableOpacity style={styles.editAvatar}>
-                    <Image source={require("../Image/edit.png")} style={styles.icon}/>
-                </TouchableOpacity>
+                <Image source={avatar ? { uri: avatar } : require("../Image/user-out.png")} style={styles.avatar} />
             </View>
 
             {/* Form chỉnh sửa */}
             <View style={styles.form}>
                 <Text style={styles.label}>Họ và tên</Text>
-                <TextInput style={styles.input} value={name} onChangeText={setName}/>
+                <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-                <Text style={styles.label}>Email</Text>
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address"/>
-
-                <Text style={styles.label}>Số điện thoại</Text>
-                <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad"/>
+                <Text style={styles.label}>Link ảnh đại diện</Text>
+                <TextInput
+                    style={styles.input}
+                    value={avatar}
+                    onChangeText={setAvatar}
+                    placeholder="Nhập link ảnh..."
+                />
             </View>
 
             {/* Nút lưu */}
-            <TouchableOpacity style={styles.saveButton}>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
             </TouchableOpacity>
         </View>
@@ -76,15 +107,6 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-    },
-    editAvatar: {
-        position: "absolute",
-        bottom: 0,
-        right: 10,
-        backgroundColor: "#fff",
-        padding: 5,
-        borderRadius: 50,
-        elevation: 3,
     },
     form: {
         marginBottom: 20,

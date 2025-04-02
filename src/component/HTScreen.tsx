@@ -1,7 +1,9 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import {View, Text, Image, TouchableOpacity, StyleSheet} from "react-native";
 
 const HTScreen = () => {
+    const navigation = useNavigation();
     return (
         <View style={styles.container}>
             {/* Tiêu đề */}
@@ -18,7 +20,7 @@ const HTScreen = () => {
             </Text>
 
             {/* Nút quay lại trang chủ */}
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={()=>navigation.navigate('BottomNavigation')}>
                 <Text style={styles.buttonText}>Trở lại trang chủ</Text>
             </TouchableOpacity>
         </View>

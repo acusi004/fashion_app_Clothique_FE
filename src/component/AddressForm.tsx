@@ -6,12 +6,11 @@ import { getProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from "..
 
 const AddressForm = ({ onSave, onClose }) => {
     const [name, setName] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState(""); // 🔹 Thêm số điện thoại
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [province, setProvince] = useState("");
     const [district, setDistrict] = useState("");
     const [ward, setWard] = useState("");
     const [detail, setDetail] = useState("");
-    // const [isDefault, setIsDefault] = useState(false);
 
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -76,7 +75,6 @@ const AddressForm = ({ onSave, onClose }) => {
             provinceId: Number(province),
             districtId: Number(district),
             wardCode: String(ward)
-            // isDefault: isDefault
         };
         console.log("📌 Dữ liệu gửi đi:", newAddress);
         onSave(newAddress);
@@ -136,18 +134,6 @@ const AddressForm = ({ onSave, onClose }) => {
 
             <Text style={styles.label}>Địa chỉ cụ thể</Text>
             <TextInput style={styles.input} placeholder="Số nhà, đường,..." value={detail} onChangeText={setDetail} />
-
-            {/* <View style={styles.switchContainer}>
-                <Text>Đặt làm mặc định</Text>
-                <Switch
-                    value={isDefault}
-                    onValueChange={(value) => {
-                        console.log("📌 Giá trị mới của isDefault:", value);
-                        setIsDefault(value);
-                    }}
-                />
-            </View> */}
-
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>Lưu</Text>
             </TouchableOpacity>

@@ -14,7 +14,41 @@ const ChatScreen = () => {
     const [username, setUsername] = useState("");
     const [typingUser, setTypingUser] = useState(null);
     const adminId = "admin";
-    const [userList, setUserList] = useState([]);
+
+    useEffect(() => {
+        const initializeAdmin = async () => {
+            const accessToken = await tokenService.getToken();
+            socket.auth = { token: accessToken };
+            socket.connect();
+
+            // Đăng ký admin với server
+            socket.emit("register", { userId: "admin", username: "Admin" });
+        };
+
+        initializeAdmin();
+    }, []);
+
+    useEffect(() => {
+        socket.on("receivePrivateMessage", (data) => {
+            console.log("📥 Tin nhắn từ admin:", data);
+            setMessages((prevMessages) => [...prevMessages, data]);
+        });
+
+        return () => socket.off("receivePrivateMessage");
+    }, []);
+
+    useEffect(() => {
+        if (userId) {
+            socket.emit("getMessages", userId);
+        }
+
+        socket.on("chatHistory", ({ messages }) => {
+            console.log("📜 Lịch sử tin nhắn:", messages);
+            setMessages(messages);
+        });
+
+        return () => socket.off("chatHistory");
+    }, [userId]);
 
     useEffect(() => {
         const initializeChat = async () => {
@@ -26,8 +60,6 @@ const ChatScreen = () => {
             }
 
             const userInfo = await tokenService.getUserIdFromToken();
-            console.log("🔍 Thông tin user:", userInfo); // Kiểm tra xem có userId không
-
             if (!userInfo || !userInfo.userId || !userInfo.username) {
                 Alert.alert("Không thể lấy thông tin người dùng. Hãy đăng nhập lại.");
                 return;
@@ -41,12 +73,14 @@ const ChatScreen = () => {
                 socket.connect();
             }
 
+            console.log(`📡 Gửi register: userId=${userInfo.userId}, username=${userInfo.username}`);
+
+            // 🛠 Đăng ký user với server
             socket.emit("register", { userId: userInfo.userId, username: userInfo.username });
         };
 
         initializeChat();
     }, []);
-
 
     useEffect(() => {
         socket.on("userTyping", ({ username }) => {
@@ -68,7 +102,10 @@ const ChatScreen = () => {
     };
 
     const sendMessage = () => {
-        if (message.trim() === "") return;
+        if (message.trim() === "") {
+            Alert.alert("Lỗi", "Tin nhắn không được để trống.");
+            return;
+        }
 
         if (!userId || !username) {
             Alert.alert("Lỗi", "Không thể gửi tin nhắn vì chưa lấy được thông tin người dùng.");
@@ -76,21 +113,22 @@ const ChatScreen = () => {
         }
 
         const newMessage = {
-            senderId: userId,
+            sender: userId,
+            receiver: "admin",
+            message: message.trim(),
             senderName: username,
-            receiverId: adminId,
-            message,
             timestamp: new Date().toISOString(),
         };
 
         console.log("📤 Gửi tin nhắn:", newMessage);
 
-        socket.emit("sendPrivateMessage", newMessage, (response) => {
+        socket.emit("sendPrivateMessage", { ...newMessage }, (response) => {
+            console.log("📥 Server phản hồi:", response);
             if (response.status === "ok") {
-                setMessages((prevMessages) => [...prevMessages, newMessage]);
-                setMessage("");
+                setMessages(prevMessages => [...prevMessages, newMessage]);
+                setMessage(""); // Reset ô nhập
             } else {
-                Alert.alert("Lỗi", "Không thể gửi tin nhắn!");
+                Alert.alert("Lỗi", response.message);
             }
         });
     };
@@ -109,7 +147,7 @@ const ChatScreen = () => {
                 data={messages}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
-                    <View style={[styles.messageContainer, item.senderId === userId ? styles.myMessageContainer : styles.adminMessageContainer]}>
+                    <View style={[styles.messageContainer, item.sender === userId ? styles.myMessageContainer : styles.adminMessageContainer]}>
                         <Image source={require("../Image/user-out.png")} style={styles.avatar} />
                         <View style={styles.messageContent}>
                             <Text style={styles.sender}>{item.senderName}</Text>

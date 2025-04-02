@@ -17,6 +17,14 @@ const AddressForm = ({ onSave, onClose }) => {
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
 
+    const validatePhoneNumber = (phone) => {
+        if (!phone) return "Vui lòng nhập số điện thoại!";
+        if (!/^\d+$/.test(phone)) return "Số điện thoại chỉ được chứa chữ số!";
+        if (phone.length !== 10) return "Số điện thoại phải có đúng 10 chữ số!";
+        if (!/^(03|05|07|08|09)[0-9]{8}$/.test(phone)) return "Số điện thoại không hợp lệ! Vui lòng nhập số hợp lệ tại Việt Nam.";
+        return null; // Hợp lệ
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             const provincesData = await getProvinces();
@@ -52,6 +60,12 @@ const AddressForm = ({ onSave, onClose }) => {
 
         if (!name.trim() || !phoneNumber.trim() || !province || !district || !ward || !detail.trim()) {
             Alert.alert("Vui lòng nhập đầy đủ thông tin!");
+            return;
+        }
+
+        const phoneError = validatePhoneNumber(phoneNumber.trim());
+        if (phoneError) {
+            Alert.alert("Lỗi", phoneError);
             return;
         }
 

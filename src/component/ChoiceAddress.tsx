@@ -9,12 +9,14 @@ interface CustomJwtPayload extends JwtPayload {
     email?: string;
 }
 import axios, { AxiosError } from "axios";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const AddressScreen = () => {
     interface Address {
         _id: string;
         name?: string;
         addressDetail?: string;
+        phoneNumber?:string;
         province?: { id: number; name: string };
         district?: { id: number; name: string };
         ward?: { id: number; name: string };
@@ -27,6 +29,10 @@ const AddressScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
+    const [add,setadd]=useState([])
+    const navigation = useNavigation();
+      const route = useRoute();
+        const { selectedProducts } = route.params || { selectedProducts: [] };
 
     const closeModal = () => {
         setEditModalVisible(false);
@@ -194,40 +200,60 @@ const AddressScreen = () => {
             ]
         );
     };
+ const [selectedAddressId, setSelectedAddressId] = useState(null);
 
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Địa chỉ của bạn</Text>
 
-            <FlatList
-                data={addresses}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.addressCard}
-                        onPress={() => handleEditAddress(item)}
-                    >
-                        <View style={styles.addressCard}>
-                            <Text style={styles.name}>{item?.name || "Không có tên"}</Text>
-                            <Text style={styles.address}>
-                                {item?.addressDetail || "Không có địa chỉ"},{" "}
-                                {item?.province?.name || item?.provinceName || "Không có tỉnh"},{" "}
-                                {item?.district?.name || item?.districtName || "Không có huyện"},{" "}
-                                {item?.ward?.name || item?.wardName || "Không có xã"}
-                            </Text>
-                        </View>
-                        {/* Nút xóa */}
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDeleteAddress(item._id)}
-                        >
-                            <Text style={styles.deleteIcon}>🗑</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                )}
-            />
+           <FlatList
+                      data={addresses}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({ item }) => {
+                          const isSelected = selectedAddressId === item._id;
+                          return (
+                              <TouchableOpacity
+                                  style={[styles.addressCard, isSelected && styles.selectedCard]}
+                                  onPress={() => handleEditAddress(item)}
+                              >
+                                  <View style={styles.addressContent}>
+                                      <Text style={styles.name}>{item?.name || "Không có tên"}</Text>
+                                      <Text style={styles.address}>
+                                          {item?.addressDetail || "Không có địa chỉ"}, {item?.province?.name || item?.provinceName || "Không có tỉnh"}, {item?.district?.name || item?.districtName || "Không có huyện"}, {item?.ward?.name || item?.wardName || "Không có xã"}
+                                      </Text>
+                                      <Text>{item?.phoneNumber || "Khong co so"}</Text>
+                                  </View>
+                                  
+                                  {/* Nút radio box chọn địa chỉ */}
+                                  <TouchableOpacity onPress={() => {
+                                  setSelectedAddressId(item._id),
+                                    setadd(item)
+                                  }
+                                  }>
+                                      <View style={isSelected ? styles.radioSelected : styles.radioUnselected} />
+                                  </TouchableOpacity>
+                                  
+                                  {/* Nút xóa */}
+                                  <TouchableOpacity
+                                      style={styles.deleteButton}
+                                      onPress={() => handleDeleteAddress(item._id)}
+                                  >
+                                      <Text style={styles.deleteIcon}>🗑</Text>
+                                  </TouchableOpacity>
+                              </TouchableOpacity>
+                          );
+                      }}
+                  />
             <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <Text style={styles.addButtonText}>+</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.confirmButton} onPress={
+                ()=>  {
+                    navigation.navigate('PaymentScreen', { address: add , selectedProducts:selectedProducts})
+             
+            }
+                }>
+                <Text style={styles.confirmButtonText}>Xác nhận</Text>
             </TouchableOpacity>
 
             <Modal visible={modalVisible} animationType="slide">
@@ -253,8 +279,16 @@ const styles = StyleSheet.create({
     addressCard: { backgroundColor: "#f9f9f9", padding: 15, borderRadius: 10, marginBottom: 10 },
     name: { fontSize: 16, fontWeight: "bold" },
     address: { fontSize: 14, color: "gray" },
-    addButton: { position: "absolute", bottom: 20, right: 20, backgroundColor: "black", padding: 15, borderRadius: 30 },
+    addButton: { position: "absolute", bottom: 80, right: 20, backgroundColor: "black", padding: 15, borderRadius: 30 },
     addButtonText: { color: "white", fontSize: 20 },
+    confirmButton: { position: "absolute", bottom: 20, left: 20, right: 20, backgroundColor: "red", padding: 15, borderRadius: 30, alignItems: "center" },
+    confirmButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+    addressContent: {
+        flex: 1,
+    },  selectedCard: {
+        borderColor: "green",
+        backgroundColor: "#e6ffe6",
+    },
     defaultText: {
         fontSize: 14,
         color: "red", // ✅ Mặc định màu đỏ
@@ -263,6 +297,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     deleteButton: {
+        backgroundColor: "gray",
         width: 40, // Nhỏ gọn hơn
         height: 40,
         borderRadius: 20, // Bo tròn hoàn toàn
@@ -274,7 +309,8 @@ const styles = StyleSheet.create({
         color: "black",
         fontSize: 20, // Biểu tượng lớn hơn
         fontWeight: "bold",
-    },
+    },   radioUnselected: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: "gray", marginLeft: "auto" },
+    radioSelected: { width: 20, height: 20, borderRadius: 10, backgroundColor: "red", borderWidth: 2, borderColor: "red", marginLeft: "auto" },
 });
 
 export default AddressScreen;

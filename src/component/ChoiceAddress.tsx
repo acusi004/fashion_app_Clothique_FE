@@ -19,6 +19,7 @@ interface CustomJwtPayload extends JwtPayload {
 
 import axios, {AxiosError} from 'axios';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 const AddressScreen = () => {
   interface Address {
@@ -42,6 +43,17 @@ const AddressScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertHeader, setAlertHeader] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (header: string, message: string) => {
+    setAlertHeader(header);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
+
+
   const {selectedProducts} = route.params || {selectedProducts: []};
 
   const closeModal = () => {
@@ -58,7 +70,7 @@ const AddressScreen = () => {
       const token = await tokenService.getToken();
       if (!token) {
         console.error('❌ Không tìm thấy token!');
-        return Alert.alert('Lỗi', 'Bạn chưa đăng nhập!');
+        return showAlert('Lỗi', 'Bạn chưa đăng nhập!');
       }
 
       let decodedToken: CustomJwtPayload;
@@ -66,13 +78,13 @@ const AddressScreen = () => {
         decodedToken = jwtDecode<CustomJwtPayload>(token);
       } catch (err) {
         console.error('❌ Lỗi giải mã token:', err);
-        return Alert.alert('Lỗi', 'Token không hợp lệ!');
+        return showAlert('Lỗi', 'Token không hợp lệ!');
       }
 
       const userEmail = decodedToken?.email;
       if (!userEmail) {
         console.error('❌ Không lấy được email từ token!', decodedToken);
-        return Alert.alert('Lỗi', 'Email không hợp lệ!');
+        return showAlert('Lỗi', 'Email không hợp lệ!');
       }
 
       console.log('📌 Token gửi đi:', token);
@@ -103,16 +115,16 @@ const AddressScreen = () => {
           '❌ Lỗi khi lấy danh sách địa chỉ:',
           error.response?.data || error.message,
         );
-        Alert.alert(
+        showAlert(
           'Lỗi',
           error.response?.data?.message || 'Không thể tải danh sách địa chỉ.',
         );
       } else if (error instanceof Error) {
         console.error('❌ Lỗi khi lấy danh sách địa chỉ:', error.message);
-        Alert.alert('Lỗi', error.message);
+        showAlert('Lỗi', error.message);
       } else {
         console.error('❌ Lỗi khi lấy danh sách địa chỉ:', error);
-        Alert.alert('Lỗi', 'Không thể tải danh sách địa chỉ.');
+        showAlert("Lỗi","Không thể tải danh sách địa chỉ.")
       }
     }
   };
@@ -156,10 +168,10 @@ const AddressScreen = () => {
         );
       } else if (error instanceof Error) {
         console.error('❌ Lỗi khi thêm địa chỉ:', error.message);
-        Alert.alert('Lỗi', error.message);
+       showAlert('Lỗi', error.message);
       } else {
         console.error('❌ Lỗi khi thêm địa chỉ:', error);
-        Alert.alert('Lỗi', 'Không thể thêm địa chỉ.');
+        showAlert('Lỗi', 'Không thể thêm địa chỉ.');
       }
     }
   };
@@ -170,7 +182,7 @@ const AddressScreen = () => {
 
     if (!selected || !selected._id) {
       console.error('❌ Không có ID hợp lệ!', selected);
-      Alert.alert('Lỗi', 'Dữ liệu địa chỉ bị thiếu ID!');
+     showAlert('Lỗi', 'Dữ liệu địa chỉ bị thiếu ID!');
       return;
     }
     setSelectedAddress(selected);
@@ -204,7 +216,7 @@ const AddressScreen = () => {
             );
 
             console.log('✅ Xóa thành công:', response.data);
-            Alert.alert('Thành công', 'Địa chỉ đã được xóa!');
+            showAlert('Thành công', 'Địa chỉ đã được xóa!');
             setAddresses(response.data.addresses);
           } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -217,7 +229,7 @@ const AddressScreen = () => {
             } else {
               console.error('❌ Lỗi khi xóa địa chỉ:', error);
             }
-            Alert.alert('Lỗi', 'Không thể xóa địa chỉ.');
+            showAlert('Lỗi', 'Không thể xóa địa chỉ.');
           }
         },
       },
@@ -307,6 +319,13 @@ const AddressScreen = () => {
           />
         </Modal>
       )}
+
+      <CustomAlert
+          visible={alertVisible}
+          header={alertHeader}
+          message={alertMessage}
+          onClose={() => setAlertVisible(false)}
+      />
     </View>
   );
 };
@@ -333,7 +352,7 @@ const styles = StyleSheet.create({
     right: 20,
     backgroundColor: 'black',
     padding: 15,
-    borderRadius: 30,
+    borderRadius: 150,
   },
   addButtonText: {color: 'white', fontSize: 20},
   confirmButton: {
@@ -341,12 +360,12 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: 'red',
+    backgroundColor: '#000',
     padding: 15,
-    borderRadius: 30,
+    borderRadius: 10,
     alignItems: 'center',
   },
-  confirmButtonText: {color: 'white', fontSize: 16, fontWeight: 'bold'},
+  confirmButtonText: {color: 'white', fontSize: 16, fontWeight: 'bold',},
   addressContent: {
     flex: 1,
   },

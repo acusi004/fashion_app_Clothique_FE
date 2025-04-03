@@ -9,6 +9,7 @@ interface CustomJwtPayload extends JwtPayload {
     email?: string;
 }
 import axios, { AxiosError } from "axios";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 const AddressScreen = () => {
     interface Address {
@@ -27,6 +28,18 @@ const AddressScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
+
+
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+
+    const showAlert = (header: string, message: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+    };
+
 
     const closeModal = () => {
         setEditModalVisible(false);
@@ -81,13 +94,13 @@ const AddressScreen = () => {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error.response?.data || error.message);
-                Alert.alert("Lỗi", error.response?.data?.message || "Không thể tải danh sách địa chỉ.");
+               showAlert("Lỗi", error.response?.data?.message || "Không thể tải danh sách địa chỉ.");
             } else if (error instanceof Error) {
                 console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error.message);
-                Alert.alert("Lỗi", error.message);
+             showAlert("Lỗi", error.message);
             } else {
                 console.error("❌ Lỗi khi lấy danh sách địa chỉ:", error);
-                Alert.alert("Lỗi", "Không thể tải danh sách địa chỉ.");
+               showAlert("Lỗi", "Không thể tải danh sách địa chỉ.");
             }
         }
     };
@@ -123,13 +136,13 @@ const AddressScreen = () => {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error("❌ Lỗi khi thêm địa chỉ:", error.response?.data || error.message);
-                Alert.alert("Lỗi", error.response?.data?.message || "Không thể thêm địa chỉ.");
+               showAlert("Lỗi", error.response?.data?.message || "Không thể thêm địa chỉ.");
             } else if (error instanceof Error) {
                 console.error("❌ Lỗi khi thêm địa chỉ:", error.message);
-                Alert.alert("Lỗi", error.message);
+               showAlert("Lỗi", error.message);
             } else {
                 console.error("❌ Lỗi khi thêm địa chỉ:", error);
-                Alert.alert("Lỗi", "Không thể thêm địa chỉ.");
+                showAlert("Lỗi", "Không thể thêm địa chỉ.");
             }
         }
     };
@@ -140,7 +153,7 @@ const AddressScreen = () => {
 
         if (!selected || !selected._id) {
             console.error("❌ Không có ID hợp lệ!", selected);
-            Alert.alert("Lỗi", "Dữ liệu địa chỉ bị thiếu ID!");
+            showAlert("Lỗi", "Dữ liệu địa chỉ bị thiếu ID!");
             return;
         }
         setSelectedAddress(selected);
@@ -167,7 +180,7 @@ const AddressScreen = () => {
                             const userEmail = decodedToken?.email;
 
                             if (!userEmail) {
-                                return Alert.alert("Lỗi", "Không tìm thấy email!");
+                                return showAlert("Lỗi", "Không tìm thấy email!");
                             }
 
                             const response = await axios.post(
@@ -177,7 +190,7 @@ const AddressScreen = () => {
                             );
 
                             console.log("✅ Xóa thành công:", response.data);
-                            Alert.alert("Thành công", "Địa chỉ đã được xóa!");
+                            showAlert("Thành công", "Địa chỉ đã được xóa!");
                             setAddresses(response.data.addresses);
                         } catch (error) {
                             if (axios.isAxiosError(error)) {
@@ -187,7 +200,7 @@ const AddressScreen = () => {
                             } else {
                                 console.error("❌ Lỗi khi xóa địa chỉ:", error);
                             }
-                            Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
+                           showAlert("Lỗi", "Không thể xóa địa chỉ.");
                         }
                     },
                 },
@@ -242,6 +255,12 @@ const AddressScreen = () => {
                     />
                 </Modal>
             )}
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={() => setAlertVisible(false)}
+            />
 
         </View>
     );

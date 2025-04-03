@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   FlatList,
   Alert,
-  Linking,
+  Linking, ScrollView,
 } from 'react-native';
 import {RadioButton} from 'react-native-paper';
 import tokenService from '../service/tokenService';
@@ -83,146 +83,148 @@ const CheckoutScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}>
-        <Image source={require('../Image/back.png')} />
-      </TouchableOpacity>
-      <Text style={styles.header}>Thanh toán</Text>
+   <ScrollView>
+     <SafeAreaView style={styles.container}>
+       <TouchableOpacity
+           style={styles.backButton}
+           onPress={() => navigation.goBack()}>
+         <Image source={require('../Image/back.png')} />
+       </TouchableOpacity>
+       <Text style={styles.header}>Thanh toán</Text>
 
-      <View style={styles.section}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('ChoiceAddress', {selectedProducts})
-          }>
-          <Text style={styles.sectionTitle}>Địa chỉ giao hàng</Text>
-          {address ? (
-            <View style={styles.addressBox}>
-              <Text style={styles.addressName}>{address.name}</Text>
-              <Text style={styles.addressDetail}>
-                {address.addressDetail +
-                  ',' +
-                  address.wardName +
-                  ',' +
-                  address.districtName +
-                  ',' +
-                  address.provinceName}
-              </Text>
-              <Text style={styles.addressPhone}>
-                SĐT: {address.phoneNumber}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.addressBox}>
-              <Text style={styles.addressName}>
-                Bạn chưa chọn địa chỉ giao hàng
-              </Text>
-              <Text style={styles.addressDetail}>
-                Hãy chọn địa chỉ giao hàng
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+       <View style={styles.section}>
+         <TouchableOpacity
+             onPress={() =>
+                 navigation.navigate('ChoiceAddress', {selectedProducts})
+             }>
+           <Text style={styles.sectionTitle}>Địa chỉ giao hàng</Text>
+           {address ? (
+               <View style={styles.addressBox}>
+                 <Text style={styles.addressName}>{address.name}</Text>
+                 <Text style={styles.addressDetail}>
+                   {address.addressDetail +
+                       ',' +
+                       address.wardName +
+                       ',' +
+                       address.districtName +
+                       ',' +
+                       address.provinceName}
+                 </Text>
+                 <Text style={styles.addressPhone}>
+                   SĐT: {address.phoneNumber}
+                 </Text>
+               </View>
+           ) : (
+               <View style={styles.addressBox}>
+                 <Text style={styles.addressName}>
+                   Bạn chưa chọn địa chỉ giao hàng
+                 </Text>
+                 <Text style={styles.addressDetail}>
+                   Hãy chọn địa chỉ giao hàng
+                 </Text>
+               </View>
+           )}
+         </TouchableOpacity>
+       </View>
 
-      {selectedProducts.length > 0 ? (
-        <View style={{width: '100%', paddingHorizontal: 10}}>
-          <FlatList
-            data={selectedProducts}
-            keyExtractor={item => item._id.toString()}
-            renderItem={({item}) => (
-              <View style={styles.productItem}>
-                <Image
-                  source={{
-                    uri:
-                      item.variantId.images && item.variantId.images.length > 0
-                        ? getFullImageUrl(item.variantId.images[0])
-                        : 'https://via.placeholder.com/300',
-                  }}
-                  style={styles.productImage}
-                />
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{item.productId.name}</Text>
-                  <Text style={styles.productSize}>
-                    Size: {item.variantId.size}
-                  </Text>
-                  <Text style={styles.productPrice}>
-                    {item.variantId?.price
-                      ? (item.variantId.price * item.quantity).toLocaleString()
-                      : 'Chưa có giá'}{' '}
-                    đ
-                  </Text>
-                  <Text style={styles.productQuantity}>
-                    Số lượng: {item.quantity}
-                  </Text>
-                </View>
-              </View>
-            )}
-          />
-        </View>
-      ) : (
-        <Text style={styles.emptyText}>Không có sản phẩm nào được chọn.</Text>
-      )}
+       {selectedProducts.length > 0 ? (
+           <View style={{width: '100%', paddingHorizontal: 10}}>
+             <FlatList
+                 data={selectedProducts}
+                 keyExtractor={item => item._id.toString()}
+                 renderItem={({item}) => (
+                     <View style={styles.productItem}>
+                       <Image
+                           source={{
+                             uri:
+                                 item.variantId.images && item.variantId.images.length > 0
+                                     ? getFullImageUrl(item.variantId.images[0])
+                                     : 'https://via.placeholder.com/300',
+                           }}
+                           style={styles.productImage}
+                       />
+                       <View style={styles.productInfo}>
+                         <Text style={styles.productName}>{item.productId.name}</Text>
+                         <Text style={styles.productSize}>
+                           Size: {item.variantId.size}
+                         </Text>
+                         <Text style={styles.productPrice}>
+                           {item.variantId?.price
+                               ? (item.variantId.price * item.quantity).toLocaleString()
+                               : 'Chưa có giá'}{' '}
+                           đ
+                         </Text>
+                         <Text style={styles.productQuantity}>
+                           Số lượng: {item.quantity}
+                         </Text>
+                       </View>
+                     </View>
+                 )}
+             />
+           </View>
+       ) : (
+           <Text style={styles.emptyText}>Không có sản phẩm nào được chọn.</Text>
+       )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
-        <View style={styles.paymentOption}>
-          <RadioButton.Android
-            value="MoMo"
-            status={paymentMethod === 'MoMo' ? 'checked' : 'unchecked'}
-            onPress={() => setPaymentMethod('MoMo')}
-          />
-          <Text style={styles.paymentText}>ZaloPay</Text>
-        </View>
-        <View style={styles.paymentOption}>
-          <RadioButton.Android
-            value="COD"
-            status={paymentMethod === 'COD' ? 'checked' : 'unchecked'}
-            onPress={() => setPaymentMethod('COD')}
-          />
-          <Text style={styles.paymentText}>Thanh toán khi nhận hàng</Text>
-        </View>
-      </View>
+       <View style={styles.section}>
+         <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
+         <View style={styles.paymentOption}>
+           <RadioButton.Android
+               value="MoMo"
+               status={paymentMethod === 'MoMo' ? 'checked' : 'unchecked'}
+               onPress={() => setPaymentMethod('MoMo')}
+           />
+           <Text style={styles.paymentText}>ZaloPay</Text>
+         </View>
+         <View style={styles.paymentOption}>
+           <RadioButton.Android
+               value="COD"
+               status={paymentMethod === 'COD' ? 'checked' : 'unchecked'}
+               onPress={() => setPaymentMethod('COD')}
+           />
+           <Text style={styles.paymentText}>Thanh toán khi nhận hàng</Text>
+         </View>
+       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Phương thức giao hàng</Text>
-        <View style={styles.shippingBox}>
-          <Image
-            source={require('../Image/giaohangtietkiem.png')}
-            style={styles.shippingIcon}
-          />
-          <Text style={styles.shippingText}>
-            Giao hàng tiết kiệm (2-3 days)
-          </Text>
-        </View>
-      </View>
+       <View style={styles.section}>
+         <Text style={styles.sectionTitle}>Phương thức giao hàng</Text>
+         <View style={styles.shippingBox}>
+           <Image
+               source={require('../Image/giaohangtietkiem.png')}
+               style={styles.shippingIcon}
+           />
+           <Text style={styles.shippingText}>
+             Giao hàng tiết kiệm (2-3 days)
+           </Text>
+         </View>
+       </View>
 
-      <View style={styles.priceSection}>
-        <View style={styles.priceRow}>
-          <Text style={styles.priceLabel}>Giá:</Text>
-          <Text style={styles.priceValue}>{totalPrice.toLocaleString()} đ</Text>
-        </View>
-        <View style={styles.priceRow}>
-          <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
-          <Text style={styles.priceValue}>30000 đ</Text>
-        </View>
-        <View style={styles.priceRowTotal}>
-          <Text style={styles.totalLabel}>Tổng:</Text>
-          <Text style={styles.totalValue}>
-            {(totalPrice + 30000).toLocaleString()} đ
-          </Text>
-        </View>
-      </View>
+       <View style={styles.priceSection}>
+         <View style={styles.priceRow}>
+           <Text style={styles.priceLabel}>Giá:</Text>
+           <Text style={styles.priceValue}>{totalPrice.toLocaleString()} đ</Text>
+         </View>
+         <View style={styles.priceRow}>
+           <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
+           <Text style={styles.priceValue}>30000 đ</Text>
+         </View>
+         <View style={styles.priceRowTotal}>
+           <Text style={styles.totalLabel}>Tổng:</Text>
+           <Text style={styles.totalValue}>
+             {(totalPrice + 30000).toLocaleString()} đ
+           </Text>
+         </View>
+       </View>
 
-      <TouchableOpacity
-        style={styles.orderButton}
-        onPress={() => {
-          thanhtoan();
-        }}>
-        <Text style={styles.orderText}>Đặt hàng</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+       <TouchableOpacity
+           style={styles.orderButton}
+           onPress={() => {
+             thanhtoan();
+           }}>
+         <Text style={styles.orderText}>Đặt hàng</Text>
+       </TouchableOpacity>
+     </SafeAreaView>
+   </ScrollView>
   );
 };
 
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
   },
   shippingIcon: {width: 40, height: 40, marginRight: 10},
   shippingText: {fontSize: 16},
-  priceSection: {padding: 16, backgroundColor: '#f5f5f5', borderRadius: 8},
+  priceSection: {padding: 16, backgroundColor: '#f5f5f5', borderRadius: 8,marginBottom:70},
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -282,6 +284,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 16,
     borderRadius: 8,
+    marginTop:10
   },
   orderText: {color: 'white', fontSize: 16, fontWeight: 'bold'},
   productItem: {

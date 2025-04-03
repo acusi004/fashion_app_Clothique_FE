@@ -23,6 +23,7 @@ import HTScreen from './src/component/HTScreen.tsx';
 import DetailScreen from "./src/component/DetailScreen.tsx";
 import PaymentScreen from './src/component/PaymentScreen.tsx'
 import ChoiceAddress from './src/component/ChoiceAddress.tsx'
+import ProfileResetPasswordScreen from './src/component/ProfileResetPasswordScreen.tsx';
 
 function App() {
 
@@ -92,6 +93,10 @@ function App() {
                     name="NotificationScreen"
                     options={{ headerShown: false }}
                     component={NotificationScreen} />
+                <Stack.Screen
+                     name="ProfileResetPasswordScreen"
+                     options={{ headerShown: false }}
+                     component={ProfileResetPasswordScreen} />
                 <Stack.Screen
                     name="ProfileScreen"
                     options={{ headerShown: false }}

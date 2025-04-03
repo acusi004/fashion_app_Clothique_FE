@@ -63,7 +63,7 @@ function ProfileScreen({ navigation }) {
 
             <View style={styles.profileContainer}>
                 <Image
-                    source={user?.avatar ? { uri: user.avatar } : require("../Image/user-out.png")}
+                    source={user?.avatar ? { uri: user.avatar } : require("../Image/profile.png")}
                     style={styles.avatar}
                 />
                 <View style={styles.userInfo}>

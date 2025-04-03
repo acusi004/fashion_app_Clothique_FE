@@ -8,6 +8,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 interface CustomJwtPayload extends JwtPayload {
     email?: string;
 }
+
 import axios, { AxiosError } from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
@@ -32,7 +33,8 @@ const AddressScreen = () => {
     const [add,setadd]=useState([])
     const navigation = useNavigation();
       const route = useRoute();
-        const { selectedProducts } = route.params || { selectedProducts: [] };
+
+    const { selectedProducts } = route.params || { selectedProducts: [] };
 
     const closeModal = () => {
         setEditModalVisible(false);
@@ -223,7 +225,7 @@ const AddressScreen = () => {
                                       </Text>
                                       <Text>{item?.phoneNumber || "Khong co so"}</Text>
                                   </View>
-                                  
+
                                   {/* Nút radio box chọn địa chỉ */}
                                   <TouchableOpacity onPress={() => {
                                   setSelectedAddressId(item._id),
@@ -232,7 +234,7 @@ const AddressScreen = () => {
                                   }>
                                       <View style={isSelected ? styles.radioSelected : styles.radioUnselected} />
                                   </TouchableOpacity>
-                                  
+
                                   {/* Nút xóa */}
                                   <TouchableOpacity
                                       style={styles.deleteButton}
@@ -250,7 +252,7 @@ const AddressScreen = () => {
             <TouchableOpacity style={styles.confirmButton} onPress={
                 ()=>  {
                     navigation.navigate('PaymentScreen', { address: add , selectedProducts:selectedProducts})
-             
+
             }
                 }>
                 <Text style={styles.confirmButtonText}>Xác nhận</Text>

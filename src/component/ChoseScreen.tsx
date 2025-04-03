@@ -7,7 +7,7 @@ const ChoseScreen = ({navigation}) => {
         <View style={styles.container}>
             {/* Phần trên của màn hình */}
             <View style={styles.buttonContainer}>
-                <Text style={styles.buttonText}>Kiến tạo{"\n"}Thời trang{"\n"}bằng{"\n"}Nghệ thuật</Text>
+                <Text style={styles.buttonText}>Kiến tạo{`\n`}Thời trang{"\n"}bằng{"\n"}Nghệ thuật</Text>
             </View>
 
             {/* Phần dưới cùng của màn hình */}

@@ -28,6 +28,8 @@ import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
 import ResetPasswordScreen from "./src/component/ResetPasswordScreen.tsx";
 import SearchScreen from "./src/component/SearchScreen.tsx";
 import ProfileResetPasswordScreen from './src/component/ProfileResetPasswordScreen.tsx';
+import PaymentScreen from './src/component/PaymentScreen.tsx'
+import ChoiceAddress from './src/component/ChoiceAddress.tsx'
 
 function App() {
 
@@ -125,6 +127,14 @@ function App() {
                     name="ChatScreen"
                     options={{ headerShown: false }}
                     component={ChatScreen} />
+                <Stack.Screen
+                    name="ChoiceAddress"
+                    options={{ headerShown: true }}
+                    component={ChoiceAddress} />
+                <Stack.Screen
+                    name="PaymentScreen"
+                    options={{ headerShown: false }}
+                    component={PaymentScreen} />
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

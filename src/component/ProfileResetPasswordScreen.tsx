@@ -11,6 +11,17 @@ const ProfileResetPasswordScreen = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [token, setToken] = useState("");
+    const [secureText, setSecureText] = useState(true);
+    const [secureText2, setSecureText2] = useState(true);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const validatePassword = (password) => {
+        if (password.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự";
+        if (!/[A-Z]/.test(password)) return "Mật khẩu phải có ít nhất một chữ in hoa";
+        if (!/[0-9]/.test(password)) return "Mật khẩu phải có ít nhất một số";
+        if (!/[!@#$%^&*]/.test(password)) return "Mật khẩu phải có ít nhất một ký tự đặc biệt";
+        return "";
+    };
 
     const handleSendOTP = async () => {
         if (!email || email.trim() === "") {
@@ -18,7 +29,7 @@ const ProfileResetPasswordScreen = () => {
             return;
         }
 
-        console.log("Email gửi đi:", email); // Kiểm tra email trước khi gửi
+        console.log("Email gửi đi:", email); 
 
         try {
             const response = await axios.post("http://10.0.2.2:5000/v1/auth/send-otp", { email });
@@ -46,15 +57,21 @@ const ProfileResetPasswordScreen = () => {
     };
 
     const handleResetPassword = async () => {
+        const validationError = validatePassword(newPassword);
         if (newPassword !== confirmPassword) {
             Alert.alert("Lỗi", "Mật khẩu nhập lại không khớp");
+            return;
+        }
+
+        if (validationError) {
+            setErrorMessage(validationError);
             return;
         }
 
         try {
             const response = await axios.post("http://10.0.2.2:5000/v1/auth/reset-password", { token, newPassword });
             Alert.alert("Thành công", response.data.message);
-            navigation.goBack();
+            navigation.replace("LoginScreen")
         } catch (error) {
             Alert.alert("Lỗi", error.response?.data?.message || "Đổi mật khẩu thất bại");
         }
@@ -97,20 +114,40 @@ const ProfileResetPasswordScreen = () => {
 
             {step === 3 && (
                 <>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Một mật khẩu mới"
-                        secureTextEntry
-                        value={newPassword}
-                        onChangeText={setNewPassword}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nhập lại mật khẩu"
-                        secureTextEntry
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                    />
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.inputN}
+                            placeholder="Một mật khẩu mới"
+                            secureTextEntry={secureText}
+                            value={newPassword}
+                            onChangeText={(text) => {
+                                setNewPassword(text);
+                                setErrorMessage("");
+                            }}
+                        />
+                        <TouchableOpacity onPress={() => setSecureText(!secureText)} style={styles.eyeIcon}>
+                            <Image source={secureText ? require("../Image/visibility.png") : require("../Image/hide.png")} style={styles.eyeImage} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.inputN}
+                            placeholder="Nhập lại mật khẩu"
+                            secureTextEntry={secureText2}
+                            value={confirmPassword}
+                            onChangeText={(text) => {
+                                setConfirmPassword(text);
+                                setErrorMessage("");
+                            }}
+                        />
+                        <TouchableOpacity onPress={() => setSecureText2(!secureText2)} style={styles.eyeIcon}>
+                            <Image source={secureText2 ? require("../Image/visibility.png") : require("../Image/hide.png")} style={styles.eyeImage} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {errorMessage !== "" && <Text style={styles.errorText}>{errorMessage}</Text>}
+
                     <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
                         <Text style={styles.buttonText}>Đổi mật khẩu</Text>
                     </TouchableOpacity>
@@ -161,6 +198,36 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
         fontWeight: "bold",
+    },
+    eyeImage: {
+        width: 24,
+        height: 24,
+    },
+    eyeIcon: {
+        padding: 10,
+    },
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        height: 50,
+        borderColor: "#000",
+        borderWidth: 1,
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+        backgroundColor: "#F8F9FA",
+    },
+    inputN: {
+        flex: 1,
+        fontSize: 16,
+        color: "#000",
+    },
+    errorText: {
+        color: "red",
+        fontSize: 14,
+        marginBottom: 10,
+        textAlign: "center",
     },
 });
 

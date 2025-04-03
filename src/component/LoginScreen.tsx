@@ -60,7 +60,10 @@ function LoginScreen({navigation}) {
                 setLoading(true);
                 setTimeout(() => {
                     setLoading(false);
-                    navigation.navigate('BottomNavigation'); // chuyển sang màn hình chính sau 3 giây
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "BottomNavigation" }],
+                    }); // chuyển sang màn hình chính sau 3 giây
 
                 }, 3000);
 

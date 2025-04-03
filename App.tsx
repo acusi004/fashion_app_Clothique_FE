@@ -23,6 +23,12 @@ import HTScreen from './src/component/HTScreen.tsx';
 import DetailScreen from "./src/component/DetailScreen.tsx";
 import PaymentScreen from './src/component/PaymentScreen.tsx'
 import ChoiceAddress from './src/component/ChoiceAddress.tsx'
+import ResetPasswordScreen from "./src/component/ResetPasswordScreen.tsx";
+import ChangePassScreen from "./src/component/ChangePassScreen.tsx";
+import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
+import SearchScreen from "./src/component/SearchScreen.tsx";
+import SettingScreen from "./src/component/SettingScreen.tsx";
+import ChatScreen from "./src/component/ChatScreen.tsx";
 
 function App() {
 
@@ -35,7 +41,7 @@ function App() {
             >
                 <Stack.Screen
                     name="WelcomeScreen"
-                    options={{ headerShown: false }}
+                    options={{ headerShown: false ,}}
                     component={WelcomeScreen} />
                     <Stack.Screen
                     name="ChoiceAddress"
@@ -100,6 +106,28 @@ function App() {
                     name="DetailScreen"
                     options={{ headerShown: false }}
                     component={DetailScreen} />
+                <Stack.Screen
+                    name="ResetPasswordScreen"
+                    options={{ headerShown: false }}
+                    component={ResetPasswordScreen} />
+                <Stack.Screen
+                    name="ChangePassScreen"
+                    component={ChangePassScreen} />
+                <Stack.Screen
+                    name="VerifyOtpScreen"
+                    component={VerifyOtpScreen} />
+                <Stack.Screen
+                    name="SearchScreen"
+                    options={{ headerShown: false }}
+                    component={SearchScreen} />
+                <Stack.Screen
+                    name="SettingScreen"
+                    options={{ headerShown: false }}
+                    component={SettingScreen} />
+                <Stack.Screen
+                    name="ChatScreen"
+                    options={{ headerShown: false }}
+                    component={ChatScreen} />
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

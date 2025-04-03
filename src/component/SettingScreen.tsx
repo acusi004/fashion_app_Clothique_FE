@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ScrollView, Image } from "react-native";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
+import ChangePassScreen from "./ChangePassScreen.tsx";
+import ChatScreen from "./ChatScreen.tsx";
 
 function MenuItem({ title, subtitle, iconSource, onPress }) {
     return (
@@ -25,6 +27,7 @@ function SettingScreen() {
         { question: "Tôi có thể xóa tài khoản của mình không?", answer: "Có, bạn có thể gửi yêu cầu xóa tài khoản đến Chủ cửa hàng." }
     ];
 
+    // @ts-ignore
     return (
         <ScrollView style={styles.container}>
             {/* Header với nút Back */}
@@ -45,8 +48,8 @@ function SettingScreen() {
             ))}
             <View style={{marginTop: 5}}>
                 <Text style={styles.sectionTitle}>Chức năng</Text>
-                <MenuItem title="Trả lời tin nhắn" subtitle="Nhắn tin" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("ChatScreen")} />
-                <MenuItem title="Đổi mật khẩu" subtitle="Đổi mật khẩu người dùng" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("ProfileResetPasswordScreen")} />
+                <MenuItem title="Trả lời tin nhắn" subtitle="Nhắn tin" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate(ChatScreen)} />
+                <MenuItem title="Đổi mật khẩu" subtitle="Đổi mật khẩu người dùng" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate(ChangePassScreen)} />
             </View>
 
 

@@ -1,16 +1,27 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Checkbox, TextInput } from "react-native-paper";
 import tokenService from "../service/tokenService";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { useNavigation } from "@react-navigation/native";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 function CartScreen() {
     const [cartData, setCartData] = useState([]); // Dữ liệu giỏ hàng từ API
     const [quantities, setQuantities] = useState({}); // Số lượng sản phẩm
     const BASE_URL = "http://10.0.2.2:5000"; // API local
     const [selectedItems, setSelectedItems] = useState([]);
-const navigation = useNavigation();
+    const navigation = useNavigation();
+
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+
+    const showAlert = (header: string, message: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+    };
 
     useEffect(() => {
         const fetchCart = async () => {
@@ -36,11 +47,11 @@ const navigation = useNavigation();
 
                 const data = await response.json();
                 setCartData(data.cart || []); // Đảm bảo dữ liệu chính xác
-                
+
 
                 // Cập nhật số lượng ban đầu của từng sản phẩm
                 console.log(cartData);
-                
+
                 const initialQuantities = {};
                 data.cart.forEach((item) => {
                     initialQuantities[item.productId._id] = item.quantity;
@@ -61,7 +72,7 @@ const navigation = useNavigation();
                 console.warn("Chưa có token, vui lòng đăng nhập trước.");
                 return;
             }
-    
+
             const response = await fetch(`${BASE_URL}/v1/cart/delete-cart/${cartId}`, { // 👈 Truyền ID vào URL
                 method: "DELETE",
                 headers: {
@@ -69,20 +80,20 @@ const navigation = useNavigation();
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
             if (!response.ok) {
                 const text = await response.text();
                 console.error("Lỗi từ server:", text);
                 return;
             }
-    
+
             console.log(`Sản phẩm ${cartId} đã bị xóa.`);
             setCartData(cartData.filter(item => item._id !== cartId));
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);
         }
     };
-    
+
     const updateCartItem = async (cartId, quantity) => {
         try {
             const token = await tokenService.getToken();
@@ -90,7 +101,7 @@ const navigation = useNavigation();
                 console.warn("Chưa có token, vui lòng đăng nhập trước.");
                 return;
             }
-    
+
             const response = await fetch(`${BASE_URL}/v1/cart/update-cart`, { // ❌ Xoá cartId khỏi URL
                 method: "PUT",
                 headers: {
@@ -99,16 +110,16 @@ const navigation = useNavigation();
                 },
                 body: JSON.stringify({ cartItemId: cartId, quantity }) // ✅ Truyền cartItemId vào body
             });
-    
+
             if (!response.ok) {
                 const text = await response.text();
                 console.error("Lỗi từ server:", text);
                 return;
             }
-    
+
             const updatedItem = await response.json();
             console.log(`Sản phẩm ${cartId} đã cập nhật thành công.`);
-    
+
             setCartData(prevCart =>
                 prevCart.map(item =>
                     item._id === cartId ? { ...item, quantity } : item
@@ -118,46 +129,53 @@ const navigation = useNavigation();
             console.error("Lỗi khi gọi API:", error);
         }
     };
-    
+
     const increaseQuantity = (cartId, sl, stock) => {
         if (sl >= stock) { // Dừng ngay nếu đã đạt số lượng tối đa
             Alert.alert('Bạn đã đạt đến số lượng tối đa của sản phẩm này.');
-            return; 
+            return;
         }
-    
+
         const newQuantity = sl + 1;
-        
+
         setQuantities(prevQuantities => ({
-            ...prevQuantities, 
+            ...prevQuantities,
             [cartId]: newQuantity
         }));
-    
+
         setCartData(prevCart =>
             prevCart.map(item =>
                 item._id === cartId ? { ...item, quantity: newQuantity } : item
             )
         );
-    
+
         updateCartItem(cartId, newQuantity); // Gọi API cập nhật
     };
-    
-    
-    const decreaseQuantity = ( cartId,sl,stock) => {
-        setQuantities(prevQuantities => {
-            const newQuantity = sl - 1;
-            
-            setCartData(prevCart =>
-                prevCart.map(item =>
-                    item._id === cartId ? { ...item, quantity: newQuantity } : item
-                )
-            );
-        
-            updateCartItem(cartId, newQuantity); // Gọi API cập nhật
-            return { ...prevQuantities, [cartId]: newQuantity }; 
-        });
-        
+
+
+    const decreaseQuantity = (cartId, sl, stock) => {
+        if (sl <= 1) {
+           showAlert("Thông báo", "Số lượng tối thiểu là 1",)
+            return;
+        }
+
+        const newQuantity = sl - 1;
+
+        setQuantities(prev => ({
+            ...prev,
+            [cartId]: newQuantity
+        }));
+
+        // @ts-ignore
+        setCartData(prevCart =>
+            prevCart.map(item =>
+                item._id === cartId ? { ...item, quantity: newQuantity } : item
+            )
+        );
+
+        updateCartItem(cartId, newQuantity);
     };
-    
+
 
     // Lấy đường dẫn ảnh sản phẩm
     const getFullImageUrl = (imagePath) => {
@@ -174,7 +192,7 @@ const navigation = useNavigation();
         const selectedProducts = cartData.filter(item => selectedItems.includes(item._id));
         navigation.navigate('PaymentScreen', { selectedProducts });
         console.log("thông tin ",selectedProducts);
-        
+
     };
 
     return (
@@ -246,6 +264,12 @@ const navigation = useNavigation();
             >
                 <Text style={styles.checkoutText}>Thanh toán ({selectedItems.length})</Text>
             </TouchableOpacity>
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={() => setAlertVisible(false)}
+            />
         </SafeAreaView>
     );
 }

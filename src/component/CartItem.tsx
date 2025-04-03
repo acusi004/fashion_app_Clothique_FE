@@ -32,8 +32,11 @@ const CartItem = ({item, quantity, isSelected, onIncrease, onDecrease, onToggleS
             </View>
             <View style={styles.quantityContainer}>
                 <TouchableOpacity
-                    onPress={() => onDecrease(item.productId._id, item._id)}
-                    style={styles.quantityButton}
+                    onPress={() => {
+                        if ((quantity || item.quantity) > 1) {
+                            onDecrease(item.productId._id, item._id);
+                        }
+                    }}
                 >
                     <Image
                         source={require("../Image/minus.png")}

@@ -69,7 +69,7 @@ function ChangePassScreen({ navigation }) {
 
 
             <TouchableOpacity style={styles.button} onPress={handleSendEmail} >
-                {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>Gửi mã OTP</Text>}
+                {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>Lấy OTP</Text>}
             </TouchableOpacity>
 
             <CustomAlert

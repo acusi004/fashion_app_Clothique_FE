@@ -27,6 +27,7 @@ import ChangePassScreen from "./src/component/ChangePassScreen.tsx";
 import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
 import ResetPasswordScreen from "./src/component/ResetPasswordScreen.tsx";
 import SearchScreen from "./src/component/SearchScreen.tsx";
+import ProfileResetPasswordScreen from './src/component/ProfileResetPasswordScreen.tsx';
 
 function App() {
 
@@ -100,6 +101,10 @@ function App() {
                     name="NotificationScreen"
                     options={{ headerShown: false }}
                     component={NotificationScreen} />
+                <Stack.Screen
+                    name="ProfileResetPasswordScreen"
+                    options={{ headerShown: false }}
+                    component={ProfileResetPasswordScreen} />
                 <Stack.Screen
                     name="ProfileScreen"
                     options={{ headerShown: false }}

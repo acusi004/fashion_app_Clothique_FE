@@ -23,10 +23,6 @@ import HTScreen from './src/component/HTScreen.tsx';
 import DetailScreen from "./src/component/DetailScreen.tsx";
 import PaymentScreen from './src/component/PaymentScreen.tsx'
 import ChoiceAddress from './src/component/ChoiceAddress.tsx'
-import ChangePassScreen from "./src/component/ChangePassScreen.tsx";
-import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
-import ResetPasswordScreen from "./src/component/ResetPasswordScreen.tsx";
-import SearchScreen from "./src/component/SearchScreen.tsx";
 
 function App() {
 
@@ -104,23 +100,6 @@ function App() {
                     name="DetailScreen"
                     options={{ headerShown: false }}
                     component={DetailScreen} />
-                <Stack.Screen
-                    name="ChangePassScreen"
-                    options={{ headerShown: false }}
-                    component={ChangePassScreen} />
-                <Stack.Screen
-                    name="VerifyOtpScreen"
-                    options={{ headerShown: false }}
-                    component={VerifyOtpScreen} />
-                <Stack.Screen
-                    name="ResetPasswordScreen"
-                    options={{ headerShown: false }}
-                    component={ResetPasswordScreen} />
-                <Stack.Screen
-                    name="SearchScreen"
-                    options={{ headerShown: false }}
-                    component={SearchScreen} />
-
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

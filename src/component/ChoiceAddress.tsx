@@ -129,52 +129,7 @@ const AddressScreen = () => {
     }
   };
 
-  // @ts-ignore
-  const handleAddAddress = async newAddress => {
-    try {
-      const token = await tokenService.getToken();
-      if (!token) {
-        console.error('❌ Không tìm thấy token!');
-        return Alert.alert('Lỗi', 'Bạn chưa đăng nhập!');
-      }
-      const decodedToken = jwtDecode<CustomJwtPayload>(token);
-      const userEmail = decodedToken?.email;
-
-      if (!userEmail) {
-        return Alert.alert('Lỗi', 'Không tìm thấy email!');
-      }
-
-      console.log('📌 Email gửi đi:', userEmail);
-
-      const response = await axios.post(
-        'http://10.0.2.2:5000/v1/user/add-address',
-        {...newAddress, email: userEmail},
-        {headers: {Authorization: `Bearer ${token}`}},
-      );
-
-      console.log('✅ Địa chỉ mới:', response.data);
-      fetchAddresses();
-      setAddresses(response.data.addresses);
-      setModalVisible(false);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          '❌ Lỗi khi thêm địa chỉ:',
-          error.response?.data || error.message,
-        );
-        Alert.alert(
-          'Lỗi',
-          error.response?.data?.message || 'Không thể thêm địa chỉ.',
-        );
-      } else if (error instanceof Error) {
-        console.error('❌ Lỗi khi thêm địa chỉ:', error.message);
-       showAlert('Lỗi', error.message);
-      } else {
-        console.error('❌ Lỗi khi thêm địa chỉ:', error);
-        showAlert('Lỗi', 'Không thể thêm địa chỉ.');
-      }
-    }
-  };
+  
 
   // @ts-ignore
   const handleEditAddress = selected => {
@@ -189,52 +144,7 @@ const AddressScreen = () => {
     setTimeout(() => setEditModalVisible(true), 100);
   };
 
-  // @ts-ignore
-  const handleDeleteAddress = async addressId => {
-    Alert.alert('Xác nhận xóa', 'Bạn có chắc muốn xóa địa chỉ này không?', [
-      {text: 'Hủy', style: 'cancel'},
-      {
-        text: 'Xóa',
-        onPress: async () => {
-          try {
-            const token = await tokenService.getToken();
-            if (!token) {
-              console.error('❌ Không tìm thấy token!');
-              return Alert.alert('Lỗi', 'Bạn chưa đăng nhập!');
-            }
-            const decodedToken = jwtDecode<CustomJwtPayload>(token);
-            const userEmail = decodedToken?.email;
-
-            if (!userEmail) {
-              return Alert.alert('Lỗi', 'Không tìm thấy email!');
-            }
-
-            const response = await axios.post(
-              'http://10.0.2.2:5000/v1/user/remove-address',
-              {email: userEmail, addressId},
-              {headers: {Authorization: `Bearer ${token}`}},
-            );
-
-            console.log('✅ Xóa thành công:', response.data);
-            showAlert('Thành công', 'Địa chỉ đã được xóa!');
-            setAddresses(response.data.addresses);
-          } catch (error) {
-            if (axios.isAxiosError(error)) {
-              console.error(
-                '❌ Lỗi khi xóa địa chỉ:',
-                error.response?.data || error.message,
-              );
-            } else if (error instanceof Error) {
-              console.error('❌ Lỗi khi xóa địa chỉ:', error.message);
-            } else {
-              console.error('❌ Lỗi khi xóa địa chỉ:', error);
-            }
-            showAlert('Lỗi', 'Không thể xóa địa chỉ.');
-          }
-        },
-      },
-    ]);
-  };
+  
   const [selectedAddressId, setSelectedAddressId] = useState(null);
 
   return (
@@ -278,21 +188,12 @@ const AddressScreen = () => {
                 />
               </TouchableOpacity>
 
-              {/* Nút xóa */}
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteAddress(item._id)}>
-                <Text style={styles.deleteIcon}>🗑</Text>
-              </TouchableOpacity>
+           
             </TouchableOpacity>
           );
         }}
       />
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalVisible(true)}>
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
+     
       <TouchableOpacity
           style={styles.confirmButton}
           onPress={() => {
@@ -309,10 +210,7 @@ const AddressScreen = () => {
 
 
       <Modal visible={modalVisible} animationType="slide">
-        <AddressForm
-          onSave={handleAddAddress}
-          onClose={() => setModalVisible(false)}
-        />
+       
       </Modal>
       {editModalVisible && selectedAddress && (
         <Modal visible={editModalVisible} animationType="slide">

@@ -48,17 +48,25 @@ const CheckoutScreen = () => {
     return total + item.variantId.price * item.quantity;
   }, 0);
 
+  const checkMoMoApp = async (url) => {
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert('Lỗi', 'Không thể mở MoMo. Vui lòng thử lại.');
+    }
+  };
+
+  
   const thanhtoan = async () => {
     if (!address) {
-      return showAlert('Thông báo','Hãy chọn địa chỉ giao hàng');
+      return showAlert('Thông báo', 'Hãy chọn địa chỉ giao hàng');
     }
-
+  
     try {
       const token = await tokenService.getToken();
       if (!token) {
         return Alert.alert('Vui lòng đăng nhập trước!');
       }
-
+  
       const response = await fetch(`${BASE_URL}/v1/order/createOrder`, {
         method: 'POST',
         headers: {
@@ -66,32 +74,37 @@ const CheckoutScreen = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          shippingAddressId: address._id, // Đổi tên cho đúng API
-          cartItems: selectedProducts.map(item => item._id), // Gửi ID giỏ hàng
+          shippingAddressId: address._id,
+          cartItems: selectedProducts.map(item => item._id),
           paymentMethod: paymentMethod,
         }),
       });
-
+  
       const data = await response.json();
-
-      if (response.ok) {
-        Alert.alert('Đặt hàng thành công!');
-
-        if (paymentMethod === 'MoMo' && data.momoResult?.payUrl) {
-          // Mở trình duyệt cho người dùng thanh toán MoMo
-          Linking.openURL(data.momoResult.payUrl);
-        } else {
-          // Điều hướng về màn hình lịch sử đơn hàng sau khi đặt hàng COD
-          navigation.navigate('HTScreen');
-        }
+      console.log('Response:', data);
+      console.log('Order data:', data.data);
+      const momoUrl = data?.momoResult?.payUrl;
+      console.log('MoMo URL:', momoUrl);
+  
+      if (!response.ok) {
+        throw new Error(data.message || 'Đặt hàng thất bại!');
+      }
+  
+      Alert.alert('Đặt hàng thành công!');
+  
+      if (paymentMethod === 'MoMo' && momoUrl) {
+        await checkMoMoApp(momoUrl);
+  Linking.openURL(momoUrl);
       } else {
-        Alert.alert(data.message || 'Đặt hàng thất bại!');
+        navigation.navigate('HTScreen');
       }
     } catch (error) {
       console.error('Lỗi khi đặt hàng:', error);
-      Alert.alert('Đã xảy ra lỗi, vui lòng thử lại!');
+      Alert.alert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
     }
   };
+  
+  
 
   return (
       <SafeAreaView style={styles.container}>
@@ -188,7 +201,7 @@ const CheckoutScreen = () => {
                  status={paymentMethod === 'MoMo' ? 'checked' : 'unchecked'}
                  onPress={() => setPaymentMethod('MoMo')}
              />
-             <Text style={styles.paymentText}>ZaloPay</Text>
+             <Text style={styles.paymentText}>MoMo</Text>
            </View>
            <View style={styles.paymentOption}>
              <RadioButton.Android

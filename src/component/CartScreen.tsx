@@ -132,7 +132,7 @@ function CartScreen() {
 
     const increaseQuantity = (cartId, sl, stock) => {
         if (sl >= stock) { // Dừng ngay nếu đã đạt số lượng tối đa
-            Alert.alert('Bạn đã đạt đến số lượng tối đa của sản phẩm này.');
+           showAlert('Thông báo',`Loại sản phẩm này còn ${sl} trong kho`);
             return;
         }
 

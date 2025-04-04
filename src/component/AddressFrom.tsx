@@ -16,6 +16,7 @@ import {
   getWardsByDistrictId,
 } from '../service/addressService';
 import CustomAlert from '../styles/CustomAlert.tsx';
+import CustomAlertSecond from "../styles/CustomALertSecond.tsx";
 
 const AddressForm = ({onSave, onClose}) => {
   const [name, setName] = useState('');
@@ -33,18 +34,23 @@ const AddressForm = ({onSave, onClose}) => {
   const [alertHeader, setAlertHeader] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
+
   const showAlert = (header: string, message: string) => {
     setAlertHeader(header);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
+
+
+
+
   const validatePhoneNumber = phone => {
-    if (!phone) return 'Vui lòng nhập số điện thoại!';
-    if (!/^\d+$/.test(phone)) return 'Số điện thoại chỉ được chứa chữ số!';
-    if (phone.length !== 10) return 'Số điện thoại phải có đúng 10 chữ số!';
+    if (!phone) return showAlert('Thông báo','Vui lòng nhập số điện thoại!');
+    if (!/^\d+$/.test(phone)) return showAlert('Thông báo','Số điện thoại chỉ được chứa chữ số!');
+    if (phone.length !== 10) return showAlert('Thông báo','Số điện thoại phải có đúng 10 chữ số!');
     if (!/^(03|05|07|08|09)[0-9]{8}$/.test(phone))
-      return 'Số điện thoại không hợp lệ! Vui lòng nhập số hợp lệ tại Việt Nam.';
+      return showAlert('Thông báo','Số điện thoại không hợp lệ! Vui lòng nhập số hợp lệ tại Việt Nam.');
     return null; // Hợp lệ
   };
 
@@ -211,6 +217,8 @@ const AddressForm = ({onSave, onClose}) => {
         message={alertMessage}
         onClose={() => setAlertVisible(false)}
       />
+
+
     </View>
   );
 };

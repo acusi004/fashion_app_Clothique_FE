@@ -294,15 +294,19 @@ const AddressScreen = () => {
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={() => {
-          navigation.navigate('PaymentScreen', {
-            address: add,
-            selectedProducts: selectedProducts,
-          });
-        }}>
+          style={styles.confirmButton}
+          onPress={() => {
+            if (!selectedAddressId) {
+              return showAlert('Thông báo', 'Vui lòng chọn địa chỉ trước khi tiếp tục!');
+            }
+            navigation.navigate('PaymentScreen', {
+              address: add,
+              selectedProducts: selectedProducts,
+            });
+          }}>
         <Text style={styles.confirmButtonText}>Xác nhận</Text>
       </TouchableOpacity>
+
 
       <Modal visible={modalVisible} animationType="slide">
         <AddressForm
@@ -351,14 +355,18 @@ const styles = StyleSheet.create({
     bottom: 80,
     right: 20,
     backgroundColor: 'black',
-    padding: 15,
     borderRadius: 150,
+    width:45,
+    height:45,
+    alignItems:'center',
+    justifyContent:'center'
   },
   addButtonText: {color: 'white', fontSize: 20},
   confirmButton: {
     position: 'absolute',
     bottom: 20,
     left: 20,
+
     right: 20,
     backgroundColor: '#000',
     padding: 15,

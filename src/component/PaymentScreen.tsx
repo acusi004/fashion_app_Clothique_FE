@@ -16,17 +16,25 @@ import tokenService from '../service/tokenService';
 import CustomAlert from "../styles/CustomAlert.tsx";
 
 const CheckoutScreen = () => {
-  const [paymentMethod, setPaymentMethod] = React.useState('COD');
+  const [paymentMethod, setPaymentMethod] = React.useState('');
   const navigation = useNavigation();
   const route = useRoute();
   const {selectedProducts} = route.params || {selectedProducts: []};
   const {address} = route.params || {address: []};
+  const { paymentMethod1 } = route.params || {}; // đổi tên để không trùng với state
   const BASE_URL = 'http://10.0.2.2:5000'; // API local
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertHeader, setAlertHeader] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-
+  useEffect(() => {
+    if (paymentMethod1) {
+      setPaymentMethod(paymentMethod1);
+    }
+    console.log('Selected Products: ', selectedProducts);
+    console.log('Địa chỉ: ', address ? address._id : 'Không có địa chỉ');
+    console.log('Phương thức thanh toán nhận vào:', paymentMethod1);
+  }, []);
   const showAlert = (header: string, message: string) => {
     setAlertHeader(header);
     setAlertMessage(message);
@@ -50,9 +58,7 @@ const CheckoutScreen = () => {
 
   const checkMoMoApp = async (url) => {
     const supported = await Linking.canOpenURL(url);
-    if (!supported) {
-      Alert.alert('Lỗi', 'Không thể mở MoMo. Vui lòng thử lại.');
-    }
+    
   };
 
   
@@ -120,7 +126,7 @@ const CheckoutScreen = () => {
          <View style={styles.section}>
            <TouchableOpacity
                onPress={() =>
-                   navigation.navigate('ChoiceAddress', {selectedProducts})
+                   navigation.navigate('ChoiceAddress', {selectedProducts,paymentMethod:paymentMethod})
                }>
              <Text style={styles.sectionTitle}>Địa chỉ giao hàng</Text>
              {address ? (
@@ -175,7 +181,7 @@ const CheckoutScreen = () => {
                            <Text style={styles.productSize}>
                              Size: {item.variantId.size}
                            </Text>
-                           <Text style={styles.productPrice}>
+                           <Text style={styles.productPrice}>Giá: 
                              {item.variantId?.price
                                  ? (item.variantId.price * item.quantity).toLocaleString()
                                  : 'Chưa có giá'}{' '}
@@ -233,12 +239,12 @@ const CheckoutScreen = () => {
            </View>
            <View style={styles.priceRow}>
              <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
-             <Text style={styles.priceValue}>30000 đ</Text>
+             <Text style={styles.priceValue}>25000 đ</Text>
            </View>
            <View style={styles.priceRowTotal}>
              <Text style={styles.totalLabel}>Tổng:</Text>
              <Text style={styles.totalValue}>
-               {(totalPrice + 30000).toLocaleString()} đ
+               {(totalPrice + 25000).toLocaleString()} đ
              </Text>
            </View>
          </View>

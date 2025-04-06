@@ -54,7 +54,9 @@ const AddressScreen = () => {
   };
 
 
-  const {selectedProducts} = route.params || {selectedProducts: []};
+  const { selectedProducts, paymentMethod } = route.params || {};
+
+
 
   const closeModal = () => {
     setEditModalVisible(false);
@@ -203,6 +205,7 @@ const AddressScreen = () => {
             navigation.navigate('PaymentScreen', {
               address: add,
               selectedProducts: selectedProducts,
+              paymentMethod1:paymentMethod
             });
           }}>
         <Text style={styles.confirmButtonText}>Xác nhận</Text>

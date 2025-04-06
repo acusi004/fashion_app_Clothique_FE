@@ -5,6 +5,7 @@ import axios from "axios";
 import tokenService from "../service/tokenService";
 import { jwtDecode } from "jwt-decode";
 import { getProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from "../service/addressService";
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
     const [name, setName] = useState("");
@@ -18,11 +19,26 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
 
-    const validatePhoneNumber = (phone) => {
-        if (!phone) return "Vui lòng nhập số điện thoại!";
-        if (!/^\d+$/.test(phone)) return "Số điện thoại chỉ được chứa chữ số!";
-        if (phone.length !== 10) return "Số điện thoại phải có đúng 10 chữ số!";
-        if (!/^(03|05|07|08|09)[0-9]{8}$/.test(phone)) return "Số điện thoại không hợp lệ! Vui lòng nhập số hợp lệ tại Việt Nam.";
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+
+
+    const showAlert = (header: string, message: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+    };
+
+
+
+    // @ts-ignore
+    const validatePhoneNumber = phone => {
+        if (!phone) return showAlert('Thông báo','Vui lòng nhập số điện thoại!');
+        if (!/^\d+$/.test(phone)) return showAlert('Thông báo','Số điện thoại chỉ được chứa chữ số!');
+        if (phone.length !== 10) return showAlert('Thông báo','Số điện thoại phải có đúng 10 chữ số!');
+        if (!/^(03|05|07|08|09)[0-9]{8}$/.test(phone))
+            return showAlert('Thông báo','Số điện thoại không hợp lệ! Vui lòng nhập số hợp lệ tại Việt Nam.');
         return null; // Hợp lệ
     };
 
@@ -73,13 +89,13 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
     // Xử lý cập nhật địa chỉ
     const handleUpdate = async () => {
         if (!name || !phoneNumber || !province || !district || !ward || !detail) {
-            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin!");
+           showAlert("Lỗi", "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
 
         const phoneError = validatePhoneNumber(phoneNumber);
         if (phoneError) {
-            Alert.alert("Lỗi", phoneError);
+            showAlert("Lỗi", phoneError);
             return;
         }
 
@@ -89,7 +105,7 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
         const addressId = address?._id || "";
 
         if (!userEmail || !addressId) {
-            Alert.alert("Lỗi", "Dữ liệu không hợp lệ!");
+           showAlert("Lỗi", "Dữ liệu không hợp lệ!");
             return;
         }
 
@@ -110,12 +126,12 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             });
 
             console.log("✅ API Response:", response.data);
-            Alert.alert("Thành công", "Địa chỉ đã được cập nhật!");
+             showAlert("Thành công", "Địa chỉ đã được cập nhật!");
             refreshAddresses();
             onClose();
         } catch (error) {
             console.error("❌ Update Error:", error.response?.data || error.message);
-            Alert.alert("Lỗi", error.response?.data?.message || "Không thể cập nhật địa chỉ. Vui lòng thử lại!");
+            showAlert("Lỗi", error.response?.data?.message || "Không thể cập nhật địa chỉ. Vui lòng thử lại!");
         }
     };
 
@@ -219,6 +235,14 @@ const EditAddressForm = ({ address, onClose, refreshAddresses }) => {
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
                 <Text style={styles.cancelButtonText}>Hủy</Text>
             </TouchableOpacity>
+
+            <CustomAlert
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+                onClose={() => setAlertVisible(false)}
+            />
+
         </View>
     );
 };
@@ -227,7 +251,7 @@ const styles = StyleSheet.create({
     container: { flex: 1, padding: 20, backgroundColor: "#fff" },
     header: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
     label: { fontSize: 14, fontWeight: "600", marginTop: 10 },
-    input: { borderWidth: 1, padding: 10, marginBottom: 10 },
+    input: { borderWidth: 1, padding: 10, marginBottom: 10, borderRadius:10 },
     picker: { height: 50, marginBottom: 10 },
     saveButton: { backgroundColor: "black", padding: 15, borderRadius: 10, alignItems: "center", marginTop: 15 },
     saveButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },

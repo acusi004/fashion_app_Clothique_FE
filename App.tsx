@@ -45,7 +45,9 @@ function App() {
                     component={WelcomeScreen} />
                     <Stack.Screen
                     name="ChoiceAddress"
-                    options={{ headerShown: true }}
+                    options={{
+                        headerTitle: '',
+                    }}
                     component={ChoiceAddress} />
                      <Stack.Screen
                     name="PaymentScreen"
@@ -108,13 +110,24 @@ function App() {
                     component={DetailScreen} />
                 <Stack.Screen
                     name="ResetPasswordScreen"
-                    options={{ headerShown: false }}
+                    options={{
+                        headerTitle: 'Đổi Mật Khẩu ',
+                        headerTitleAlign: 'center'
+                    }}
                     component={ResetPasswordScreen} />
                 <Stack.Screen
                     name="ChangePassScreen"
+                    options={{
+                        headerTitle: 'Đổi Mật Khẩu ',
+                        headerTitleAlign: 'center'
+                    }}
                     component={ChangePassScreen} />
                 <Stack.Screen
                     name="VerifyOtpScreen"
+                    options={{
+                        headerTitle: 'Đổi Mật Khẩu ',
+                        headerTitleAlign: 'center'
+                    }}
                     component={VerifyOtpScreen} />
                 <Stack.Screen
                     name="SearchScreen"

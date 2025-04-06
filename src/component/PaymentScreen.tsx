@@ -13,14 +13,35 @@ import {
 } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import tokenService from '../service/tokenService';
+import CustomAlert from "../styles/CustomAlert.tsx";
 
 const CheckoutScreen = () => {
-  const [paymentMethod, setPaymentMethod] = React.useState('COD');
+  const [paymentMethod, setPaymentMethod] = React.useState('');
   const navigation = useNavigation();
   const route = useRoute();
   const { selectedProducts } = route.params || { selectedProducts: [] };
   const { address } = route.params || { address: [] };
+  const {selectedProducts} = route.params || {selectedProducts: []};
+  const {address} = route.params || {address: []};
+  const { paymentMethod1 } = route.params || {}; // đổi tên để không trùng với state
   const BASE_URL = 'http://10.0.2.2:5000'; // API local
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertHeader, setAlertHeader] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  useEffect(() => {
+    if (paymentMethod1) {
+      setPaymentMethod(paymentMethod1);
+    }
+    console.log('Selected Products: ', selectedProducts);
+    console.log('Địa chỉ: ', address ? address._id : 'Không có địa chỉ');
+    console.log('Phương thức thanh toán nhận vào:', paymentMethod1);
+  }, []);
+  const showAlert = (header: string, message: string) => {
+    setAlertHeader(header);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   useEffect(() => {
     console.log('fdfd ', selectedProducts);
@@ -37,17 +58,23 @@ const CheckoutScreen = () => {
     return total + item.variantId.price * item.quantity;
   }, 0);
 
+  const checkMoMoApp = async (url) => {
+    const supported = await Linking.canOpenURL(url);
+    
+  };
+
+  
   const thanhtoan = async () => {
     if (!address) {
-      return Alert.alert('Hãy chọn địa chỉ giao hàng');
+      return showAlert('Thông báo', 'Hãy chọn địa chỉ giao hàng');
     }
-
+  
     try {
       const token = await tokenService.getToken();
       if (!token) {
         return Alert.alert('Vui lòng đăng nhập trước!');
       }
-
+  
       const response = await fetch(`${BASE_URL}/v1/order/createOrder`, {
         method: 'POST',
         headers: {
@@ -55,14 +82,13 @@ const CheckoutScreen = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          shippingAddressId: address._id, // Đổi tên cho đúng API
-          cartItems: selectedProducts.map(item => item._id), // Gửi ID giỏ hàng
+          shippingAddressId: address._id,
+          cartItems: selectedProducts.map(item => item._id),
           paymentMethod: paymentMethod,
         }),
       });
-
+  
       const data = await response.json();
-
       if (response.ok) {
         Alert.alert('Đặt hàng thành công!');
 
@@ -74,14 +100,30 @@ const CheckoutScreen = () => {
           // Điều hướng về màn hình lịch sử đơn hàng sau khi đặt hàng COD
           navigation.navigate('HTScreen');
         }
+      console.log('Response:', data);
+      console.log('Order data:', data.data);
+      const momoUrl = data?.momoResult?.payUrl;
+      console.log('MoMo URL:', momoUrl);
+  
+      if (!response.ok) {
+        throw new Error(data.message || 'Đặt hàng thất bại!');
+      }
+  
+      Alert.alert('Đặt hàng thành công!');
+  
+      if (paymentMethod === 'MoMo' && momoUrl) {
+        await checkMoMoApp(momoUrl);
+  Linking.openURL(momoUrl);
       } else {
-        Alert.alert(data.message || 'Đặt hàng thất bại!');
+        navigation.navigate('HTScreen');
       }
     } catch (error) {
       console.error('Lỗi khi đặt hàng:', error);
-      Alert.alert('Đã xảy ra lỗi, vui lòng thử lại!');
+      Alert.alert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
     }
   };
+  
+  
 
   return (
     <ScrollView>
@@ -227,6 +269,158 @@ const CheckoutScreen = () => {
         </TouchableOpacity>
       </SafeAreaView>
     </ScrollView>
+      <SafeAreaView style={styles.container}>
+        <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}>
+          <Image source={require('../Image/back.png')} />
+        </TouchableOpacity>
+        <Text style={styles.header}>Thanh toán</Text>
+       <ScrollView>
+
+
+         <View style={styles.section}>
+           <TouchableOpacity
+               onPress={() =>
+                   navigation.navigate('ChoiceAddress', {selectedProducts,paymentMethod:paymentMethod})
+               }>
+             <Text style={styles.sectionTitle}>Địa chỉ giao hàng</Text>
+             {address ? (
+                 <View style={styles.addressBox}>
+                   <Text style={styles.addressName}>{address.name}</Text>
+                   <Text style={styles.addressDetail}>
+                     {address.addressDetail +
+                         ',' +
+                         address.wardName +
+                         ',' +
+                         address.districtName +
+                         ',' +
+                         address.provinceName}
+                   </Text>
+                   <Text style={styles.addressPhone}>
+                     SĐT: {address.phoneNumber}
+                   </Text>
+                 </View>
+             ) : (
+                 <View style={styles.addressBox}>
+                   <Text style={styles.addressName}>
+                     Bạn chưa chọn địa chỉ giao hàng
+                   </Text>
+                   <Text style={styles.addressDetail}>
+                     Hãy chọn địa chỉ giao hàng
+                   </Text>
+                 </View>
+             )}
+           </TouchableOpacity>
+         </View>
+
+         {selectedProducts.length > 0 ? (
+             <View style={{width: '100%', paddingHorizontal: 10}}>
+               <FlatList
+                   data={selectedProducts}
+                   nestedScrollEnabled={true}
+                   scrollEnabled={false}
+                   keyExtractor={item => item._id.toString()}
+                   renderItem={({item}) => (
+                       <View style={styles.productItem}>
+                         <Image
+                             source={{
+                               uri:
+                                   item.variantId.images && item.variantId.images.length > 0
+                                       ? getFullImageUrl(item.variantId.images[0])
+                                       : 'https://via.placeholder.com/300',
+                             }}
+                             style={styles.productImage}
+                         />
+                         <View style={styles.productInfo}>
+                           <Text style={styles.productName}>{item.productId.name}</Text>
+                           <Text style={styles.productSize}>
+                             Size: {item.variantId.size}
+                           </Text>
+                           <Text style={styles.productPrice}>Giá: 
+                             {item.variantId?.price
+                                 ? (item.variantId.price * item.quantity).toLocaleString()
+                                 : 'Chưa có giá'}{' '}
+                             đ
+                           </Text>
+                           <Text style={styles.productQuantity}>
+                             Số lượng: {item.quantity}
+                           </Text>
+                         </View>
+                       </View>
+                   )}
+               />
+             </View>
+         ) : (
+             <Text style={styles.emptyText}>Không có sản phẩm nào được chọn.</Text>
+         )}
+
+         <View style={styles.section}>
+           <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
+           <View style={styles.paymentOption}>
+             <RadioButton.Android
+                 value="MoMo"
+                 status={paymentMethod === 'MoMo' ? 'checked' : 'unchecked'}
+                 onPress={() => setPaymentMethod('MoMo')}
+             />
+             <Text style={styles.paymentText}>MoMo</Text>
+           </View>
+           <View style={styles.paymentOption}>
+             <RadioButton.Android
+                 value="COD"
+                 status={paymentMethod === 'COD' ? 'checked' : 'unchecked'}
+                 onPress={() => setPaymentMethod('COD')}
+             />
+             <Text style={styles.paymentText}>Thanh toán khi nhận hàng</Text>
+           </View>
+         </View>
+
+         <View style={styles.section}>
+           <Text style={styles.sectionTitle}>Phương thức giao hàng</Text>
+           <View style={styles.shippingBox}>
+             <Image
+                 source={require('../Image/giaohangtietkiem.png')}
+                 style={styles.shippingIcon}
+             />
+             <Text style={styles.shippingText}>
+               Giao hàng tiết kiệm (2-3 days)
+             </Text>
+           </View>
+         </View>
+
+         <View style={styles.priceSection}>
+           <View style={styles.priceRow}>
+             <Text style={styles.priceLabel}>Giá:</Text>
+             <Text style={styles.priceValue}>{totalPrice.toLocaleString()} đ</Text>
+           </View>
+           <View style={styles.priceRow}>
+             <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
+             <Text style={styles.priceValue}>25000 đ</Text>
+           </View>
+           <View style={styles.priceRowTotal}>
+             <Text style={styles.totalLabel}>Tổng:</Text>
+             <Text style={styles.totalValue}>
+               {(totalPrice + 25000).toLocaleString()} đ
+             </Text>
+           </View>
+         </View>
+       </ScrollView>
+
+        <TouchableOpacity
+            style={styles.orderButton}
+            onPress={() => {
+              thanhtoan();
+            }}>
+          <Text style={styles.orderText}>Đặt hàng</Text>
+        </TouchableOpacity>
+        <CustomAlert
+            visible={alertVisible}
+            header={alertHeader}
+            message={alertMessage}
+            onClose={() => setAlertVisible(false)}
+        />
+
+      </SafeAreaView>
   );
 };
 
@@ -277,10 +471,6 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 18, fontWeight: 'bold' },
   totalValue: { fontSize: 18, fontWeight: 'bold' },
   orderButton: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: 'black',
     padding: 16,
     alignItems: 'center',

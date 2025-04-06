@@ -3,6 +3,7 @@ import tokenService from '../service/tokenService';
 import React, { useEffect, useState, useCallback } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import CustomAlertSecond from "../styles/CustomALertSecond.tsx";
 
 
 // Component MenuItem tái sử dụng
@@ -21,6 +22,23 @@ function MenuItem({ title, subtitle, iconSource, onPress }) {
 function ProfileScreen({ navigation }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+
+
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+    const [textYes, setTextYes] = useState('');
+    const [textNo, setTextNo] = useState('');
+
+    const showAlert = (header: string, message: string, textYesBtn: string, textNoBtn: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setTextNo(textNoBtn);
+        setTextYes(textYesBtn);
+        setAlertVisible(true);
+
+    };
+
 
     useFocusEffect(
         useCallback(() => {
@@ -80,7 +98,19 @@ function ProfileScreen({ navigation }) {
             <MenuItem title="Địa chỉ giao hàng" subtitle="Địa chỉ cá nhân" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("AddressScreen")} />
             <MenuItem title="Đánh giá của tôi" subtitle="Đã đánh giá sản phẩm" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("FavoriteScreen")} />
             <MenuItem title="Cài đặt" subtitle="Mật khẩu, FAQ, Chatting" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("SettingScreen")} />
-            <MenuItem title="Đăng xuất" subtitle="Đăng xuất tài khoản" iconSource={require("../Image/frame.png")} onPress={() => navigation.replace("ChoseScreen")} />
+            <MenuItem title="Đăng xuất" subtitle="Đăng xuất tài khoản" iconSource={require("../Image/frame.png")} onPress={() => showAlert('Thông báo','Đăng xuất khỏi tài khoản này?', 'Đăng xuất','Quay lại')} />
+            <CustomAlertSecond
+                onNo={()=> setAlertVisible(false)}
+                onYes={()=> navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'LoginScreen' }],
+                })}
+                buttonTextNo={textNo}
+                buttonTextYes={textYes}
+                visible={alertVisible}
+                header={alertHeader}
+                message={alertMessage}
+            />
         </View>
     );
 }

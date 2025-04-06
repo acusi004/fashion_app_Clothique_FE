@@ -11,9 +11,10 @@ import ItemSearchProducts from "./ItemSearchProducts.tsx";
 import FilterDrawer from "../styles/FilterDrawer";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
-import React, {useEffect, useState} from "react";
-import {getSearchHistory, saveSearchHistory} from "../service/searchHistoryService";
+import React, { useEffect, useState } from "react";
+import { getSearchHistory, saveSearchHistory } from "../service/searchHistoryService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 // @ts-ignore
 function HomeScreen({ navigation }) {
     const [userName, setUserName] = useState("Đang tải...");
@@ -26,9 +27,6 @@ function HomeScreen({ navigation }) {
     const SEARCH_HISTORY_KEY = 'searchHistory';
     const [searchHistory, setSearchHistory] = useState([]);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
-
-
-
 
     // Banner images
     const banner: any[] = [
@@ -208,21 +206,21 @@ function HomeScreen({ navigation }) {
                         />
                     )}
                 </View>
-            )   : isSearchFocused && searchHistory.length > 0 ? (
-                    <>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Lịch sử tìm kiếm:</Text>
-                            <TouchableOpacity onPress={handleClearHistory}>
-                                <Text style={{ color: 'red', fontSize: 14 }}>Xoá</Text>
-                            </TouchableOpacity>
-                        </View>
+            ) : isSearchFocused && searchHistory.length > 0 ? (
+                <>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Lịch sử tìm kiếm:</Text>
+                        <TouchableOpacity onPress={handleClearHistory}>
+                            <Text style={{ color: 'red', fontSize: 14 }}>Xoá</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                        {searchHistory.map((item, index) => (
-                            <TouchableOpacity key={index} onPress={() => setSearchQuery(item)}>
-                                <Text style={{ paddingVertical: 6, fontSize: 16 }}>{item}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </>
+                    {searchHistory.map((item, index) => (
+                        <TouchableOpacity key={index} onPress={() => setSearchQuery(item)}>
+                            <Text style={{ paddingVertical: 6, fontSize: 16 }}>{item}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </>
 
             ) : (
                 <>
@@ -349,16 +347,16 @@ const styles = StyleSheet.create({
         height: 24,
         resizeMode: "contain",
     },
-        fakeSearchBox: {
-            width: '100%',
-            height: 45,
-            borderRadius: 8,
-            backgroundColor: '#F6F6F6',
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-        },
+    fakeSearchBox: {
+        width: '100%',
+        height: 45,
+        borderRadius: 8,
+        backgroundColor: '#F6F6F6',
+        paddingHorizontal: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
     placeholderText: {
         color: '#999',
         fontSize: 16,

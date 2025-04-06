@@ -1,27 +1,29 @@
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // @ts-ignore
-const ChoseScreen = ({navigation}) => {
+const ChoseScreen = ({ navigation }) => {
     return (
-        <View style={styles.container}>
-            {/* Phần trên của màn hình */}
-            <View style={styles.buttonContainer}>
-                <Text style={styles.buttonText}>Kiến tạo{`\n`}Thời trang{"\n"}bằng{"\n"}Nghệ thuật</Text>
-            </View>
+        <SafeAreaView>
+            <View style={styles.container}>
+                {/* Phần trên của màn hình */}
+                <View style={styles.buttonContainer}>
+                    <Text style={styles.buttonText}>Kiến tạo{`\n`}Thời trang{"\n"}bằng{"\n"}Nghệ thuật</Text>
+                </View>
 
-            {/* Phần dưới cùng của màn hình */}
-            <View style={styles.footerContainer}>
-                {/* Nút Đăng kí điều hướng đến RegisterScreen */}
-                <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen")} style={styles.button}>
-                    <Text style={styles.buttonLabel}>Đăng kí</Text>
-                </TouchableOpacity>
-                {/* Nút Đăng nhập điều hướng đến LoginScreen */}
-                <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")} style={styles.buttonRight}>
-                    <Text style={styles.buttonLabelRight}>Đăng nhập</Text>
-                </TouchableOpacity>
+                {/* Phần dưới cùng của màn hình */}
+                <View style={styles.footerContainer}>
+                    {/* Nút Đăng kí điều hướng đến RegisterScreen */}
+                    <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen")} style={styles.button}>
+                        <Text style={styles.buttonLabel}>Đăng kí</Text>
+                    </TouchableOpacity>
+                    {/* Nút Đăng nhập điều hướng đến LoginScreen */}
+                    <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")} style={styles.buttonRight}>
+                        <Text style={styles.buttonLabelRight}>Đăng nhập</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     buttonText: {
-        marginTop: 400,
+        marginTop: 190,
         marginRight: 180,
         fontSize: 38,
         fontWeight: 'bold',

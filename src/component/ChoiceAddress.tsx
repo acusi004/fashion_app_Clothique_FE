@@ -248,8 +248,8 @@ const AddressScreen = () => {
           const isSelected = selectedAddressId === item._id;
           return (
             <TouchableOpacity
-              style={[styles.addressCard, isSelected && styles.selectedCard]}
-              onPress={() => handleEditAddress(item)}>
+              // style={[styles.addressCard, isSelected && styles.selectedCard]} onPress={() => handleEditAddress(item)}>
+              style={[styles.addressCard, isSelected && styles.selectedCard]}>
               <View style={styles.addressContent}>
                 <Text style={styles.name}>{item?.name || 'Không có tên'}</Text>
                 <Text style={styles.address}>
@@ -279,20 +279,20 @@ const AddressScreen = () => {
               </TouchableOpacity>
 
               {/* Nút xóa */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() => handleDeleteAddress(item._id)}>
                 <Text style={styles.deleteIcon}>🗑</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </TouchableOpacity>
           );
         }}
       />
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.addButton}
         onPress={() => setModalVisible(true)}>
         <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <TouchableOpacity
         style={styles.confirmButton}
         onPress={() => {
@@ -304,12 +304,12 @@ const AddressScreen = () => {
         <Text style={styles.confirmButtonText}>Xác nhận</Text>
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} animationType="slide">
+      {/* <Modal visible={modalVisible} animationType="slide">
         <AddressForm
           onSave={handleAddAddress}
           onClose={() => setModalVisible(false)}
         />
-      </Modal>
+      </Modal> */}
       {editModalVisible && selectedAddress && (
         <Modal visible={editModalVisible} animationType="slide">
           <EditAddressForm

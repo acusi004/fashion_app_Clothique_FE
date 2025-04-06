@@ -2,47 +2,81 @@ import axios from "axios";
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from 'react-native-image-picker';
 import tokenService from '../service/tokenService';
 
-const EditProfileScreen = ({route}) => {
+const EditProfileScreen = ({ route }) => {
     const navigation = useNavigation();
-    // const [name, setName] = useState("");
-    // const [avatar, setAvatar] = useState("");
-    const { user } = route.params || {}; 
+    const { user } = route.params || {};
 
     const [name, setName] = useState(user?.name || "");
-    const [avatar, setAvatar] = useState(user?.avatar || "");
+    const [avatar, setAvatar] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(user?.avatar || "");
+    const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
 
-    // Hàm gửi dữ liệu cập nhật
+    const handlePickImage = async () => {
+        ImagePicker.launchImageLibrary(
+            { mediaType: 'photo', quality: 0.7 },
+            (response) => {
+                if (response.didCancel) return;
+                if (response.errorCode) {
+                    Alert.alert("Lỗi", "Không thể chọn ảnh.");
+                    return;
+                }
+
+                const file = response.assets[0];
+                setAvatar({
+                    uri: file.uri,
+                    name: file.fileName || "avatar.jpg",
+                    type: file.type || "image/jpeg",
+                });
+                setAvatarPreview(file.uri);
+            }
+        );
+    };
+
     const handleSave = async () => {
         const token = await tokenService.getToken();
 
-        if (!name || !avatar) {
-            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin.");
+        if (!name) {
+            Alert.alert("Lỗi", "Vui lòng nhập họ tên.");
             return;
         }
 
+        if (!/^\d{10,15}$/.test(phoneNumber)) {
+            Alert.alert("Lỗi", "Số điện thoại không hợp lệ. Vui lòng nhập từ 10 đến 15 chữ số.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", name); // Dữ liệu họ tên
+        formData.append("phoneNumber", phoneNumber); // Dữ liệu số điện thoại
+        if (avatar) {
+            formData.append("avatar", avatar); // File ảnh
+        }
+
         try {
-            const response = await axios.put("http://10.0.2.2:5000/v1/profile", {
-                name,
-                avatar
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+            const response = await axios.put(
+                "http://10.0.2.2:5000/v1/profile",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "Authorization": `Bearer ${token}`
+                    }
                 }
-            });
+            );
 
             Alert.alert("Thành công", "Cập nhật thông tin thành công!");
             navigation.goBack();
         } catch (error) {
+            console.log("UPLOAD ERROR:", error);
             Alert.alert("Lỗi", error.response?.data?.message || "Không thể kết nối với máy chủ!");
         }
     };
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Image source={require("../Image/back.png")} style={styles.icon} />
@@ -51,32 +85,37 @@ const EditProfileScreen = ({route}) => {
                 <View style={{ width: 28 }} />
             </View>
 
-            {/* Ảnh đại diện */}
             <View style={styles.avatarContainer}>
-                <Image source={avatar ? { uri: avatar } : require("../Image/user-out.png")} style={styles.avatar} />
+                <TouchableOpacity onPress={handlePickImage}>
+                    <Image
+                        source={avatarPreview ? { uri: avatarPreview } : require("../Image/user-out.png")}
+                        style={styles.avatar}
+                    />
+                    <Text style={{ textAlign: 'center', color: 'blue', marginTop: 5 }}>Chọn ảnh</Text>
+                </TouchableOpacity>
             </View>
 
-            {/* Form chỉnh sửa */}
             <View style={styles.form}>
                 <Text style={styles.label}>Họ và tên</Text>
                 <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-                <Text style={styles.label}>Link ảnh đại diện</Text>
+                <Text style={styles.label}>Số điện thoại</Text>
                 <TextInput
                     style={styles.input}
-                    value={avatar}
-                    onChangeText={setAvatar}
-                    placeholder="Nhập link ảnh..."
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    keyboardType="phone-pad"
+                    maxLength={10}
                 />
             </View>
 
-            {/* Nút lưu */}
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
             </TouchableOpacity>
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {

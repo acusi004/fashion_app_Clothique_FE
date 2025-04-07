@@ -54,6 +54,7 @@ const AddressScreen = () => {
   };
 
 
+  // @ts-ignore
   const { selectedProducts, paymentMethod } = route.params || {};
 
 
@@ -131,7 +132,7 @@ const AddressScreen = () => {
     }
   };
 
-  
+
 
   // @ts-ignore
   const handleEditAddress = selected => {
@@ -146,7 +147,7 @@ const AddressScreen = () => {
     setTimeout(() => setEditModalVisible(true), 100);
   };
 
-  
+
   const [selectedAddressId, setSelectedAddressId] = useState(null);
 
   return (
@@ -222,7 +223,7 @@ const AddressScreen = () => {
           onClose={() => setModalVisible(false)}
         />
       </Modal> */}
-     
+
       <TouchableOpacity
           style={styles.confirmButton}
           onPress={() => {
@@ -240,7 +241,7 @@ const AddressScreen = () => {
 
 
       <Modal visible={modalVisible} animationType="slide">
-       
+
       </Modal>
       {editModalVisible && selectedAddress && (
         <Modal visible={editModalVisible} animationType="slide">

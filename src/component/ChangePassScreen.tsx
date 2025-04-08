@@ -37,13 +37,13 @@ function ChangePassScreen({ navigation }) {
 
     const handleSendEmail = async () => {
 
-        if (!email) return Alert.alert('Thông báo', 'Vui lòng nhập email');
+        if (!email) return showAlert('Thông báo', 'Vui lòng nhập email');
         setLoading(true);
         try {
             const res = await axios.post(API_URL, { email });
             showAlert('Thành công', res.data.message, true);
         } catch (error: any) {
-            Alert.alert(
+            showAlert(
                 'Lỗi',
                 error.response?.data?.message || error.response?.data?.error || `Gửi OTP thất bại: ${email}`
             );

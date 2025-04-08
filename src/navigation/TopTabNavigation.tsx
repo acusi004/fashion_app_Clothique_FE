@@ -4,15 +4,17 @@ import ShirtScreen from "../component/ShirtScreen.tsx";
 import TrousersScreen from "../component/TrousersScreen.tsx";
 import DressScreen from "../component/DressScreen.tsx";
 import AllProducts from "../component/AllProducts.tsx";
+import {useRoute} from "@react-navigation/native";
 
 function TopTabNavigation() {
 
     const Tab = createMaterialTopTabNavigator();
 
+
     return (
         <Tab.Navigator
-            screenOptions={{
 
+            screenOptions={{
                 tabBarStyle: {
                     backgroundColor: '#F6F6F6',
                     borderRadius: 25,

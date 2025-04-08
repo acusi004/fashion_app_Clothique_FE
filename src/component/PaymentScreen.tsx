@@ -17,6 +17,7 @@ import tokenService from '../service/tokenService';
 import CustomAlert from '../styles/CustomAlert.tsx';
 import InAppBrowser from "react-native-inappbrowser-reborn";
 import { Platform, Linking } from 'react-native';
+import CustomAlertSecond from "../styles/CustomALertSecond.tsx";
 const CheckoutScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const navigation = useNavigation();
@@ -27,7 +28,10 @@ const CheckoutScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertHeader, setAlertHeader] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-
+  const [textYes, setTextYes] = useState('');
+  const [textNo, setTextNo] = useState('');
+  const [momoUrl, setMomoUrl] = useState('');
+  const [confirmOpenBrowser, setConfirmOpenBrowser] = useState(false);
 
 
   const openWithChrome = async (url: string) => {
@@ -62,6 +66,15 @@ const CheckoutScreen = () => {
     setAlertVisible(true);
   };
 
+
+  const showAlert2 = (header: string, message: string, textYesBtn: string, textNoBtn: string) => {
+    setAlertHeader(header);
+    setAlertMessage(message);
+    setTextNo(textNoBtn);
+    setTextYes(textYesBtn);
+    setAlertVisible(true);
+
+  };
   // @ts-ignore
   const getFullImageUrl = imagePath => {
     return imagePath.startsWith('/uploads/')
@@ -90,7 +103,11 @@ const CheckoutScreen = () => {
     }
   };
 
-  const thanhtoan = async () => {
+  const ThanhToan = async () => {
+    if (!paymentMethod) {
+      return showAlert('Thông báo', 'Vui lòng chọn phương thức thanh toán');
+    }
+
     if (!address) {
       return showAlert('Thông báo', 'Hãy chọn địa chỉ giao hàng');
     }
@@ -123,26 +140,23 @@ const CheckoutScreen = () => {
       if (paymentMethod === 'MoMo') {
         if (data?.momoResult?.payUrl) {
           console.log('MoMo payUrl:', data.momoResult.payUrl);
-          try {
-            await openWithChrome(data.momoResult.payUrl);
-          } catch (err) {
-            console.error('Lỗi khi mở bằng Chrome:', err);
-            showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.');
-          }
+          setMomoUrl(data.momoResult.payUrl); // lưu url
+          setAlertHeader('Xác nhận thanh toán');
+          setAlertMessage('Bạn có muốn mở trình duyệt để thanh toán qua MoMo không?');
+          setConfirmOpenBrowser(true); // bật CustomAlertSecond
         } else {
           showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.');
         }
       }
 
 
-
-
       console.log('Response:', data);
     } catch (error) {
       console.error('Lỗi khi đặt hàng:', error);
-      Alert.alert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
+    showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -278,7 +292,7 @@ const CheckoutScreen = () => {
       </ScrollView>
 
       {/* Nút đặt hàng */}
-      <TouchableOpacity style={styles.orderButton} onPress={thanhtoan}>
+      <TouchableOpacity style={styles.orderButton} onPress={ThanhToan}>
         <Text style={styles.orderText}>Đặt hàng</Text>
       </TouchableOpacity>
 
@@ -289,6 +303,25 @@ const CheckoutScreen = () => {
         message={alertMessage}
         onClose={() => setAlertVisible(false)}
       />
+
+      <CustomAlertSecond
+          visible={confirmOpenBrowser}
+          header={alertHeader}
+          message={alertMessage}
+          buttonTextNo="Hủy"
+          buttonTextYes="Mở trình duyệt"
+          onNo={() => setConfirmOpenBrowser(false)}
+          onYes={async () => {
+            setConfirmOpenBrowser(false);
+            try {
+              await openWithChrome(momoUrl);
+            } catch (err) {
+              console.error('Lỗi khi mở bằng Chrome:', err);
+              showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.');
+            }
+          }}
+      />
+
     </SafeAreaView>
   );
 };

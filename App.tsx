@@ -29,6 +29,9 @@ import VerifyOtpScreen from "./src/component/VerifyOtpScreen.tsx";
 import SearchScreen from "./src/component/SearchScreen.tsx";
 import SettingScreen from "./src/component/SettingScreen.tsx";
 import ChatScreen from "./src/component/ChatScreen.tsx";
+import OrderScreen from "./src/component/OrderScreen.tsx";
+import OrderDetailTabs from "./src/navigation/OrderDetailTabs.tsx";
+import OrderHistory from "./src/component/OrderHistory.tsx";
 
 function App() {
 
@@ -131,8 +134,16 @@ function App() {
                     component={VerifyOtpScreen} />
                 <Stack.Screen
                     name="SearchScreen"
-                    options={{ headerShown: false }}
+                    options={{
+                        headerShown: false
+                    }}
                     component={SearchScreen} />
+                <Stack.Screen
+                    name="OrderScreen"
+                    options={{
+                        headerTitle:'Đơn hàng',
+                        headerTitleAlign:'center' }}
+                    component={OrderScreen} />
                 <Stack.Screen
                     name="SettingScreen"
                     options={{ headerShown: false }}
@@ -141,6 +152,19 @@ function App() {
                     name="ChatScreen"
                     options={{ headerShown: false }}
                     component={ChatScreen} />
+                <Stack.Screen
+                    name="OrderDetailTabs"
+                    options={{
+                        headerTitle: 'Đơn hàng',
+                        headerTitleAlign: 'center'}}
+                    component={OrderDetailTabs} />
+
+                <Stack.Screen
+                    name="OrderHistory"
+                    options={{
+                        headerTitle: 'Lịch sử mua hàng',
+                        headerTitleAlign: 'center'}}
+                    component={OrderHistory} />
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

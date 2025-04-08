@@ -21,6 +21,21 @@ function NotificationScreen() {
             image: "https://cdn0199.cdn4s.com/media/o%20ph%C3%B4ng%20c%E1%BB%99c%20tay/275543008_445549064014327_1189472481875048791_n.jpg",
             isNew: false,
         },
+        {
+            id: "3",
+            title: "Your order #123456789 has been canceled",
+            description:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis pretium et in arcu adipiscing nec.",
+            image: "https://cdn0199.cdn4s.com/media/o%20ph%C3%B4ng%20c%E1%BB%99c%20tay/275543008_445549064014327_1189472481875048791_n.jpg",
+            isNew: false,
+        }, {
+            id: "4",
+            title: "Your order #123456789 has been canceled",
+            description:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis pretium et in arcu adipiscing nec.",
+            image: "https://cdn0199.cdn4s.com/media/o%20ph%C3%B4ng%20c%E1%BB%99c%20tay/275543008_445549064014327_1189472481875048791_n.jpg",
+            isNew: false,
+        },
     ];
 
     return (

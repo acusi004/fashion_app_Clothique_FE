@@ -1,22 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import {orderLabelToTab} from "../styles/orderTabMapping.ts";
+import { orderLabelToTab } from "../styles/orderTabMapping.ts";
+import {fetchOrders} from "../service/OrderService";
+
+
 
 // @ts-ignore
-const OrderScreen = ({navigation}) => {
-    const orderStatus = [
+const OrderScreen = ({ navigation }) => {
+    const [orderStatus, setOrderStatus] = useState([
         { label: 'Chờ xác nhận', icon: require('../Image/wallet.png'), count: 0 },
         { label: 'Đang chuẩn bị hàng', icon: require('../Image/package-box.png'), count: 0 },
-        { label: 'Chờ giao hàng', icon: require('../Image/delivery-truck.png'), count: 1 },
-        { label: 'Đánh giá', icon: require('../Image/star-icon.png'), count: 3 },
-    ];
+        { label: 'Chờ giao hàng', icon: require('../Image/delivery-truck.png'), count: 0 }
+    ]);
+    const [orders, setOrders] = useState([]);
+
+    useEffect(() => {
+        const loadOrders = async () => {
+            try {
+                // Lấy dữ liệu đơn hàng
+                const data = await fetchOrders();
+                console.log("Dữ liệu đơn hàng:", data); // Kiểm tra dữ liệu trả về từ API
+                setOrders(data);
+                updateOrderStatus(data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        loadOrders();
+    }, []);
+
+    // @ts-ignore
+    const updateOrderStatus = (orders) => {
+        const updatedOrderStatus = [...orderStatus];
+
+        // Đếm số lượng đơn hàng theo trạng thái
+
+        updatedOrderStatus[0].count = orders.filter(order => order.orderStatus === 'Pending').length;
+        updatedOrderStatus[1].count = orders.filter(order => order.orderStatus === 'Processing').length;
+        updatedOrderStatus[2].count = orders.filter(order => order.orderStatus === 'Shipped').length;
+
+        // Cập nhật lại orderStatus trong state
+        setOrderStatus(updatedOrderStatus);
+    };
 
     return (
         <View style={{ backgroundColor: '#fff' }}>
             {/* PHẦN TIÊU ĐỀ */}
             <View style={styles.header}>
                 <Text style={styles.headerLeft}>Đơn mua</Text>
-                <TouchableOpacity onPress={()=> navigation.navigate('OrderHistory')}>
+                <TouchableOpacity onPress={() => navigation.navigate('OrderHistory')}>
                     <Text style={styles.headerRight}>Xem lịch sử mua hàng &gt;</Text>
                 </TouchableOpacity>
             </View>
@@ -108,5 +141,4 @@ const styles = StyleSheet.create({
         color: '#000',
         textAlign: 'center',
     },
-
 });

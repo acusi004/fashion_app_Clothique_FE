@@ -32,6 +32,13 @@ import ChatScreen from "./src/component/ChatScreen.tsx";
 import OrderScreen from "./src/component/OrderScreen.tsx";
 import OrderDetailTabs from "./src/navigation/OrderDetailTabs.tsx";
 import OrderHistory from "./src/component/OrderHistory.tsx";
+import ChoXacNhan from "./src/component/OrderScreens/ChoXacNhan.tsx";
+import ChoGiaoHang from "./src/component/OrderScreens/ChoGiaoHang.tsx";
+import ChoThanhToan from "./src/component/OrderScreens/ChoThanhToan.tsx";
+import DangChuanBiHang from "./src/component/OrderScreens/DangChuanBiHang.tsx";
+import DaHuy from "./src/component/OrderScreens/DaHuy.tsx";
+import DaGiaoHang from "./src/component/OrderScreens/DaGiaoHang.tsx";
+import RatingScreen from "./src/component/RatingScreen.tsx";
 
 function App() {
 
@@ -175,11 +182,40 @@ function App() {
                     }}
 
                 />
-
                 <Stack.Screen
                     name="SuccessScreen"
                     options={{ headerShown: false }}
                     component={SuccessScreen} />
+
+                <Stack.Screen
+                    name="DaHuy"
+                    options={{ headerShown: false }}
+                    component={DaHuy} />
+                <Stack.Screen
+                    name="DangChuanBiHang"
+                    options={{ headerShown: false }}
+                    component={DangChuanBiHang} />
+                <Stack.Screen
+                    name="ChoThanhToan"
+                    options={{ headerShown: false }}
+                    component={ChoThanhToan} />
+                <Stack.Screen
+                    name="ChoGiaoHang"
+                    options={{ headerShown: false }}
+                    component={ChoGiaoHang} />
+                <Stack.Screen
+                    name="ChoXacNhan"
+                    options={{ headerShown: false }}
+                    component={ChoXacNhan} />
+                <Stack.Screen
+                    name="DaGiaoHang"
+                    options={{ headerShown: false }}
+                    component={DaGiaoHang} />
+                <Stack.Screen
+                    name="RatingScreen"
+                    options={{ headerShown: false }}
+                    component={RatingScreen} />
+
 
             </Stack.Navigator>
         </NavigationContainer>

@@ -148,6 +148,12 @@ const CheckoutScreen = () => {
           showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.');
         }
       }
+      if (paymentMethod === 'COD') {
+        // Thông báo thanh toán thành công
+        showAlert('Thông báo', 'Thanh toán thành công!');
+        // Điều hướng đến màn hình HTScreen
+        navigation.navigate('HTScreen');
+      }
 
 
       console.log('Response:', data);

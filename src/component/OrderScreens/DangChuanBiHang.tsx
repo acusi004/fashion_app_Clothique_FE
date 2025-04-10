@@ -43,7 +43,9 @@ function DangChuanBiHang(){
         );
     }
 
+    const handleMove=()=>{
 
+    }
     return(
         <View style={{flex:1}}>
             <View style={{ flex: 1, padding: 12 }}>
@@ -51,7 +53,7 @@ function DangChuanBiHang(){
                     data={orders}
                     // @ts-ignore
                     keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => <OrderCard order={item} />}
+                    renderItem={({ item }) => <OrderCard onCancelOrder={handleMove()} order={item} />}
                     ListEmptyComponent={<EmptyOrder/>}
                     refreshControl={
                         <RefreshControl

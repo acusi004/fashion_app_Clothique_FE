@@ -39,6 +39,8 @@ import DangChuanBiHang from "./src/component/OrderScreens/DangChuanBiHang.tsx";
 import DaHuy from "./src/component/OrderScreens/DaHuy.tsx";
 import DaGiaoHang from "./src/component/OrderScreens/DaGiaoHang.tsx";
 import RatingScreen from "./src/component/RatingScreen.tsx";
+import FailedScreen from "./src/component/FailedScreen.tsx";
+import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.tsx";
 
 function App() {
 
@@ -215,6 +217,14 @@ function App() {
                     name="RatingScreen"
                     options={{ headerShown: false }}
                     component={RatingScreen} />
+                <Stack.Screen
+                    name="FailedScreen"
+                    options={{ headerShown: false }}
+                    component={FailedScreen} />
+                <Stack.Screen
+                    name="DetailOrderSCreen"
+                    options={{ headerShown: false }}
+                    component={DetailOrderScreen} />
 
 
             </Stack.Navigator>

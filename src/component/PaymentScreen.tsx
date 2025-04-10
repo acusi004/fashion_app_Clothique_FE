@@ -18,6 +18,7 @@ import CustomAlert from '../styles/CustomAlert.tsx';
 import InAppBrowser from "react-native-inappbrowser-reborn";
 import { Platform, Linking } from 'react-native';
 import CustomAlertSecond from "../styles/CustomALertSecond.tsx";
+import FailedScreen from "./FailedScreen.tsx";
 const CheckoutScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const navigation = useNavigation();
@@ -32,6 +33,7 @@ const CheckoutScreen = () => {
   const [textNo, setTextNo] = useState('');
   const [momoUrl, setMomoUrl] = useState('');
   const [confirmOpenBrowser, setConfirmOpenBrowser] = useState(false);
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false); // Thêm trạng thái để kiểm tra thanh toán thành công
 
 
   const openWithChrome = async (url: string) => {
@@ -67,14 +69,7 @@ const CheckoutScreen = () => {
   };
 
 
-  const showAlert2 = (header: string, message: string, textYesBtn: string, textNoBtn: string) => {
-    setAlertHeader(header);
-    setAlertMessage(message);
-    setTextNo(textNoBtn);
-    setTextYes(textYesBtn);
-    setAlertVisible(true);
 
-  };
   // @ts-ignore
   const getFullImageUrl = imagePath => {
     return imagePath.startsWith('/uploads/')
@@ -139,29 +134,29 @@ const CheckoutScreen = () => {
 
       if (paymentMethod === 'MoMo') {
         if (data?.momoResult?.payUrl) {
-          console.log('MoMo payUrl:', data.momoResult.payUrl);
-          setMomoUrl(data.momoResult.payUrl); // lưu url
+          setMomoUrl(data.momoResult.payUrl);
           setAlertHeader('Xác nhận thanh toán');
           setAlertMessage('Bạn có muốn mở trình duyệt để thanh toán qua MoMo không?');
-          setConfirmOpenBrowser(true); // bật CustomAlertSecond
+          setConfirmOpenBrowser(true);
         } else {
           showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.');
         }
       }
       if (paymentMethod === 'COD') {
-        // Thông báo thanh toán thành công
+        setIsPaymentSuccess(true); // Đặt trạng thái thanh toán thành công
         showAlert('Thông báo', 'Thanh toán thành công!');
-        // Điều hướng đến màn hình HTScreen
-        navigation.navigate('HTScreen');
+        navigation.reset({
+          index: 0, // Màn hình đầu tiên sau khi reset
+          routes: [{ name: 'HTScreen' }], // Điều hướng tới HTScreen
+        });
       }
 
-
-      console.log('Response:', data);
     } catch (error) {
-      console.error('Lỗi khi đặt hàng:', error);
-    showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
+
+      showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
     }
   };
+
 
 
   return (
@@ -316,17 +311,27 @@ const CheckoutScreen = () => {
           message={alertMessage}
           buttonTextNo="Hủy"
           buttonTextYes="Mở trình duyệt"
-          onNo={() => setConfirmOpenBrowser(false)}
+          onNo={() =>  navigation.reset({
+            index: 0, // Màn hình đầu tiên sau khi reset
+            routes: [{ name: 'FailedScreen' }], // Điều hướng tới HTScreen
+          })}
           onYes={async () => {
             setConfirmOpenBrowser(false);
             try {
               await openWithChrome(momoUrl);
+              // Sau khi thanh toán xong, bạn có thể kiểm tra trạng thái thanh toán và điều hướng:
+              if (isPaymentSuccess) {
+                navigation.navigate('HTScreen'); // Điều hướng sau khi thanh toán thành công
+              } else {
+                showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!');
+              }
             } catch (err) {
               console.error('Lỗi khi mở bằng Chrome:', err);
               showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.');
             }
           }}
       />
+
 
     </SafeAreaView>
   );

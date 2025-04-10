@@ -44,3 +44,39 @@ export const fetchOrders = async () => {
     }
 };
 
+export const getUnpaidOrders = async () => {
+    try {
+        const token = await tokenService.getToken();
+        const response = await axios.get(`${BASE_URL}/getAllOrders`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // Log toàn bộ dữ liệu trả về để kiểm tra
+        console.log('Dữ liệu trả về từ API:', response.data);
+
+        // Kiểm tra và trích xuất orders nếu có
+        const orders = response.data.orders || []; // Truy cập trường orders nếu có
+        console.log('Danh sách orders sau khi trích xuất:', orders);
+
+        if (!Array.isArray(orders)) {
+            console.error('Dữ liệu trả về không phải mảng:', orders);
+            throw new Error('Dữ liệu trả về không phải mảng');
+        }
+
+        const unpaidOrders = orders.filter(order =>
+            order.paymentStatus === 'Pending' &&
+            order.orderItems.some(item => item.orderStatus === 'Pending')
+        );
+
+        return unpaidOrders;
+    } catch (error) {
+        console.error('Lỗi khi lấy đơn hàng:', error.message || error);
+        throw error;
+    }
+};
+
+
+
+

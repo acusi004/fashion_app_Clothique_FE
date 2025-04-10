@@ -1,15 +1,72 @@
-import React, { useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {View, Text, Image, StyleSheet, TouchableOpacity, Alert, ToastAndroid} from 'react-native';
+import axios from 'axios';
+import {getToken} from "../../service/categoryService";
+import CustomAlert from "../../styles/CustomAlert.tsx";
+import CustomAlertSecond from "../../styles/CustomALertSecond.tsx";
 
 // @ts-ignore
-const OrderCard = ({ order }) => {
-    const product = order.orderItems.reverse()[0];// hiển thị sản phẩm đầu tiên
+const OrderCard = ({ order, onCancelOrder }) => {
+    const product = order.orderItems.reverse()[0]; // hiển thị sản phẩm đầu tiên
     const variant = product.variantId;
     const productInfo = product.productId;
 
-    // Đảm bảo lấy đúng ảnh của sản phẩm
     const productImage = variant.images?.[0] || '';
 
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertHeader, setAlertHeader] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
+    const [textYes, setTextYes] = useState('');
+    const [textNo, setTextNo] = useState('');
+
+    // @ts-ignore
+    const showAlert = (header, message) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+    };
+
+    const showAlert2 = (header: string, message: string, textYesBtn: string, textNoBtn: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setTextNo(textNoBtn);
+        setTextYes(textYesBtn);
+        setAlertVisible(true);
+
+    };
+
+
+
+    const handleCancelOrder = async () => {
+        try {
+            // Lấy token từ service
+            const token = await getToken(); // Tạo hàm lấy token nếu cần
+
+            if (!token) {
+              showAlert("Lỗi", "Bạn cần đăng nhập để thực hiện hành động này!");
+                return;
+            }
+
+            const response = await axios.post(
+                'http://10.0.2.2:5000/v1/order/cancelOrder',
+                { orderId: order._id },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Gửi token trong header
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                onCancelOrder(order._id);
+                ToastAndroid.show('Hủy đơn hàng thành công !', ToastAndroid.SHORT);
+                setAlertVisible(false)
+            }
+        } catch (error) {
+
+            ToastAndroid.show('Đã xảy ra lỗi khi hủy đơn hàng.', ToastAndroid.SHORT);
+        }
+    };
 
     return (
         <View style={styles.card}>
@@ -18,37 +75,43 @@ const OrderCard = ({ order }) => {
                 <Text style={styles.favorite}>Yêu thích+</Text>
                 <Text style={styles.shopName}>Clothique</Text>
                 <Text style={styles.status}>
-                    {
-                        (() => {
-                            let newStatus = "";
-                            let history = "";
+                    {(() => {
+                        let newStatus = '';
+                        let history = '';
 
+                        // Kiểm tra trạng thái COD chưa thanh toán
+                        if (order.paymentMethod === 'COD' && order.paymentStatus === 'Pending') {
+                            newStatus = 'Chưa thanh toán'; // Hiển thị "Chưa thanh toán" nếu paymentMethod là COD và paymentStatus là Pending
+                            history = 'Chờ thanh toán khi nhận hàng';
+                        } else {
+                            // Các trạng thái đơn hàng khác
                             switch (order.orderStatus) {
-                                case "Pending":
-                                    newStatus = "Đang xử lý";
-                                    history = "Đang chuẩn bị hàng";
+                                case 'Pending':
+                                    newStatus = 'Đang xử lý';
+                                    history = 'Đang chuẩn bị hàng';
                                     break;
-                                case "Processing":
-                                    newStatus = "Đơn hàng đang được chuẩn bị";
-                                    history = "Đang giao hàng";
+                                case 'Processing':
+                                    newStatus = 'Đơn hàng đang được chuẩn bị';
+                                    history = 'Đang giao hàng';
                                     break;
-                                case "Shipped":
-                                    newStatus = "Đang giao hàng";
-                                    history = "Đang giao hàng";
+                                case 'Shipped':
+                                    newStatus = 'Đang giao hàng';
+                                    history = 'Đang giao hàng';
                                     break;
-                                case "Delivered":
-                                    newStatus = "Đã giao";
-                                    history = "Đã giao hàng";
+                                case 'Delivered':
+                                    newStatus = 'Đã giao';
+                                    history = 'Đã giao hàng';
                                     break;
                                 default:
-                                    newStatus = "Trạng thái không xác định";
-                                    history = "Lỗi trạng thái";
+                                    newStatus = 'Trạng thái không xác định';
+                                    history = 'Lỗi trạng thái';
                             }
+                        }
 
-                            return newStatus;
-                        })()
-                    }
+                        return newStatus;
+                    })()}
                 </Text>
+
             </View>
 
             {/* Product */}
@@ -98,6 +161,32 @@ const OrderCard = ({ order }) => {
                     </View>
                 </View>
             )}
+            {order.orderStatus === 'Pending' && (
+                <View style={styles.footer}>
+                    <View style={styles.buttons}>
+                        <TouchableOpacity
+                            style={styles.btnPrimary}
+                            onPress={()=> showAlert2("Thông báo", "Bạn có chắc chắn muốn hủy đơn hàng này không?", "Đồng ý", "Quay lại")
+                        }>
+                            <Text style={{ color: '#B35A00' }}>Hủy đơn hàng</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <CustomAlertSecond
+                        onNo={()=> setAlertVisible(false)}
+                        onYes={()=> handleCancelOrder()}
+                        buttonTextNo={textNo}
+                        buttonTextYes={textYes}
+                        visible={alertVisible}
+                        header={alertHeader}
+                        message={alertMessage}
+                    />
+                </View>
+            )}
+
+
+
+
         </View>
     );
 };

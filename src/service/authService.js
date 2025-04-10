@@ -19,7 +19,7 @@ const loginUser = async (email, password) => {
 
         return response.data;
     } catch (error) {
-        console.error("❌ Lỗi đăng nhập:", error.response?.data || error.message);
+
         throw error;
     }
 };

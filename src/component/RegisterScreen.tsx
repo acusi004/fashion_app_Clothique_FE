@@ -109,6 +109,8 @@ function RegisterScreen({navigation}) {
         try {
             await RegisterService.register({ email, password });
             await AsyncStorage.setItem('hasLoggedInBefore', 'true');
+
+            showAlert("Thành công", "Đăng ký thành công!", null);
             setTimeout(() => {
                 setLoading(false);
                 navigation.navigate("LoginScreen");

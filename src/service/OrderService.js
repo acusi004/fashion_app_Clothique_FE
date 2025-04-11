@@ -65,12 +65,14 @@ export const getUnpaidOrders = async () => {
             throw new Error('Dữ liệu trả về không phải mảng');
         }
 
-        const unpaidOrders = orders.filter(order =>
-            order.paymentStatus === 'Pending' &&
-            order.orderItems.some(item => item.orderStatus === 'Pending')
+        // ✅ Lọc cả hai điều kiện: chưa thanh toán và trạng thái chờ xử lý
+        const filtered = response.data.orders.filter(
+            (order: any) =>
+                order.paymentStatus === 'Pending' && order.orderStatus === 'Pending'
         );
 
-        return unpaidOrders;
+        return filtered;
+
     } catch (error) {
         console.error('Lỗi khi lấy đơn hàng:', error.message || error);
         throw error;

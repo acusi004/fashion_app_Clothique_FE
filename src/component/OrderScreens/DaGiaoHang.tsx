@@ -30,6 +30,9 @@ function DaGiaoHang(){
             setLoading(false);
         }
     };
+
+
+
     useEffect(() => {
         loadOrders();
     }, []);
@@ -51,7 +54,7 @@ function DaGiaoHang(){
                     data={orders}
                     // @ts-ignore
                     keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => <OrderCard onCancelOrder={handleMove()} order={item} />}
+                    renderItem={({ item }) => <OrderCard  onCancelOrder={handleMove()} order={item} />}
                     ListEmptyComponent={<EmptyOrder/>}
                     refreshControl={
                         <RefreshControl

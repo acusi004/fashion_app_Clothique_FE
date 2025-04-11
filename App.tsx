@@ -222,8 +222,10 @@ function App() {
                     options={{ headerShown: false }}
                     component={FailedScreen} />
                 <Stack.Screen
-                    name="DetailOrderSCreen"
-                    options={{ headerShown: false }}
+                    name="DetailOrderScreen"
+                    options={{
+                        headerTitle:'chi tiet don hang'
+                    }}
                     component={DetailOrderScreen} />
 
 

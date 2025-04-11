@@ -47,6 +47,10 @@ function ChoXacNhan() {
         }
     };
 
+
+    const handleMove=()=>{
+
+    }
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -61,7 +65,7 @@ function ChoXacNhan() {
                 <FlatList
                     data={orders}
                     keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => <OrderCard onCancelOrder={handleCancelOrder} order={item} />}
+                    renderItem={({ item }) => <OrderCard  onCancelOrder={handleCancelOrder} order={item} />}
                     ListEmptyComponent={<EmptyOrder />}
                     refreshControl={
                         <RefreshControl

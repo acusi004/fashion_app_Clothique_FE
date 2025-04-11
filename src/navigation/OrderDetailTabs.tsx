@@ -12,7 +12,8 @@ import DaGiaoHang from "../component/OrderScreens/DaGiaoHang.tsx";
 
 const Tab = createMaterialTopTabNavigator();
 
-const OrderDetailTabs = () => {
+// @ts-ignore
+const OrderDetailTabs = ({navigation}) => {
 
 
     const route = useRoute();

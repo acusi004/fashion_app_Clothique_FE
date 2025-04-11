@@ -152,6 +152,9 @@ const SearchScreen = ({ navigation }) => {
                       )}
                   />
               )}
+
+
+
           </View>
 
     );

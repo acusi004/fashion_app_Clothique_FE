@@ -7,11 +7,21 @@ const ItemSearchProducts = ({ item, onPress }) => {
 
     const product = item;
 
-    const getImage = ()=>{
+    const getImage = () => {
         const baseUrl = 'http://10.0.2.2:5000';
-        return `${baseUrl}${product.variants[0]?.images[0]}`;
-    }
+        const imagePath = product?.variants?.[0]?.images?.[0];
+
+        if (imagePath) {
+            return `${baseUrl}${imagePath}`;
+        }
+
+        // Nếu không có ảnh, có thể trả về ảnh mặc định
+        return 'https://via.placeholder.com/80';
+    };
+
     useEffect(() => {
+        console.log( product)
+
       //   ToastAndroid.show(`Data: ${product.variants[0]?.price.toLocaleString()} VND`, ToastAndroid.SHORT);
     }, []);
 
@@ -21,7 +31,7 @@ const ItemSearchProducts = ({ item, onPress }) => {
             onPress={() => onPress(item)}
         >
             <Image
-                 source={{ uri: getImage() }}
+                 source={{ uri: getImage() || require('../Image/image1.png') }}
                 style={styles.image}
             />
             <View style={styles.textContainer}>

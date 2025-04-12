@@ -52,6 +52,7 @@ function DaHuy(){
             <View style={{ flex: 1, padding: 12 }}>
                 <FlatList
                     data={orders}
+                    inverted
                     // @ts-ignore
                     keyExtractor={(item) => item._id}
                     renderItem={({ item }) => <OrderCard onCancelOrder={handleMove()} order={item} />}

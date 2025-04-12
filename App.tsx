@@ -31,7 +31,6 @@ import SettingScreen from "./src/component/SettingScreen.tsx";
 import ChatScreen from "./src/component/ChatScreen.tsx";
 import OrderScreen from "./src/component/OrderScreen.tsx";
 import OrderDetailTabs from "./src/navigation/OrderDetailTabs.tsx";
-import OrderHistory from "./src/component/OrderHistory.tsx";
 import ChoXacNhan from "./src/component/OrderScreens/ChoXacNhan.tsx";
 import ChoGiaoHang from "./src/component/OrderScreens/ChoGiaoHang.tsx";
 import ChoThanhToan from "./src/component/OrderScreens/ChoThanhToan.tsx";
@@ -41,6 +40,7 @@ import DaGiaoHang from "./src/component/OrderScreens/DaGiaoHang.tsx";
 import RatingScreen from "./src/component/RatingScreen.tsx";
 import FailedScreen from "./src/component/FailedScreen.tsx";
 import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.tsx";
+import OrderRating from "./src/component/OrderRating.tsx";
 
 function App() {
 
@@ -169,11 +169,11 @@ function App() {
                     component={OrderDetailTabs} />
 
                 <Stack.Screen
-                    name="OrderHistory"
+                    name="OrderRating"
                     options={{
-                        headerTitle: 'Lịch sử mua hàng',
+                        headerTitle: 'Đánh giá sản phẩm',
                         headerTitleAlign: 'center'}}
-                    component={OrderHistory} />
+                    component={OrderRating} />
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}

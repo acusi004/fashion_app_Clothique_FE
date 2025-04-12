@@ -57,6 +57,7 @@ function ChoThanhToan() {
         <View style={{ flex: 1 }}>
             <FlatList
                 data={orders}
+
                 keyExtractor={(item) => item._id}
                 renderItem={({ item }) => <OrderCard onCancelOrder={handleCancelOrder} order={item} />}
                 ListEmptyComponent={<EmptyOrder />}

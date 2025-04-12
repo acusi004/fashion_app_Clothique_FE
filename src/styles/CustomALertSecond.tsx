@@ -4,6 +4,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 // @ts-ignore
 const CustomAlertSecond = ({ visible, onYes,onNo, header, message, buttonTextYes ,buttonTextNo}) => {
+    if (!visible) return null; // tránh load modal khi không cần
     return (
         <Modal transparent visible={visible} animationType="fade">
             <View style={styles.overlay}>

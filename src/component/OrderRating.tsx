@@ -1,10 +1,10 @@
 import {Text, View} from "react-native";
 
-function OrderHistory(){
+function OrderRating(){
     return(
         <View>
             <Text>history</Text>
         </View>
     )
 }
-export default OrderHistory;
+export default OrderRating;

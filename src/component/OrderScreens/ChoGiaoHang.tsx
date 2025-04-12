@@ -50,6 +50,7 @@ function ChoGiaoHang(){
         <View style={{flex:1}}>
             <View style={{ flex: 1, padding: 12 }}>
                 <FlatList
+
                     data={orders}
                     // @ts-ignore
                     keyExtractor={(item) => item._id}

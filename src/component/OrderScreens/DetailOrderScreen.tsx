@@ -82,26 +82,62 @@ const DetailOrderScreen = ({route}) => {
 
         <View style={styles.section}>
           <Text style={styles.label}>Sản phẩm</Text>
-          <View style={styles.productRow}>
-            <Image
-                source={{uri: `http://10.0.2.2:5000${variant.images[0]}`}}
-                style={styles.image}
-            />
-            <View style={styles.info}>
-              <Text>{productInfo.name}</Text>
-              <Text>
-                {variant.size} - {variant.color}
-              </Text>
-              <Text>Số lượng: {product.quantity}</Text>
-              <Text style={styles.price}>₫{variant.price.toLocaleString()}</Text>
-            </View>
-          </View>
+
+          {order.orderItems.map((item, index) => (
+              <View key={index}>
+                <View style={styles.productRow}>
+                  <Image
+                      source={{ uri: `http://10.0.2.2:5000${item.variantId.images[0]}` }}
+                      style={styles.image}
+                  />
+                  <View style={styles.info}>
+                    <Text>{item.productId.name}</Text>
+                    <Text>
+                      {item.variantId.size} - {item.variantId.color}
+                    </Text>
+                    <Text>Số lượng: {item.quantity}</Text>
+                    <Text style={styles.price}>
+                      ₫{item.variantId.price.toLocaleString()}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Đường kẻ sau mỗi sản phẩm, trừ sản phẩm cuối */}
+                {index < order.orderItems.length - 1 && (
+                    <View style={styles.divider} />
+                )}
+              </View>
+          ))}
+
         </View>
 
+
         <View style={styles.footer}>
-          <Text style={styles.total}>
-            Tổng tiền: ₫{order.totalAmount.toLocaleString()}
-          </Text>
+          <View style={styles.section}>
+            <Text style={styles.label}>Chi tiết giá tiền</Text>
+
+            {order.orderItems.map((item, index) => (
+                <View key={index} style={styles.priceRow}>
+                  <Text style={{ flex: 1 }}>
+                    {item.productId.name} ({item.variantId.size}/{item.variantId.color}) x {item.quantity}
+                  </Text>
+                  <Text>
+                    ₫{(item.variantId.price * item.quantity).toLocaleString()}
+                  </Text>
+                </View>
+            ))}
+
+            <View style={styles.priceRow}>
+              <Text style={{ flex: 1, fontWeight: 'bold' }}>Phí vận chuyển</Text>
+              <Text>₫{order.shippingFee.toLocaleString()}</Text>
+            </View>
+
+            <View style={[styles.priceRow, { borderTopWidth: 1, borderColor: '#ccc', paddingTop: 6 }]}>
+              <Text style={{ flex: 1, fontWeight: 'bold' }}>Tổng cộng</Text>
+              <Text style={{ fontWeight: 'bold' }}>₫{order.totalAmount.toLocaleString()}</Text>
+            </View>
+          </View>
+
 
           {order.history && order.history.length > 0 && (
               <View style={styles.section}>
@@ -224,6 +260,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 4,
   },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
+
+
 
 });
 

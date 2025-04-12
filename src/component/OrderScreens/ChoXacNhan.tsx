@@ -64,6 +64,7 @@ function ChoXacNhan() {
             <View style={{ flex: 1, padding: 12 }}>
                 <FlatList
                     data={orders}
+
                     keyExtractor={(item) => item._id}
                     renderItem={({ item }) => <OrderCard  onCancelOrder={handleCancelOrder} order={item} />}
                     ListEmptyComponent={<EmptyOrder />}

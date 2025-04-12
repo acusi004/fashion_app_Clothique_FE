@@ -49,8 +49,8 @@ const OrderScreen = ({ navigation }) => {
             {/* PHẦN TIÊU ĐỀ */}
             <View style={styles.header}>
                 <Text style={styles.headerLeft}>Đơn mua</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('OrderHistory')}>
-                    <Text style={styles.headerRight}>Xem lịch sử mua hàng &gt;</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('OrderRating')}>
+                    <Text style={styles.headerRight}>Đánh giá sản phẩm &gt;</Text>
                 </TouchableOpacity>
             </View>
 

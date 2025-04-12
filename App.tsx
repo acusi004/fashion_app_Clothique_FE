@@ -40,7 +40,8 @@ import DaGiaoHang from "./src/component/OrderScreens/DaGiaoHang.tsx";
 import RatingScreen from "./src/component/RatingScreen.tsx";
 import FailedScreen from "./src/component/FailedScreen.tsx";
 import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.tsx";
-import OrderRating from "./src/component/OrderRating.tsx";
+import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
+import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
 
 function App() {
 
@@ -227,6 +228,12 @@ function App() {
                         headerTitle:'chi tiet don hang'
                     }}
                     component={DetailOrderScreen} />
+                <Stack.Screen
+                    name="OrderRated"
+                    options={{
+                        headerTitle:'Sản phẩm đã đánh giá'
+                    }}
+                    component={OrderRated} />
 
 
             </Stack.Navigator>

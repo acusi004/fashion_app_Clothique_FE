@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 // @ts-ignore
-const DetailOrderScreen = ({route}) => {
+const DetailOrderScreen = ({route, navigation}) => {
   const {order} = route.params;
 
   const product = order.orderItems[0];
@@ -164,8 +164,13 @@ const DetailOrderScreen = ({route}) => {
       </ScrollView>
       {order.orderStatus === 'Delivered' && (
           <View style={styles.buttons}>
-            <TouchableOpacity style={styles.btnOutline}>
-              <Text>Trả hàng/Hoàn tiền</Text>
+            <TouchableOpacity style={styles.btnOutline}  onPress={() =>
+                navigation.navigate('OrderRating', {
+                  orderId: order._id,
+                  orderItems: order.orderItems, // ✅ Truyền toàn bộ danh sách sản phẩm
+                })
+            }>
+              <Text>Đánh Giá</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnPrimary}>
               <Text style={{ color: '#B35A00' }}>Đã nhận được hàng</Text>

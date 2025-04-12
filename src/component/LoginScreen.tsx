@@ -45,15 +45,30 @@ function LoginScreen({navigation}) {
                 // Gọi hàm loginUser từ authService
                 const result = await authService.loginUser(username, password);
 
+                console.log(result)
+
+
+                // ✅ Lưu userId trực tiếp từ kết quả trả về
+                if (result?._id) {
+                    await AsyncStorage.setItem('userId', result._id);
+                    console.log('✅ Đã lưu userId:', result._id);
+                } else {
+                    console.warn('⚠️ Không tìm thấy userId trong kết quả login');
+                }
+
+
                 // ✅ Lưu tài khoản nếu nhớ mật khẩu
                 if (isSelected) {
                     await AsyncStorage.setItem('savedUsername', username);
                     await AsyncStorage.setItem('savedPassword', password);
+
                 } else {
                     await AsyncStorage.removeItem('savedUsername');
                     await AsyncStorage.removeItem('savedPassword');
                 }
                 await AsyncStorage.setItem('hasLoggedInBefore', 'true');
+
+
 
 
                 // Nếu thành công điều hướng sang màn hình Home

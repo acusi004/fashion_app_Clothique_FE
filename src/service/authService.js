@@ -6,7 +6,7 @@ import tokenService from './tokenService'; // file tokenService.js bạn đã c�
 const loginUser = async (email, password) => {
     try {
         const response = await axios.post('http://10.0.2.2:5000/v1/auth/login', { email, password });
-        console.log("📌 Response từ API login:", response.data); // Debug
+
 
         const { accessToken } = response.data;
         if (!accessToken) throw new Error("Không nhận được accessToken!");

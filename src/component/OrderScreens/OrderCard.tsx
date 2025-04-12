@@ -322,9 +322,21 @@ const OrderCard = ({order, onCancelOrder}) => {
                   {`Đơn hàng giao thành công vào lúc ${renderStatusTimeFromHistory()}`}{' '}
                 </Text>
                 <View style={styles.buttons}>
-                  <TouchableOpacity style={styles.btnOutline} onPress={()=> navigation.navigate('OrderRating')}>
+                  <TouchableOpacity
+                      style={styles.btnOutline}
+                      onPress={() =>
+                          navigation.navigate('OrderRating', {
+                            orderId: order._id,
+                            orderItems: order.orderItems,
+                            userId: order.userId, // ✅ Truyền luôn userId sang
+                          })
+                      }
+                  >
                     <Text>Đánh Giá</Text>
                   </TouchableOpacity>
+
+
+
 
                   {!isConfirmedReceived && (
                       <TouchableOpacity

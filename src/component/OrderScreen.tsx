@@ -49,8 +49,8 @@ const OrderScreen = ({ navigation }) => {
             {/* PHẦN TIÊU ĐỀ */}
             <View style={styles.header}>
                 <Text style={styles.headerLeft}>Đơn mua</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('OrderRating')}>
-                    <Text style={styles.headerRight}>Đánh giá sản phẩm &gt;</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('OrderRated')}>
+                    <Text style={styles.headerRight}>Đơn hàng đã đánh giá &gt;</Text>
                 </TouchableOpacity>
             </View>
 

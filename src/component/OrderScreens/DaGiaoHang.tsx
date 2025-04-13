@@ -1,8 +1,9 @@
     import {ActivityIndicator, FlatList, RefreshControl, Text, View} from "react-native";
-    import {useEffect, useState} from "react";
+    import {useCallback, useEffect, useState} from "react";
     import {fetchOrdersByStatus} from "../../service/OrderService";
     import OrderCard from "./OrderCard.tsx";
     import EmptyOrder from "../EmptyOrder.tsx";
+    import {useFocusEffect} from "@react-navigation/native";
 
     // @ts-ignore
     function DaGiaoHang({navigation}){
@@ -37,7 +38,11 @@
         useEffect(() => {
             loadOrders();
         }, []);
-
+        useFocusEffect(
+            useCallback(() => {
+                loadOrders();
+            }, [])
+        );
         if (loading) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

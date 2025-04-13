@@ -1,9 +1,10 @@
 // ChoXacNhan.js
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { FlatList, ActivityIndicator, View, RefreshControl, Text } from 'react-native';
 import { getUnpaidOrders } from '../../service/OrderService'; // Import hàm từ OrderService
 import OrderCard from './OrderCard.tsx';
 import EmptyOrder from '../EmptyOrder.tsx';
+import {useFocusEffect} from "@react-navigation/native";
 
 function ChoThanhToan() {
     const [orders, setOrders] = useState([]);
@@ -37,7 +38,11 @@ function ChoThanhToan() {
     useEffect(() => {
         loadOrders(); // Tải các đơn hàng khi component mount
     }, []);
-
+    useFocusEffect(
+        useCallback(() => {
+            loadOrders();
+        }, [])
+    );
     // Hàm xử lý khi hủy đơn hàng
     const handleCancelOrder = (orderId) => {
         // Cập nhật trạng thái UI hoặc gọi API để hủy đơn hàng

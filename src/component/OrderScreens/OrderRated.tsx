@@ -4,18 +4,24 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { getToken } from '../../service/categoryService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import tokenService from "../../service/tokenService";
 
 function OrderRated() {
     const [ratings, setRatings] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchRatings = async () => {
+        const fetchUserRatedProducts = async () => {
             try {
-                const token = await getToken();
-                const userId = await AsyncStorage.getItem('userId');
-                console.log(userId)
-                if (!userId) return;
+                const token = await tokenService.getToken();
+                const userInfo = await tokenService.getUserIdFromToken();
+                const userId = userInfo?.userId;
+
+                if (!userId) {
+                    console.warn("Không tìm thấy userId từ token");
+                    setRatings([]); // fallback
+                    return;
+                }
 
                 const response = await axios.get(`http://10.0.2.2:5000/v1/rating/user/${userId}`, {
                     headers: {
@@ -23,25 +29,33 @@ function OrderRated() {
                     },
                 });
 
-                setRatings(response.data);
-                console.log(`data: ${response.data}`)
+
+                const sortedRatings = response.data.sort(
+                    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                );
+                setRatings(sortedRatings);
+
             } catch (error) {
-                console.error('❌ Lỗi khi lấy đánh giá:', error.message);
+                console.error("❌ Lỗi khi lấy danh sách đánh giá:", error.message);
+                setRatings([]);
             } finally {
-                setLoading(false);
+                setLoading(false); // Tắt loading sau khi gọi API
             }
         };
 
-        fetchRatings();
+        fetchUserRatedProducts();
     }, []);
+
 
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color="#000" />
+                <Text>Đang tải đánh giá...</Text>
             </View>
         );
     }
+
 
     return (
         <ScrollView style={styles.container}>
@@ -49,7 +63,10 @@ function OrderRated() {
                 <View key={item._id} style={styles.card}>
                     {/* User Info */}
                     <View style={styles.userRow}>
-                        <Image source={ require('../../Image/profile.png')} style={styles.avatar} />
+                        <Image
+                            source={{ uri: item.userId?.avatar || 'https://i.pravatar.cc/150?img=11' }}
+                            style={styles.avatar}
+                        />
                         <View style={{ flex: 1 }}>
                             <Text style={styles.username}>{item.userId?.name || 'Ẩn danh'}</Text>
                             <View style={{ flexDirection: 'row', marginTop: 2 }}>
@@ -69,7 +86,15 @@ function OrderRated() {
 
                     {/* Product Info */}
                     <View style={styles.productRow}>
-                        <Image source={{ uri: `http://10.0.2.2:5000${item.productId?.images?.[0] || ''}` }} style={styles.productImage} />
+                        <Image
+                            source={{
+                                uri: item.variants?.[0]?.images?.[0]
+                                    ? `http://10.0.2.2:5000${item.variants[0].images[0]}`
+                                    : 'https://via.placeholder.com/60', // fallback nếu không có ảnh
+                            }}
+                            style={styles.productImage}
+                        />
+
                         <Text style={styles.productName}>{item.productId?.name}</Text>
                     </View>
 
@@ -160,6 +185,13 @@ const styles = StyleSheet.create({
         color: '#B35A00',
         fontWeight: '500',
     },
+    productImage: {
+        width: 60,
+        height: 60,
+        marginRight: 8,
+        borderRadius: 6,
+    },
+
 });
 
 export default OrderRated;

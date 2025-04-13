@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import CustomAlert from '../../styles/CustomAlert.tsx';
 import { getToken } from '../../service/categoryService';
+import tokenService from "../../service/tokenService";
 
 const OrderRating = ({ route }) => {
     const { orderId, orderItems, userId } = route?.params || {};
@@ -62,19 +63,24 @@ const OrderRating = ({ route }) => {
     const submitRating = async (item) => {
         try {
             const token = await getToken();
+            const userInfo = await tokenService.getUserIdFromToken();
+            const currentUserId = userInfo?.userId;
+
             const payload = {
                 productId: item.productId._id,
-                userId,
+                userId: currentUserId, // ✅ sửa ở đây
                 rating: ratings[item.productId._id] || 5,
+                variants: item.variantId?._id,
             };
-            console.log(payload)
+
+
+
             await axios.post('http://10.0.2.2:5000/v1/rating/add', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
-            // Ẩn sản phẩm khỏi danh sách sau khi đánh giá
             setItemsToReview((prev) =>
                 prev.filter((p) => p.productId._id !== item.productId._id)
             );
@@ -85,6 +91,8 @@ const OrderRating = ({ route }) => {
             showAlert('Lỗi', 'Không thể gửi đánh giá. Vui lòng thử lại.');
         }
     };
+
+
 
     return (
         <ScrollView style={styles.container}>

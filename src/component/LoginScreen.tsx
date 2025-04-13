@@ -45,7 +45,7 @@ function LoginScreen({navigation}) {
                 // Gọi hàm loginUser từ authService
                 const result = await authService.loginUser(username, password);
 
-                console.log(result)
+
 
 
                 // ✅ Lưu userId trực tiếp từ kết quả trả về

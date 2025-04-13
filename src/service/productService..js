@@ -68,7 +68,7 @@ export const fetchCategories = async () => {
     });
 
     const data = await response.json();
-    console.log("📥 Kết quả category:", data);
+
 
     if (!response.ok) {
         throw new Error(data.message || "Lỗi không xác định từ API danh mục.");

@@ -53,12 +53,11 @@ export const getUnpaidOrders = async () => {
             },
         });
 
-        // Log toàn bộ dữ liệu trả về để kiểm tra
-        console.log('Dữ liệu trả về từ API:', response.data);
+
 
         // Kiểm tra và trích xuất orders nếu có
         const orders = response.data.orders || []; // Truy cập trường orders nếu có
-        console.log('Danh sách orders sau khi trích xuất:', orders);
+
 
         if (!Array.isArray(orders)) {
             console.error('Dữ liệu trả về không phải mảng:', orders);

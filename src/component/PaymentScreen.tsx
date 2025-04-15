@@ -1,5 +1,6 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
+import { io } from "socket.io-client";
 import {
   View,
   Text,
@@ -19,6 +20,9 @@ import InAppBrowser from "react-native-inappbrowser-reborn";
 import { Platform, Linking } from 'react-native';
 import CustomAlertSecond from "../styles/CustomALertSecond.tsx";
 import FailedScreen from "./FailedScreen.tsx";
+import { useSelector } from 'react-redux';
+
+
 const CheckoutScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const navigation = useNavigation();
@@ -34,8 +38,11 @@ const CheckoutScreen = () => {
   const [momoUrl, setMomoUrl] = useState('');
   const [confirmOpenBrowser, setConfirmOpenBrowser] = useState(false);
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false); // Thêm trạng thái để kiểm tra thanh toán thành công
-
-
+  const [userId, setUserId] = useState(null);
+  
+  const socket = io("http://10.0.2.2:5000", { autoConnect: false });
+  
+ 
   const openWithChrome = async (url: string) => {
     if (Platform.OS === 'android') {
       const chromeUrl = `googlechrome://navigate?url=${url}`;
@@ -68,7 +75,31 @@ const CheckoutScreen = () => {
     setAlertVisible(true);
   };
 
-
+  useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+  
+    // Khi kết nối socket thành công, gửi userId lên server
+    socket.on("connect", () => {
+      console.log("🔌 Socket connected:", socket.id);
+      if (userId) {
+        socket.emit("register", userId); // Gửi userId để server lưu socketId
+      }
+    });
+  
+    // Lắng nghe thông báo từ server
+    socket.on("notification", (data) => {
+      console.log("📩 Nhận được thông báo:", data);
+      showAlert("Thông báo từ admin", data.message); // hoặc bạn muốn xử lý khác
+    });
+  
+    return () => {
+      socket.disconnect(); // Cleanup khi component unmount
+    };
+    
+  }, [userId]);
+  
 
   // @ts-ignore
   const getFullImageUrl = imagePath => {
@@ -92,13 +123,12 @@ const CheckoutScreen = () => {
         'Không thể mở liên kết MoMo',
         'Vui lòng kiểm tra lại ứng dụng MoMo.',
       );
-
-
-
     }
   };
 
   const ThanhToan = async () => {
+     const userInfo = await tokenService.getUserIdFromToken();
+     setUserId(userInfo?.userId);
     if (!paymentMethod) {
       return showAlert('Thông báo', 'Vui lòng chọn phương thức thanh toán');
     }
@@ -138,18 +168,38 @@ const CheckoutScreen = () => {
           setAlertHeader('Xác nhận thanh toán');
           setAlertMessage('Bạn có muốn mở trình duyệt để thanh toán qua MoMo không?');
           setConfirmOpenBrowser(true);
+      
+          socket.emit("sendPrivateMessage", {
+            sender: userInfo?.userId,
+            receiver: "admin",
+            message: `📱 User ${userInfo?.userId} đã chọn thanh toán bằng MoMo.`,
+          });
+          console.log(`✅ Đã gửi thông báo MoMo đến admin: User ${userInfo?.userId}`);
+      
         } else {
           showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.');
         }
       }
+      
       if (paymentMethod === 'COD') {
-        setIsPaymentSuccess(true); // Đặt trạng thái thanh toán thành công
+        setIsPaymentSuccess(true);
         showAlert('Thông báo', 'Thanh toán thành công!');
+        
+        // 🔔 Gửi thông báo đến admin
+        socket.emit("sendPrivateMessage", {
+          sender: userInfo?.userId,
+          receiver: "admin",
+          message: `📦 User ${userInfo?.userId} đã thanh toán đơn hàng bằng COD.`,
+        });
+        console.log(`✅ Đã gửi thông báo COD đến admin: User ${userInfo?.userId} , ${userInfo?.userId}`);
+        
+      
         navigation.reset({
-          index: 0, // Màn hình đầu tiên sau khi reset
-          routes: [{ name: 'HTScreen' }], // Điều hướng tới HTScreen
+          index: 0,
+          routes: [{ name: 'HTScreen' }],
         });
       }
+      
 
     } catch (error) {
 

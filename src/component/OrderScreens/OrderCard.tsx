@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,9 @@ import {getToken} from '../../service/categoryService';
 import CustomAlert from '../../styles/CustomAlert.tsx';
 import CustomAlertSecond from '../../styles/CustomALertSecond.tsx';
 import {useNavigation} from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { io } from 'socket.io-client';
+import tokenService from '../../service/tokenService.js';
 
 // @ts-ignore
 const OrderCard = ({order, onCancelOrder}) => {
@@ -43,7 +46,7 @@ const OrderCard = ({order, onCancelOrder}) => {
   const [textNo, setTextNo] = useState('');
   const [isConfirmedReceived, setIsConfirmedReceived] = useState(order.orderStatus === 'Received');
   const [showBreakdown, setShowBreakdown] = useState(false);
-
+  const socket = io("http://10.0.2.2:5000", { autoConnect: false });
 
   const [alertActionType, setAlertActionType] = useState<
       'cancel' | 'confirmReceived' | null
@@ -75,6 +78,35 @@ const OrderCard = ({order, onCancelOrder}) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShowMoreProducts(prev => !prev);
   };
+
+  useEffect(() => {
+    const initSocket = async () => {
+        const userInfo = await tokenService.getUserIdFromToken();
+            const userId = userInfo?._id;
+    if (!socket.connected) {
+      socket.connect();
+    }
+  
+    // Khi kết nối socket thành công, gửi userId lên server
+    socket.on("connect", () => {
+      console.log("🔌 Socket connected:", socket.id);
+      if (userId) {
+        socket.emit("register", userId); // Gửi userId để server lưu socketId
+      }
+    });
+  
+    // Lắng nghe thông báo từ server
+    socket.on("notification", (data) => {
+      console.log("📩 Nhận được thông báo:", data);
+      showAlert("Thông báo từ admin", data.message); // hoặc bạn muốn xử lý khác
+    });
+  };
+  initSocket();
+    return () => {
+      socket.disconnect(); // Cleanup khi component unmount
+    };
+  
+  }, []);
 
   const handleConfirmReceived = async () => {
     try {
@@ -130,6 +162,7 @@ const OrderCard = ({order, onCancelOrder}) => {
   };
 
   const handleCancelOrder = async () => {
+     const userInfo = await tokenService.getUserIdFromToken();
     try {
       // Lấy token từ service
       const token = await getToken();
@@ -152,6 +185,12 @@ const OrderCard = ({order, onCancelOrder}) => {
       if (response.status === 200) {
         onCancelOrder(order._id);
         ToastAndroid.show('Hủy đơn hàng thành công !', ToastAndroid.SHORT);
+        socket.emit("sendPrivateMessage", {
+          sender: userInfo?.userId,
+          receiver: "admin",
+          message: `📱 User ${userInfo?.userId} đã hủy đơn hàng .`,
+        });
+        console.log(`✅ Đã HỦy đơn hàng thành công : User ${userInfo?.userId}`);
         setAlertVisible(false);
       }
     } catch (error) {
@@ -231,7 +270,7 @@ const OrderCard = ({order, onCancelOrder}) => {
             />
             <View style={styles.productInfo}>
               <Text numberOfLines={1} style={styles.productName}>
-                {productInfo.name}
+                {productInfo?.name}
               </Text>
               <Text style={styles.variantText}>
                 {variant.size} - {variant.color}

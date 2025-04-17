@@ -97,11 +97,12 @@ function ProfileScreen({ navigation }) {
             <MenuItem title="Đơn hàng của tôi" subtitle="Đơn hàng đã có sẵn" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("OrderScreen")} />
             <MenuItem title="Địa chỉ giao hàng" subtitle="Địa chỉ cá nhân" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("AddressScreen")} />
             <MenuItem title="Đánh giá của tôi" subtitle="Đã đánh giá sản phẩm" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("OrderRated")} />
-            <MenuItem title="Cài đặt" subtitle="Mật khẩu, FAQ, Chatting" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("SettingScreen")} />
-            <MenuItem title="Đăng xuất" subtitle="Đăng xuất tài khoản" iconSource={require("../Image/frame.png")} onPress={() => showAlert('Thông báo','Đăng xuất khỏi tài khoản này?', 'Đăng xuất','Quay lại')} />
+            <MenuItem title="Trả lời tin nhắn" subtitle="Nhắn tin" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate(ChatScreen)} />
+            <MenuItem title="Cài đặt" subtitle="Mật khẩu, FAQ" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate("SettingScreen")} />
+            <MenuItem title="Đăng xuất" subtitle="Đăng xuất tài khoản" iconSource={require("../Image/frame.png")} onPress={() => showAlert('Thông báo', 'Đăng xuất khỏi tài khoản này?', 'Đăng xuất', 'Quay lại')} />
             <CustomAlertSecond
-                onNo={()=> setAlertVisible(false)}
-                onYes={()=> navigation.reset({
+                onNo={() => setAlertVisible(false)}
+                onYes={() => navigation.reset({
                     index: 0,
                     routes: [{ name: 'LoginScreen' }],
                 })}

@@ -48,7 +48,6 @@ function SettingScreen() {
             ))}
             <View style={{marginTop: 5}}>
                 <Text style={styles.sectionTitle}>Chức năng</Text>
-                <MenuItem title="Trả lời tin nhắn" subtitle="Nhắn tin" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate(ChatScreen)} />
                 <MenuItem title="Đổi mật khẩu" subtitle="Đổi mật khẩu người dùng" iconSource={require("../Image/frame.png")} onPress={() => navigation.navigate(ChangePassScreen)} />
             </View>
 

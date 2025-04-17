@@ -1,10 +1,12 @@
 // DetailScreen.js
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {Alert, Image, ScrollView, StyleSheet, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
-import {addToCartAPI} from "../service/cartService";
-import {toggleFavorite} from "../service/favoriteService";
+import { Alert, Image, ScrollView, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
+import { addToCartAPI } from "../service/cartService";
+import { toggleFavorite } from "../service/favoriteService";
 import CustomAlert from "../styles/CustomAlert.tsx";
-
+import { getToken } from '../service/categoryService.js';
+import tokenService from '../service/tokenService.js';
+import { likeComment, dislikeComment } from '../service/commentService';
 
 // @ts-ignore
 const DetailScreen = ({ route, navigation }) => {
@@ -24,6 +26,10 @@ const DetailScreen = ({ route, navigation }) => {
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertHeader, setAlertHeader] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
+
+    const [ratings, setRatings] = useState([]);
+    const [comments, setComments] = useState([]);
+    const [avgRating, setAvgRating] = useState(0);
 
     // @ts-ignore
     const showAlert = (header, message) => {
@@ -98,8 +104,8 @@ const DetailScreen = ({ route, navigation }) => {
         }
 
         const matchedVariant = product.variants.find(
-                    (v: { _id: string; size: string }) => v.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
-                );
+            (v: { _id: string; size: string }) => v.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
+        );
         if (!matchedVariant) {
             setAlertHeader('Lỗi');
             setAlertMessage('Không tìm thấy biến thể phù hợp!');
@@ -126,10 +132,118 @@ const DetailScreen = ({ route, navigation }) => {
 
     const handleCloseAlert = () => {
         setAlertVisible(false);
-        if (alertHeader === 'Thành công' ) {
+        if (alertHeader === 'Thành công') {
             navigation.navigate('CartScreen');
         }
     };
+
+    useEffect(() => {
+        const fetchRatingsAndComments = async () => {
+            const token = await getToken();
+
+            if (!token) {
+                console.warn("Người dùng chưa đăng nhập!");
+                return;
+            }
+
+            try {
+                // Gửi yêu cầu đánh giá với token trong header
+                const resRating = await fetch(`http://10.0.2.2:5000/v1/rating/${product._id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`  // Thêm token vào header
+                    }
+                });
+                const ratingData = await resRating.json();
+                setRatings(ratingData);
+
+                const avg = ratingData.reduce((acc, r) => acc + r.rating, 0) / ratingData.length;
+                setAvgRating(avg.toFixed(1));
+
+                // Gửi yêu cầu bình luận với token trong header
+                const resComment = await fetch(`http://10.0.2.2:5000/v1/comment/${product._id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`  // Thêm token vào header
+                    }
+                });
+                const commentData = await resComment.json();
+                console.log("Bình luận nhận được từ API:", commentData);
+
+                if (commentData && Array.isArray(commentData)) {
+                    setComments(commentData);
+                } else {
+                    console.warn("Dữ liệu bình luận không hợp lệ:", commentData);
+                    setComments([]);
+                }
+            } catch (err) {
+                console.error("Lỗi khi fetch đánh giá & bình luận:", err);
+            }
+        };
+
+        fetchRatingsAndComments();
+    }, []);
+
+    const handleLike = async (commentId) => {
+        try {
+            const token = await getToken();
+            const currentUser = await tokenService.getUserIdFromToken();
+            const currentUserId = currentUser?.userId;
+
+            if (!currentUserId) return;
+
+            // Gửi yêu cầu LIKE
+            await likeComment(commentId);
+
+            // Cập nhật lại state
+            setComments((prevComments) =>
+                prevComments.map((comment) =>
+                    comment._id === commentId
+                        ? {
+                            ...comment,
+                            likes: Array.isArray(comment.likes)
+                                ? [...comment.likes, { userId: currentUserId }]
+                                : [{ userId: currentUserId }],
+                            dislikes: Array.isArray(comment.dislikes) ? comment.dislikes : [],
+                        }
+                        : comment
+                )
+            );
+
+        } catch (error) {
+            console.error("Lỗi khi like comment:", error);
+        }
+    };
+
+    const handleDislike = async (commentId) => {
+        try {
+            const token = await getToken();
+            const currentUser = await tokenService.getUserIdFromToken();
+            const currentUserId = currentUser?.userId;
+
+            if (!currentUserId) return;
+
+            // Gửi yêu cầu DISLIKE
+            await dislikeComment(commentId);
+
+            // Cập nhật lại state
+            setComments((prevComments) =>
+                prevComments.map((comment) =>
+                    comment._id === commentId
+                        ? {
+                            ...comment,
+                            dislikes: Array.isArray(comment.dislikes)
+                                ? [...comment.dislikes, { userId: currentUserId }]
+                                : [{ userId: currentUserId }],
+                            likes: Array.isArray(comment.likes) ? comment.likes : [],
+                        }
+                        : comment
+                )
+            );
+
+        } catch (error) {
+            console.error("Lỗi khi dislike comment:", error);
+        }
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView style={styles.ScrollView}>
@@ -168,6 +282,7 @@ const DetailScreen = ({ route, navigation }) => {
                                     setCurrentVariant(item);
                                     setSizes(Array.isArray(item.size) ? item.size : [item.size]);
                                     setStock(item.stock);
+                                    setSelectedSize('');
                                 }}
                                 style={styles.variantButton}
                             >
@@ -192,6 +307,64 @@ const DetailScreen = ({ route, navigation }) => {
                             {product.description || 'Chưa có mô tả sản phẩm'}
                         </Text>
                     </View>
+                </View>
+
+                <View style={{ marginTop: 20 }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+                        Đánh giá & bình luận ({ratings.length})
+                    </Text>
+
+                    {/* ⭐ Tổng đánh giá */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                        <Text style={{ fontSize: 16, color: '#FFA500', marginRight: 6 }}>⭐</Text>
+                        <Text style={{ fontSize: 16 }}>{avgRating}/5 điểm</Text>
+                    </View>
+
+                    {/* Danh sách đánh giá + bình luận */}
+                    {ratings.map((item, index) => {
+                        const comment = comments.find(c => c.userId?._id === item.userId?._id);
+                        return (
+                            <View key={index} style={styles.reviewCard}>
+                                <Image
+                                    source={{ uri: comment?.userId?.avatar || 'https://via.placeholder.com/100' }}
+                                    style={styles.avatar}
+                                />
+                                <View style={{ flex: 1, marginLeft: 10 }}>
+                                    <Text style={styles.reviewerName}>
+                                        {item.userId?.name || item.userId?.userId?.name || 'Ẩn danh'}
+                                    </Text>
+
+                                    <View style={{ flexDirection: 'row', marginVertical: 4 }}>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Text
+                                                key={star}
+                                                style={{ color: star <= item.rating ? '#FFD700' : '#ccc', fontSize: 16 }}
+                                            >
+                                                ★
+                                            </Text>
+                                        ))}
+                                    </View>
+
+                                    <Text style={styles.commentText}>
+                                        {comment?.content || 'Chưa có bình luận nào.'}
+                                    </Text>
+
+                                    {/* Like/Dislike nằm trong comment tương ứng */}
+                                    {/* {comment && (
+                                        <View style={{ flexDirection: 'row', marginTop: 8, gap: 12 }}>
+                                            <TouchableOpacity onPress={() => handleLike(comment._id)}>
+                                                <Text style={{ color: 'blue' }}>👍 {comment.likes || 0}</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity onPress={() => handleDislike(comment._id)}>
+                                                <Text style={{ color: 'red' }}>👎 {comment.dislikes || 0}</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )} */}
+                                </View>
+                            </View>
+                        );
+                    })}
                 </View>
             </ScrollView>
 
@@ -336,6 +509,35 @@ const styles = StyleSheet.create({
     },
     sizeButtonText: {
         color: 'black',
+    },
+    reviewCard: {
+        flexDirection: 'row',
+        padding: 12,
+        backgroundColor: '#F9F9F9',
+        borderRadius: 10,
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        alignItems: 'flex-start',
+    },
+
+    avatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#ccc',
+    },
+
+    reviewerName: {
+        fontWeight: '600',
+        fontSize: 15,
+        marginBottom: 4,
+    },
+
+    commentText: {
+        fontSize: 14,
+        color: '#333',
+        lineHeight: 20,
     },
 });
 

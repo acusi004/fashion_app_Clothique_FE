@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 
 // @ts-ignore
-const DetailOrderScreen = ({route, navigation}) => {
-  const {order} = route.params;
+const DetailOrderScreen = ({ route, navigation }) => {
+  const { order } = route.params;
 
   const product = order.orderItems[0];
   const variant = product.variantId;
@@ -41,8 +41,8 @@ const DetailOrderScreen = ({route, navigation}) => {
   };
 
 
-  const formatHistoryText = (text) => {
-    // Tìm và format lại phần thời gian nếu có
+  const formatHistoryText = (input: string | { message: string }) => {
+    const text = typeof input === 'string' ? input : input.message;
     const regex = /vào lúc (\d{1,2}:\d{1,2}:\d{1,2}) (\d{1,2})\/(\d{1,2})\/(\d{4})/;
     const match = text.match(regex);
 
@@ -52,19 +52,20 @@ const DetailOrderScreen = ({route, navigation}) => {
       return text.replace(regex, `vào lúc ${formatted}`);
     }
 
-    return text; // Nếu không match, trả nguyên
+    return text;
   };
 
+
   return (
-    <View style={{flex:1, backgroundColor:'#FFF'}}>
-      <ScrollView  style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: '#FFF' }}>
+      <ScrollView style={styles.container}>
         <Text style={styles.title}>{renderStatusText()}</Text>
 
         <View style={styles.section}>
           <Text style={styles.label}>Thông tin vận chuyển</Text>
           <Text>SPX Express: SPXVN050683193434</Text>
           {order.orderStatus === 'Delivered' && (
-              <Text style={styles.success}>{renderStatusText()}</Text>
+            <Text style={styles.success}>{renderStatusText()}</Text>
           )}
 
         </View>
@@ -84,29 +85,29 @@ const DetailOrderScreen = ({route, navigation}) => {
           <Text style={styles.label}>Sản phẩm</Text>
 
           {order.orderItems.map((item, index) => (
-              <View key={index}>
-                <View style={styles.productRow}>
-                  <Image
-                      source={{ uri: `http://10.0.2.2:5000${item.variantId.images[0]}` }}
-                      style={styles.image}
-                  />
-                  <View style={styles.info}>
-                    <Text>{item.productId.name}</Text>
-                    <Text>
-                      {item.variantId.size} - {item.variantId.color}
-                    </Text>
-                    <Text>Số lượng: {item.quantity}</Text>
-                    <Text style={styles.price}>
-                      ₫{item.variantId.price.toLocaleString()}
-                    </Text>
-                  </View>
+            <View key={index}>
+              <View style={styles.productRow}>
+                <Image
+                  source={{ uri: `http://10.0.2.2:5000${item.variantId.images[0]}` }}
+                  style={styles.image}
+                />
+                <View style={styles.info}>
+                  <Text>{item.productId.name}</Text>
+                  <Text>
+                    {item.variantId.size} - {item.variantId.color}
+                  </Text>
+                  <Text>Số lượng: {item.quantity}</Text>
+                  <Text style={styles.price}>
+                    ₫{item.variantId.price.toLocaleString()}
+                  </Text>
                 </View>
-
-                {/* Đường kẻ sau mỗi sản phẩm, trừ sản phẩm cuối */}
-                {index < order.orderItems.length - 1 && (
-                    <View style={styles.divider} />
-                )}
               </View>
+
+              {/* Đường kẻ sau mỗi sản phẩm, trừ sản phẩm cuối */}
+              {index < order.orderItems.length - 1 && (
+                <View style={styles.divider} />
+              )}
+            </View>
           ))}
 
         </View>
@@ -117,14 +118,14 @@ const DetailOrderScreen = ({route, navigation}) => {
             <Text style={styles.label}>Chi tiết giá tiền</Text>
 
             {order.orderItems.map((item, index) => (
-                <View key={index} style={styles.priceRow}>
-                  <Text style={{ flex: 1 }}>
-                    {item.productId.name} ({item.variantId.size}/{item.variantId.color}) x {item.quantity}
-                  </Text>
-                  <Text>
-                    ₫{(item.variantId.price * item.quantity).toLocaleString()}
-                  </Text>
-                </View>
+              <View key={index} style={styles.priceRow}>
+                <Text style={{ flex: 1 }}>
+                  {item.productId.name} ({item.variantId.size}/{item.variantId.color}) x {item.quantity}
+                </Text>
+                <Text>
+                  ₫{(item.variantId.price * item.quantity).toLocaleString()}
+                </Text>
+              </View>
             ))}
 
             <View style={styles.priceRow}>
@@ -140,21 +141,27 @@ const DetailOrderScreen = ({route, navigation}) => {
 
 
           {order.history && order.history.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.label}>Lịch sử đơn hàng:</Text>
-                {order.history.map((event, index) => (
-                    <Text
-                        key={index}
-                        style={[
-                          styles.historyItem,
-                          event.includes('bị hủy') && { color: 'red' },
-                          event.includes('giao hàng') && { color: '#1abc9c' },
-                        ]}
-                    >
-                      • {formatHistoryText(event)}
-                    </Text>
-                ))}
-              </View>
+            <View style={styles.section}>
+              <Text style={styles.label}>Lịch sử đơn hàng:</Text>
+              {order.history.map((event, index) => {
+                const text = typeof event === 'string'
+                  ? event
+                  : (event && typeof event.message === 'string' ? event.message : '');
+
+                return (
+                  <Text
+                    key={index}
+                    style={[
+                      styles.historyItem,
+                      text.toLowerCase().includes('bị hủy') && { color: 'red' },
+                      text.toLowerCase().includes('giao hàng') && { color: '#1abc9c' },
+                    ]}
+                  >
+                    • {formatHistoryText(text)}
+                  </Text>
+                );
+              })}
+            </View>
           )}
 
 
@@ -163,19 +170,19 @@ const DetailOrderScreen = ({route, navigation}) => {
 
       </ScrollView>
       {order.orderStatus === 'Delivered' && (
-          <View style={styles.buttons}>
-            <TouchableOpacity style={styles.btnOutline}  onPress={() =>
-                navigation.navigate('OrderRating', {
-                  orderId: order._id,
-                  orderItems: order.orderItems, // ✅ Truyền toàn bộ danh sách sản phẩm
-                })
-            }>
-              <Text>Đánh Giá</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btnPrimary}>
-              <Text style={{ color: '#B35A00' }}>Đã nhận được hàng</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.buttons}>
+          <TouchableOpacity style={styles.btnOutline} onPress={() =>
+            navigation.navigate('OrderRating', {
+              orderId: order._id,
+              orderItems: order.orderItems, // ✅ Truyền toàn bộ danh sách sản phẩm
+            })
+          }>
+            <Text>Đánh Giá</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnPrimary}>
+            <Text style={{ color: '#B35A00' }}>Đã nhận được hàng</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
     </View>
@@ -192,9 +199,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
     color: '#FFF',
-    backgroundColor:'#1abc9c',
-    borderRadius:10,
-    padding:10
+    backgroundColor: '#1abc9c',
+    borderRadius: 10,
+    padding: 10
   },
   section: {
     marginBottom: 20
@@ -234,9 +241,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 10,
-    alignItems:'center',
-    marginBottom:20,
-    alignSelf:'center'
+    alignItems: 'center',
+    marginBottom: 20,
+    alignSelf: 'center'
   },
   btnOutline: {
     padding: 8,
@@ -244,10 +251,10 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 6,
     marginRight: 8,
-    width:'45%',
-    alignItems:'center',
-    height:50,
-   justifyContent:'center'
+    width: '45%',
+    alignItems: 'center',
+    height: 50,
+    justifyContent: 'center'
   },
   btnPrimary: {
     backgroundColor: '#fff3e6',
@@ -255,10 +262,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     borderRadius: 6,
-    width:'45%',
-    alignItems:'center',
-    height:50,
-    justifyContent:'center'
+    width: '45%',
+    alignItems: 'center',
+    height: 50,
+    justifyContent: 'center'
   },
   historyItem: {
     color: '#444',

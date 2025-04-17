@@ -7,6 +7,7 @@ import {
     Image,
     ScrollView,
     Alert,
+    TextInput
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
@@ -24,6 +25,13 @@ const OrderRating = ({ route }) => {
     const [ratings, setRatings] = useState(
         orderItems.reduce((acc, item) => {
             acc[item.productId._id] = 5;
+            return acc;
+        }, {})
+    );
+
+    const [comments, setComments] = useState(
+        orderItems.reduce((acc, item) => {
+            acc[item.productId._id] = '';
             return acc;
         }, {})
     );
@@ -66,29 +74,48 @@ const OrderRating = ({ route }) => {
             const userInfo = await tokenService.getUserIdFromToken();
             const currentUserId = userInfo?.userId;
 
+            const productId = item.productId._id;
+            const content = comments[productId]?.trim();
+
             const payload = {
-                productId: item.productId._id,
-                userId: currentUserId, // ✅ sửa ở đây
-                rating: ratings[item.productId._id] || 5,
+                productId,
+                userId: currentUserId,
+                rating: ratings[productId] || 5,
                 variants: item.variantId?._id,
             };
 
-
-
+            // Gửi đánh giá
             await axios.post('http://10.0.2.2:5000/v1/rating/add', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
+            // Nếu có bình luận thì gửi thêm
+            if (content) {
+                await axios.post(
+                    'http://10.0.2.2:5000/v1/comment/add',
+                    {
+                        productId,
+                        userId: currentUserId,
+                        content,
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        }
+                    }
+                );
+            }
+
             setItemsToReview((prev) =>
-                prev.filter((p) => p.productId._id !== item.productId._id)
+                prev.filter((p) => p.productId._id !== productId)
             );
 
-            showAlert('Thành công', '🎉 Bạn đã đánh giá sản phẩm!');
+            showAlert('Thành công', '🎉 Bạn đã gửi đánh giá và bình luận!');
         } catch (error) {
-            console.error('❌ Lỗi gửi đánh giá:', error.message);
-            showAlert('Lỗi', 'Không thể gửi đánh giá. Vui lòng thử lại.');
+            console.error('❌ Lỗi gửi đánh giá/bình luận:', error.message);
+            showAlert('Lỗi', 'Không thể gửi đánh giá hoặc bình luận. Vui lòng thử lại.');
         }
     };
 
@@ -117,6 +144,26 @@ const OrderRating = ({ route }) => {
 
                     <Text style={styles.sectionTitle}>Đánh giá sản phẩm</Text>
                     {renderStars(item.productId._id)}
+
+                    <Text style={{ fontWeight: '500', marginTop: 6 }}>Bình luận:</Text>
+                    <TextInput
+                        value={comments[item.productId._id]}
+                        onChangeText={(text) =>
+                            setComments((prev) => ({ ...prev, [item.productId._id]: text }))
+                        }
+                        placeholder="Nhập bình luận..."
+                        style={{
+                            borderWidth: 1,
+                            borderColor: '#ccc',
+                            borderRadius: 6,
+                            padding: 10,
+                            marginTop: 6,
+                            marginBottom: 8,
+                            height: 80,
+                            textAlignVertical: 'top',
+                        }}
+                        multiline
+                    />
 
                     <TouchableOpacity
                         style={styles.submitButton}

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { } from 'react-native';
 
 import { NavigationContainer, } from "@react-navigation/native";
@@ -42,10 +42,15 @@ import FailedScreen from "./src/component/FailedScreen.tsx";
 import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.tsx";
 import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
 import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
+import { requestUserPermission } from './src/notification/notificationHelper.ts';
 
 function App() {
 
     const Stack = createNativeStackNavigator();
+
+    useEffect(()=>{
+        requestUserPermission()
+    })
 
     return (
         <NavigationContainer>

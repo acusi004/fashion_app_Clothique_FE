@@ -1,10 +1,9 @@
 import React, {useEffect, useState} from "react";
 import {View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert} from "react-native";
 import { Checkbox } from "react-native-paper";
-
+import messaging from '@react-native-firebase/messaging';
 import authService from "../service/authService";
 import {ActivityIndicator} from "react-native-paper";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomAlert from "../styles/CustomAlert.tsx";
 
@@ -17,7 +16,7 @@ function LoginScreen({navigation}) {
     const [secureText, setSecureText] = useState(true);
     const [loading, setLoading] = useState(false);
     const [isSelected, setIsSelected] = useState(false);
-
+    const BASE_URL = 'http://10.0.2.2:5000';
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertHeader, setAlertHeader] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
@@ -28,76 +27,98 @@ function LoginScreen({navigation}) {
         setAlertVisible(true);
     };
 
-    const handleLogin = async () => {
-        console.log('Username:', username);  // Log giá trị username
-        console.log('Password:', password);  // Log giá trị password
+    const getFcmToken = async () => {
+        try {
+          const token = await messaging().getToken();
+          console.log("✅ FCM Token:", token);
+          return token;
+        } catch (error) {
+          console.error("❌ Lỗi lấy FCM token:", error);
+          return null;
+        }
+      };
 
-        // Kiểm tra xem username và password có hợp lệ hay không
+      const updateFcmToken = async (fcmToken) => {
+        try {
+          const token = await AsyncStorage.getItem('accessToken');
+          const response = await fetch(`${BASE_URL}/v1/notifications/update-fcm`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ fcmToken }), // ❌ Không cần gửi userId
+          });
+      
+          const data = await response.json();
+      
+          if (response.ok) {
+            console.log('✅ FCM token cập nhật thành công:', data.message);
+          } else {
+            console.log('❌ Lỗi khi cập nhật token:', data.message);
+          }
+        } catch (error) {
+          // console.error('❌ Lỗi fetch khi cập nhật token:', error);
+          console.error('Lỗi chi tiết:', JSON.stringify(error, null, 2));
+        }
+      };
+      
+      
+    
+
+      const handleLogin = async () => {
         if (!username || username.trim() === '') {
-            Alert.alert('Lỗi', 'Vui lòng nhập email');
-            return;
+          Alert.alert('Lỗi', 'Vui lòng nhập email');
+          return;
         } else if (!password || password.trim() === '') {
-            Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
-            console.log('pass' + password)
-            return;
-        } else {
-            try {
-                // Gọi hàm loginUser từ authService
-                const result = await authService.loginUser(username, password);
-
-
-
-
-                // ✅ Lưu userId trực tiếp từ kết quả trả về
-                if (result?._id) {
-                    await AsyncStorage.setItem('userId', result._id);
-                    console.log('✅ Đã lưu userId:', result._id);
-                } else {
-                    console.warn('⚠️ Không tìm thấy userId trong kết quả login');
-                }
-
-
-                // ✅ Lưu tài khoản nếu nhớ mật khẩu
-                if (isSelected) {
-                    await AsyncStorage.setItem('savedUsername', username);
-                    await AsyncStorage.setItem('savedPassword', password);
-
-                } else {
-                    await AsyncStorage.removeItem('savedUsername');
-                    await AsyncStorage.removeItem('savedPassword');
-                }
-                await AsyncStorage.setItem('hasLoggedInBefore', 'true');
-
-
-
-
-                // Nếu thành công điều hướng sang màn hình Home
-                setLoading(true);
-                setTimeout(() => {
-                    setLoading(false);
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: "BottomNavigation" }],
-                    }); // chuyển sang màn hình chính sau 3 giây
-
-                }, 3000);
-
-
-
-            } catch (error: any) {
-                const message =
-                    error?.response?.data?.message ||
-                    error?.response?.data?.error ||
-                    'Tài khoản hoặc mật khẩu không đúng';
-
-                showAlert('Đăng nhập thất bại', message);
+          Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu');
+          return;
+        }
+      
+        try {
+          const result = await authService.loginUser(username, password);
+      
+          if (result?._id) {
+            await AsyncStorage.setItem('userId', result._id);
+            console.log('✅ Đã lưu userId:', result._id);
+      
+            const fcmToken = await getFcmToken();
+            if (fcmToken) {
+                await updateFcmToken(fcmToken);
 
             }
+          } else {
+            console.warn('⚠️ Không tìm thấy userId trong kết quả login');
+          }
+      
+          if (isSelected) {
+            await AsyncStorage.setItem('savedUsername', username);
+            await AsyncStorage.setItem('savedPassword', password);
+          } else {
+            await AsyncStorage.removeItem('savedUsername');
+            await AsyncStorage.removeItem('savedPassword');
+          }
+      
+          await AsyncStorage.setItem('hasLoggedInBefore', 'true');
+      
+          setLoading(true);
+          setTimeout(() => {
+            setLoading(false);
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "BottomNavigation" }],
+            });
+          }, 3000);
+      
+        } catch (error: any) {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            'Tài khoản hoặc mật khẩu không đúng';
+          showAlert('Đăng nhập thất bại', message);
         }
-
-
-    }
-
+      };
+      
 
     useEffect(() => {
         const loadCredentials = async () => {

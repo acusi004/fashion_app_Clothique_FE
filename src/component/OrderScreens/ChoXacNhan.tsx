@@ -24,7 +24,7 @@ function ChoXacNhan() {
             const data = await fetchOrdersByStatus('Pending');
             setOrders(data.reverse());
             setOrderList(data.reverse()); // Cập nhật danh sách đơn hàng sau khi hủy
-            console.log(data);
+
         } catch (error) {
             console.error(error);
         } finally {

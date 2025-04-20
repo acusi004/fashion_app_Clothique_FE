@@ -20,6 +20,7 @@ export const fetchProducts = async (page = 1, limit = 10) => {
     const response = await axios.get(`http://10.0.2.2:5000/v1/product?page=${page}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
+    console.log(response.data)
     return response.data;
 };
 

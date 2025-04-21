@@ -41,8 +41,10 @@ const OrderCard = ({ order, onCancelOrder }) => {
   const [alertMessage, setAlertMessage] = useState('');
   const [textYes, setTextYes] = useState('');
   const [textNo, setTextNo] = useState('');
-  const [isConfirmedReceived, setIsConfirmedReceived] = useState(order.orderStatus === 'Received');
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [isConfirmedReceived, setIsConfirmedReceived] = useState(
+    order.orderStatus === 'Received' || order.orderStatus === 'Completed'
+  );
 
 
   const [alertActionType, setAlertActionType] = useState<
@@ -84,9 +86,9 @@ const OrderCard = ({ order, onCancelOrder }) => {
         return;
       }
 
-      const response = await axios.put(
-        `http://10.0.2.2:5000/v1/updateOrderStatus/${order._id}`,
-
+      const response = await axios.post(
+        `http://10.0.2.2:5000/v1/order/confirmOrder/${order._id}`,
+        {}, // POST cần có body (dù rỗng)
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,38 +97,36 @@ const OrderCard = ({ order, onCancelOrder }) => {
       );
 
       if (response.data.success) {
-
-        setIsConfirmedReceived(true); // ✅ Ẩn nút sau xác nhận
+        setIsConfirmedReceived(true);
         setAlertVisible(false);
+        ToastAndroid.show('Xác nhận đã nhận hàng thành công!', ToastAndroid.SHORT);
       } else {
-        showAlert(
-          'Lỗi',
-          response.data.message || 'Không thể cập nhật đơn hàng.',
-        );
+        showAlert('Lỗi', response.data.message || 'Không thể xác nhận đơn hàng.');
       }
     } catch (error) {
       ToastAndroid.show('Lỗi xác nhận đơn hàng!', ToastAndroid.SHORT);
-      console.log(`error ${error.message}`)
+      console.log('❌ Lỗi xác nhận:', error.response?.data || error.message);
     }
   };
+
 
   const renderStatusTimeFromHistory = () => {
     if (!order.history || order.history.length === 0) return null;
 
-    // Ưu tiên dòng có chứa 'giao hàng', nếu không có lấy dòng cuối cùng
     const relevantEntry =
       order.history.find(h =>
-        h.message?.toLowerCase().includes('giao hàng')
+        h.description?.toLowerCase().includes('giao hàng') ||
+        h.status?.toLowerCase() === 'completed'
       ) || order.history[order.history.length - 1];
 
-    const match = relevantEntry?.time?.match(/(\d{1,2}:\d{1,2}:\d{1,2}) (\d{1,2}\/\d{1,2}\/\d{4})/);
-
-    if (match) {
-      return `${match[1]} ${match[2]}`; // Trả ra: 14:39:36 3/4/2025
+    if (relevantEntry?.changedAt) {
+      const time = new Date(relevantEntry.changedAt);
+      return `${time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${time.toLocaleDateString('vi-VN')}`;
     }
 
     return null;
   };
+
 
   const handleCancelOrder = async () => {
     try {
@@ -157,6 +157,8 @@ const OrderCard = ({ order, onCancelOrder }) => {
       ToastAndroid.show('Đã xảy ra lỗi khi hủy đơn hàng.', ToastAndroid.SHORT);
     }
   };
+
+
 
   return (
     <TouchableOpacity
@@ -204,6 +206,10 @@ const OrderCard = ({ order, onCancelOrder }) => {
                   case 'Received':
                     newStatus = 'Đã nhận hàng';
                     history = 'Khách hàng đã xác nhận';
+                    break;
+                  case 'Completed': // ✅ Thêm trường hợp này
+                    newStatus = 'Đã hoàn tất';
+                    history = 'Khách đã xác nhận đã nhận hàng';
                     break;
                   case 'Cancelled':
                     newStatus = 'Đã hủy';
@@ -315,7 +321,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
 
 
         {/* Trạng thái giao hàng + Button */}
-        {order.orderStatus === 'Delivered' && (
+        {(order.orderStatus === 'Delivered' || order.orderStatus === 'Completed') && (
           <View style={styles.footer}>
             <Text style={styles.deliveryNote}>
               {`Đơn hàng giao thành công vào lúc ${renderStatusTimeFromHistory()}`}{' '}

@@ -43,14 +43,48 @@ import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.ts
 import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
 import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
 import { requestUserPermission } from './src/notification/notificationHelper.ts';
+import messaging, { getMessaging } from '@react-native-firebase/messaging';
 
 function App() {
 
     const Stack = createNativeStackNavigator();
 
-    useEffect(()=>{
-        requestUserPermission()
-    })
+    async function requestUserPermission() {
+        try {
+          const authStatus = await messaging().requestPermission();
+          const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      
+          if (enabled) {
+            console.log('Authorization status:', authStatus);
+            return true;
+          } else {
+            console.warn('[FCM] Quyền thông báo bị từ chối:', authStatus);
+            return false;
+          }
+        } catch (error) {
+          console.error('[FCM] Lỗi khi yêu cầu quyền:', error);
+          return false;
+        }
+      }
+    
+      const getToken = async () => {
+        const fcmToken = await messaging().getToken(); // ✅ đúng cú pháp
+        console.log("FCM Token: ", fcmToken);
+      };
+
+      useEffect(() => {
+        const initializeFCM = async () => {
+          const permissionGranted = await requestUserPermission();
+          if (permissionGranted) {
+            await getToken();
+          } else {
+            console.warn('[FCM] Không lấy token vì thiếu quyền');
+          }
+        };
+        initializeFCM();
+      }, []);
 
     return (
         <NavigationContainer>

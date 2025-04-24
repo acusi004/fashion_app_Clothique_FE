@@ -34,6 +34,7 @@ const CheckoutScreen = () => {
   const [momoUrl, setMomoUrl] = useState('');
   const [confirmOpenBrowser, setConfirmOpenBrowser] = useState(false);
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false); // Thêm trạng thái để kiểm tra thanh toán thành công
+  const { selectedCoupon } = route.params || {};
 
 
   const openWithChrome = async (url: string) => {
@@ -98,6 +99,14 @@ const CheckoutScreen = () => {
     }
   };
 
+  const discountAmount = selectedCoupon
+      ? selectedCoupon.discountType === 'fixed'
+          ? selectedCoupon.discountValue
+          : Math.floor((selectedCoupon.discountValue / 100) * totalPrice)
+      : 0;
+  const finalTotal = totalPrice + 25000 - discountAmount;
+
+
   const ThanhToan = async () => {
     if (!paymentMethod) {
       return showAlert('Thông báo', 'Vui lòng chọn phương thức thanh toán');
@@ -123,6 +132,7 @@ const CheckoutScreen = () => {
           shippingAddressId: address._id,
           cartItems: selectedProducts.map(item => item._id),
           paymentMethod,
+          couponCode: selectedCoupon?.code,
         }),
       });
 
@@ -257,6 +267,9 @@ const CheckoutScreen = () => {
           ))}
         </View>
 
+
+
+
         {/* Phương thức giao hàng */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Phương thức giao hàng</Text>
@@ -271,6 +284,40 @@ const CheckoutScreen = () => {
           </View>
         </View>
 
+        {/* Mã giảm giá */}
+        <View style={styles.section}>
+          <TouchableOpacity
+              style={styles.discountBox}
+              onPress={() =>
+                  navigation.navigate('CouponScreen', {
+                    selectedProducts,
+                    address,
+                    paymentMethod,
+                    orderTotal: totalPrice + 25000, // truyền tổng đơn hàng bao gồm cả phí ship
+                    onSelectCoupon: (coupon: any) => {
+                      navigation.setParams({ selectedCoupon: coupon });
+                    },
+                  })
+              }>
+            <Text style={styles.sectionTitle}>Mã giảm giá</Text>
+            <Text style={styles.discountHint}>Chọn hoặc nhập mã ưu đãi của bạn</Text>
+          </TouchableOpacity>
+
+        </View>
+        {selectedCoupon && (
+            <View style={styles.selectedCoupon}>
+              <Image
+                  source={require('../Image/couponIcon.png')}
+                  style={styles.couponIcon}
+              />
+              <Text style={styles.couponText}>
+                {selectedCoupon.discountType === 'fixed'
+                    ? `Giảm ₫${(selectedCoupon.discountValue / 1000).toLocaleString()}k`
+                    : `Giảm ${selectedCoupon.discountValue}%`}
+              </Text>
+            </View>
+        )}
+
         {/* Tổng tiền */}
         <View style={styles.priceSection}>
           <View style={styles.priceRow}>
@@ -283,12 +330,23 @@ const CheckoutScreen = () => {
             <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
             <Text style={styles.priceValue}>25,000 đ</Text>
           </View>
+
+          {selectedCoupon && (
+              <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>Mã giảm giá:</Text>
+                <Text style={[styles.priceValue, { color: 'green' }]}>
+                  -{discountAmount.toLocaleString()} đ
+                </Text>
+              </View>
+          )}
+
           <View style={styles.priceRowTotal}>
             <Text style={styles.totalLabel}>Tổng:</Text>
             <Text style={styles.totalValue}>
-              {(totalPrice + 25000).toLocaleString()} đ
+              {finalTotal.toLocaleString()} đ
             </Text>
           </View>
+
         </View>
       </ScrollView>
 
@@ -352,13 +410,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 16,
   },
-  section: {marginBottom: 16},
-  sectionTitle: {fontSize: 16, fontWeight: 'bold', marginBottom: 8},
-  addressBox: {backgroundColor: '#f5f5f5', padding: 12, borderRadius: 8},
-  addressName: {fontSize: 16, fontWeight: 'bold'},
-  addressDetail: {fontSize: 14, color: 'gray'},
-  paymentOption: {flexDirection: 'row', alignItems: 'center', marginBottom: 8},
-  paymentText: {fontSize: 16},
+  section: {
+    marginBottom: 16
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8
+  },
+  addressBox: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 8
+  },
+  addressName: {
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+  addressDetail: {
+    fontSize: 14,
+    color: 'gray'
+  },
+  paymentOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8},
+  paymentText: {
+    fontSize: 16
+  },
   shippingBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -366,8 +445,14 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
   },
-  shippingIcon: {width: 40, height: 40, marginRight: 10},
-  shippingText: {fontSize: 16},
+  shippingIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10
+  },
+  shippingText: {
+    fontSize: 16
+  },
   priceSection: {
     padding: 16,
     backgroundColor: '#f5f5f5',
@@ -405,8 +490,11 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
   },
-  productImage: {width: 80, height: 80, borderRadius: 8, marginRight: 10},
-  productInfo: {flex: 1},
+  productImage: {
+    width: 80, height: 80, borderRadius: 8, marginRight: 10},
+  productInfo: {
+    flex: 1
+  },
   productName: {fontSize: 16, fontWeight: 'bold'},
   productSize: {fontSize: 14, color: 'gray'},
   productPrice: {fontSize: 16, fontWeight: 'bold', color: '#333'},
@@ -417,6 +505,38 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 4,
   },
+  discountBox: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 8,
+  },
+  discountHint: {
+    fontSize: 14,
+    color: 'gray',
+    marginTop: 4,
+  },
+  selectedCoupon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    backgroundColor: '#e0f5f0',
+    padding: 8,
+    borderRadius: 8,
+    marginBottom:10,
+
+  },
+  couponIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
+  couponText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#008060',
+  },
+
+
 });
 
 export default CheckoutScreen;

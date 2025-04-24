@@ -110,7 +110,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
                   style={styles.image}
                 />
                 <View style={styles.info}>
-                  <Text>{item.productId.name}</Text>
+                  <Text style={{fontWeight:'bold'}}>{item.productId.name}</Text>
                   <Text>
                     {item.variantId.size} - {item.variantId.color}
                   </Text>
@@ -150,6 +150,13 @@ const DetailOrderScreen = ({ route, navigation }) => {
               <Text style={{ flex: 1, fontWeight: 'bold' }}>Phí vận chuyển</Text>
               <Text>₫{order.shippingFee.toLocaleString()}</Text>
             </View>
+
+            {order.discountAmount > 0 && (
+                <View style={styles.priceRow}>
+                  <Text style={{ flex: 1, fontWeight: 'bold', color: 'green' }}>Giảm từ mã giảm giá</Text>
+                  <Text style={{ color: 'green' }}>-₫{order.discountAmount.toLocaleString()}</Text>
+                </View>
+            )}
 
             <View style={[styles.priceRow, { borderTopWidth: 1, borderColor: '#ccc', paddingTop: 6 }]}>
               <Text style={{ flex: 1, fontWeight: 'bold' }}>Tổng cộng</Text>
@@ -224,7 +231,10 @@ const styles = StyleSheet.create({
     padding: 10
   },
   section: {
-    marginBottom: 20
+    marginBottom: 20,
+    backgroundColor:'#F5F5F5',
+    borderRadius:15,
+    padding:10
   },
   label: {
     fontWeight: 'bold',

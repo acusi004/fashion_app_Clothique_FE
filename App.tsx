@@ -42,6 +42,7 @@ import FailedScreen from "./src/component/FailedScreen.tsx";
 import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.tsx";
 import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
 import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
+import CouponScreen from './src/component/CouponScreen.tsx';
 
 function App() {
 
@@ -222,6 +223,10 @@ function App() {
                     name="FailedScreen"
                     options={{ headerShown: false }}
                     component={FailedScreen} />
+              <Stack.Screen
+                name="CouponScreen"
+                options={{ headerShown: false }}
+                component={CouponScreen} />
                 <Stack.Screen
                     name="DetailOrderScreen"
                     options={{

@@ -1,5 +1,5 @@
-import {useNavigation, useRoute} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,32 +9,28 @@ import {
   SafeAreaView,
   FlatList,
   Alert,
-
   ScrollView,
 } from 'react-native';
-import {RadioButton} from 'react-native-paper';
+import { RadioButton } from 'react-native-paper';
 import tokenService from '../service/tokenService';
 import CustomAlert from '../styles/CustomAlert.tsx';
-import InAppBrowser from "react-native-inappbrowser-reborn";
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { Platform, Linking } from 'react-native';
-import CustomAlertSecond from "../styles/CustomALertSecond.tsx";
-import FailedScreen from "./FailedScreen.tsx";
+import CustomAlertSecond from '../styles/CustomALertSecond.tsx';
+import FailedScreen from './FailedScreen.tsx';
+
 const CheckoutScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const navigation = useNavigation();
   const route = useRoute();
-  // @ts-ignore
-  const {selectedProducts = [], address = null, paymentMethod1,} = route.params || {};
+  const { selectedProducts = [], address = null, paymentMethod1 } = route.params || {};
   const BASE_URL = 'http://10.0.2.2:5000';
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertHeader, setAlertHeader] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [textYes, setTextYes] = useState('');
-  const [textNo, setTextNo] = useState('');
   const [momoUrl, setMomoUrl] = useState('');
   const [confirmOpenBrowser, setConfirmOpenBrowser] = useState(false);
-  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false); // Thêm trạng thái để kiểm tra thanh toán thành công
-
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
 
   const openWithChrome = async (url: string) => {
     if (Platform.OS === 'android') {
@@ -43,15 +39,12 @@ const CheckoutScreen = () => {
       if (supported) {
         await Linking.openURL(chromeUrl);
       } else {
-        // Fallback nếu không có Chrome
         await Linking.openURL(url);
       }
     } else {
-      // iOS hoặc fallback
       await Linking.openURL(url);
     }
   };
-
 
   useEffect(() => {
     if (paymentMethod1) {
@@ -60,7 +53,7 @@ const CheckoutScreen = () => {
     console.log('Selected Products: ', selectedProducts);
     console.log('Địa chỉ: ', address ? address._id : 'Không có địa chỉ');
     console.log('Phương thức thanh toán nhận vào:', paymentMethod1);
-  }, []);
+  }, [paymentMethod1, selectedProducts, address]);
 
   const showAlert = (header: string, message: string) => {
     setAlertHeader(header);
@@ -68,37 +61,76 @@ const CheckoutScreen = () => {
     setAlertVisible(true);
   };
 
-
-
-  // @ts-ignore
-  const getFullImageUrl = imagePath => {
+  const getFullImageUrl = (imagePath: string) => {
     return imagePath.startsWith('/uploads/')
       ? `${BASE_URL}${imagePath}`
       : imagePath;
   };
 
-  // @ts-ignore
-  const totalPrice = selectedProducts.reduce((total, item) => {
+  const totalPrice = selectedProducts.reduce((total: number, item: any) => {
     return total + item.variantId.price * item.quantity;
   }, 0);
 
-  // @ts-ignore
-  const checkMoMoApp = async url => {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert(
-        'Không thể mở liên kết MoMo',
-        'Vui lòng kiểm tra lại ứng dụng MoMo.',
-      );
+  const sendNotification = async (
+    userId: string,
+    username: string,
+    message: string,
+    data = {},
+    retries = 3
+  ): Promise<{ success: boolean; error?: string }> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        if (!userId || !message || !username) {
+          console.error('[sendNotification] Thiếu userId, username hoặc message');
+          return { success: false, error: 'Thiếu userId, username hoặc message' };
+        }
 
+        const token = await tokenService.getToken();
+        if (!token) {
+          throw new Error('Chưa đăng nhập');
+        }
 
+        console.log(`[sendNotification] Thử gửi lần ${attempt} đến ${username} (${userId})`);
 
+        const response = await fetch(`${BASE_URL}/v1/notifications/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId,
+            username,
+            message,
+            data,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Lỗi tạo notification');
+        }
+
+        console.log(`[sendNotification] Gửi thành công đến ${username} (${userId})`);
+        return { success: true, data: result };
+      } catch (error) {
+        console.error(
+          `[sendNotification] Lỗi gửi đến ${userId} (lần ${attempt}): ${error.message}`
+        );
+        if (attempt === retries) {
+          return { success: false, error: error.message };
+        }
+        // Chờ 1 giây trước khi thử lại
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
+    return { success: false, error: 'Hết số lần thử' };
   };
 
   const ThanhToan = async () => {
+    const userInfo = await tokenService.getUserIdFromToken();
+
     if (!paymentMethod) {
       return showAlert('Thông báo', 'Vui lòng chọn phương thức thanh toán');
     }
@@ -110,9 +142,10 @@ const CheckoutScreen = () => {
     try {
       const token = await tokenService.getToken();
       if (!token) {
-        return Alert.alert('Vui lòng đăng nhập trước!');
+        return showAlert('Thông báo', 'Vui lòng đăng nhập trước!');
       }
 
+      console.log('[ThanhToan] Gửi yêu cầu tạo đơn hàng...');
       const response = await fetch(`${BASE_URL}/v1/order/createOrder`, {
         method: 'POST',
         headers: {
@@ -121,7 +154,7 @@ const CheckoutScreen = () => {
         },
         body: JSON.stringify({
           shippingAddressId: address._id,
-          cartItems: selectedProducts.map(item => item._id),
+          cartItems: selectedProducts.map((item: any) => item._id),
           paymentMethod,
         }),
       });
@@ -131,6 +164,8 @@ const CheckoutScreen = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Đặt hàng thất bại!');
       }
+
+      console.log('[ThanhToan] Đơn hàng được tạo thành công:', data);
 
       if (paymentMethod === 'MoMo') {
         if (data?.momoResult?.payUrl) {
@@ -142,22 +177,37 @@ const CheckoutScreen = () => {
           showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.');
         }
       }
+
       if (paymentMethod === 'COD') {
-        setIsPaymentSuccess(true); // Đặt trạng thái thanh toán thành công
-        showAlert('Thông báo', 'Thanh toán thành công!');
-        navigation.reset({
-          index: 0, // Màn hình đầu tiên sau khi reset
-          routes: [{ name: 'HTScreen' }], // Điều hướng tới HTScreen
-        });
+        setIsPaymentSuccess(true);
+        const notificationResult = await sendNotification(
+          userInfo?.userId,
+          userInfo?.username || 'Người dùng',
+          'Bạn đã đặt hàng thành công với phương thức COD.',
+          { type: 'order', orderId: data.order?._id }
+        );
+
+        if (!notificationResult.success) {
+          console.error('[ThanhToan] Gửi thông báo thất bại:', notificationResult.error);
+          showAlert(
+            'Thông báo',
+            'Đặt hàng thành công, nhưng gửi thông báo đẩy thất bại! Vui lòng kiểm tra thông báo sau.'
+          );
+        } else {
+          console.log('[ThanhToan] Gửi thông báo thành công');
+          showAlert('Thông báo', 'Đặt hàng thành công!');
+        }
+
+        // Trì hoãn navigation để đảm bảo thông báo được xử lý
+        setTimeout(() => {
+          navigation.reset({ index: 0, routes: [{ name: 'HTScreen' }] });
+        }, 1000);
       }
-
     } catch (error) {
-
+      console.error('[ThanhToan] Lỗi:', error.message);
       showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
     }
   };
-
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -209,8 +259,8 @@ const CheckoutScreen = () => {
             data={selectedProducts}
             nestedScrollEnabled
             scrollEnabled={false}
-            keyExtractor={item => item._id?.toString?.()}
-            renderItem={({item}) => (
+            keyExtractor={(item: any) => item._id?.toString?.()}
+            renderItem={({ item }: { item: any }) => (
               <View style={styles.productItem}>
                 <Image
                   source={{
@@ -226,8 +276,7 @@ const CheckoutScreen = () => {
                     Size: {item.variantId.size}
                   </Text>
                   <Text style={styles.productPrice}>
-                    Giá:{' '}
-                    {(item.variantId.price * item.quantity).toLocaleString()} đ
+                    Giá: {(item.variantId.price * item.quantity).toLocaleString()} đ
                   </Text>
                   <Text style={styles.productQuantity}>
                     Số lượng: {item.quantity}
@@ -292,12 +341,10 @@ const CheckoutScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Nút đặt hàng */}
       <TouchableOpacity style={styles.orderButton} onPress={ThanhToan}>
         <Text style={styles.orderText}>Đặt hàng</Text>
       </TouchableOpacity>
 
-      {/* Alert */}
       <CustomAlert
         visible={alertVisible}
         header={alertHeader}
@@ -306,40 +353,40 @@ const CheckoutScreen = () => {
       />
 
       <CustomAlertSecond
-          visible={confirmOpenBrowser}
-          header={alertHeader}
-          message={alertMessage}
-          buttonTextNo="Hủy"
-          buttonTextYes="Mở trình duyệt"
-          onNo={() =>  navigation.reset({
-            index: 0, // Màn hình đầu tiên sau khi reset
-            routes: [{ name: 'FailedScreen' }], // Điều hướng tới HTScreen
-          })}
-          onYes={async () => {
-            setConfirmOpenBrowser(false);
-            try {
-              await openWithChrome(momoUrl);
-              // Sau khi thanh toán xong, bạn có thể kiểm tra trạng thái thanh toán và điều hướng:
-              if (isPaymentSuccess) {
-                navigation.navigate('HTScreen'); // Điều hướng sau khi thanh toán thành công
-              } else {
-                showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!');
-              }
-            } catch (err) {
-              console.error('Lỗi khi mở bằng Chrome:', err);
-              showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.');
+        visible={confirmOpenBrowser}
+        header={alertHeader}
+        message={alertMessage}
+        buttonTextNo="Hủy"
+        buttonTextYes="Mở trình duyệt"
+        onNo={() =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'FailedScreen' }],
+          })
+        }
+        onYes={async () => {
+          setConfirmOpenBrowser(false);
+          try {
+            await openWithChrome(momoUrl);
+            if (isPaymentSuccess) {
+              navigation.navigate('HTScreen');
+            } else {
+              showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!');
             }
-          }}
+          } catch (err) {
+            console.error('[CheckoutScreen] Lỗi khi mở Chrome:', err);
+            showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.');
+          }
+        }}
       />
-
-
     </SafeAreaView>
   );
 };
 
+// Giữ nguyên styles
 const styles = StyleSheet.create({
-  backButton: {paddingTop: 16},
-  backText: {fontSize: 16, fontWeight: 'bold'},
+  backButton: { paddingTop: 16 },
+  backText: { fontSize: 16, fontWeight: 'bold' },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -352,13 +399,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 16,
   },
-  section: {marginBottom: 16},
-  sectionTitle: {fontSize: 16, fontWeight: 'bold', marginBottom: 8},
-  addressBox: {backgroundColor: '#f5f5f5', padding: 12, borderRadius: 8},
-  addressName: {fontSize: 16, fontWeight: 'bold'},
-  addressDetail: {fontSize: 14, color: 'gray'},
-  paymentOption: {flexDirection: 'row', alignItems: 'center', marginBottom: 8},
-  paymentText: {fontSize: 16},
+  section: { marginBottom: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  addressBox: { backgroundColor: '#f5f5f5', padding: 12, borderRadius: 8 },
+  addressName: { fontSize: 16, fontWeight: 'bold' },
+  addressDetail: { fontSize: 14, color: 'gray' },
+  paymentOption: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  paymentText: { fontSize: 16 },
   shippingBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -366,8 +413,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
   },
-  shippingIcon: {width: 40, height: 40, marginRight: 10},
-  shippingText: {fontSize: 16},
+  shippingIcon: { width: 40, height: 40, marginRight: 10 },
+  shippingText: { fontSize: 16 },
   priceSection: {
     padding: 16,
     backgroundColor: '#f5f5f5',
@@ -384,10 +431,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 8,
   },
-  priceLabel: {fontSize: 16, color: 'gray'},
-  priceValue: {fontSize: 16},
-  totalLabel: {fontSize: 18, fontWeight: 'bold'},
-  totalValue: {fontSize: 18, fontWeight: 'bold'},
+  priceLabel: { fontSize: 16, color: 'gray' },
+  priceValue: { fontSize: 16 },
+  totalLabel: { fontSize: 18, fontWeight: 'bold' },
+  totalValue: { fontSize: 18, fontWeight: 'bold' },
   orderButton: {
     backgroundColor: 'black',
     padding: 16,
@@ -396,7 +443,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10,
   },
-  orderText: {color: 'white', fontSize: 16, fontWeight: 'bold'},
+  orderText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
   productItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -405,13 +452,13 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
   },
-  productImage: {width: 80, height: 80, borderRadius: 8, marginRight: 10},
-  productInfo: {flex: 1},
-  productName: {fontSize: 16, fontWeight: 'bold'},
-  productSize: {fontSize: 14, color: 'gray'},
-  productPrice: {fontSize: 16, fontWeight: 'bold', color: '#333'},
-  productQuantity: {fontSize: 14, color: '#666'},
-  emptyText: {fontSize: 16, textAlign: 'center', marginTop: 20, color: 'gray'},
+  productImage: { width: 80, height: 80, borderRadius: 8, marginRight: 10 },
+  productInfo: { flex: 1 },
+  productName: { fontSize: 16, fontWeight: 'bold' },
+  productSize: { fontSize: 14, color: 'gray' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#333' },
+  productQuantity: { fontSize: 14, color: '#666' },
+  emptyText: { fontSize: 16, textAlign: 'center', marginTop: 20, color: 'gray' },
   addressPhone: {
     fontSize: 14,
     color: '#333',

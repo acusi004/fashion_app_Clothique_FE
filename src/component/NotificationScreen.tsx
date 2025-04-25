@@ -1,10 +1,11 @@
 import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import DetailScreen from "./DetailScreen.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import tokenService from "../service/tokenService.js";
 
 function NotificationScreen() {
 
-    const notifications = [
+    const notification = [
         {
             id: "1",
             title: "Your order #123456789 has been confirmed",
@@ -22,20 +23,72 @@ function NotificationScreen() {
             isNew: false,
         },
     ];
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+     const [alertVisible, setAlertVisible] = useState(false);
+      const [alertHeader, setAlertHeader] = useState('');
+      const [alertMessage, setAlertMessage] = useState('');
+    const BASE_URL = 'http://10.0.2.2:5000';
 
+    const showAlert = (header: string, message: string) => {
+        setAlertHeader(header);
+        setAlertMessage(message);
+        setAlertVisible(true);
+      };
+
+      const fetchNotifications = async () => {
+        try {
+          const token = await tokenService.getToken();
+      
+          if (!token) {
+            return showAlert('Thông báo', 'Vui lòng đăng nhập trước!');
+          }
+      
+          const response = await fetch(`${BASE_URL}/v1/notifications/`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+      
+          if (!response.ok) {
+            // Nếu response không thành công (ví dụ: 401, 500,...)
+            const errorData = await response.json();
+            console.error('Server error:', errorData);
+            return;
+          }
+      
+          const result = await response.json();
+          setNotifications(result);  // Giả sử API trả về: { data: [...] }
+      
+          console.log('Fetched notifications:', result);
+        } catch (error) {
+          console.error('Error fetching notifications:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+
+    useEffect(() => {
+        fetchNotifications();
+      }, []);
+
+      
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Thông báo</Text>
 
             <FlatList
                 data={notifications}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id}
                 renderItem={({item}) => (
                     <View style={styles.card}>
-                        <Image source={{uri: item.image}} style={styles.image}/>
+                        <Image source={require('../Image/logo.png')} style={styles.image}/>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.description}>{item.description}</Text>
+                            <Text style={styles.description}>{item.message}</Text>
                         </View>
                         {item.isNew && <Text style={styles.newBadge}>New</Text>}
                     </View>

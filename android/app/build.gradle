@@ -123,6 +123,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation ("androidx.browser:browser:1.8.0")
     implementation project(":react-native-screens")
+    implementation 'androidx.work:work-runtime:2.7.1' // Yêu cầu bởi Notifee
    // BoM quản lý version cho các thư viện Firebase
   implementation platform('com.google.firebase:firebase-bom:33.12.0')
 
@@ -130,8 +131,7 @@ dependencies {
   implementation 'com.google.firebase:firebase-analytics'
 
   // Firebase Cloud Messaging
-  implementation 'com.google.firebase:firebase-messaging'
-
+implementation 'com.google.firebase:firebase-messaging:24.0.1' // Phiên bản mới nhất
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

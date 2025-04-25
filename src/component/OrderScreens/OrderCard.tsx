@@ -6,17 +6,20 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ToastAndroid, Platform, UIManager, LayoutAnimation,
+  ToastAndroid,
+  Platform,
+  UIManager,
+  LayoutAnimation,
 } from 'react-native';
 import axios from 'axios';
 import { getToken } from '../../service/categoryService';
 import CustomAlert from '../../styles/CustomAlert.tsx';
 import CustomAlertSecond from '../../styles/CustomALertSecond.tsx';
 import { useNavigation } from '@react-navigation/native';
+import tokenService from '../../service/tokenService.js';
 
 // @ts-ignore
 const OrderCard = ({ order, onCancelOrder }) => {
-  // kich hoat layout Animation cho android
   if (
     Platform.OS === 'android' &&
     UIManager.setLayoutAnimationEnabledExperimental
@@ -24,11 +27,9 @@ const OrderCard = ({ order, onCancelOrder }) => {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
-
-  const navigation = useNavigation(); // ⬅️ Cần đặt ở đây
+  const navigation = useNavigation();
   const product = order.orderItems[order.orderItems.length - 1];
   const orderItems = order.orderItems || [];
-
 
   const variant = product.variantId;
   const productInfo = product.productId;
@@ -41,15 +42,16 @@ const OrderCard = ({ order, onCancelOrder }) => {
   const [alertMessage, setAlertMessage] = useState('');
   const [textYes, setTextYes] = useState('');
   const [textNo, setTextNo] = useState('');
-  const [isConfirmedReceived, setIsConfirmedReceived] = useState(order.orderStatus === 'Received');
   const [showBreakdown, setShowBreakdown] = useState(false);
-
+  const [isConfirmedReceived, setIsConfirmedReceived] = useState(
+    order.orderStatus === 'Received' || order.orderStatus === 'Completed'
+  );
+  const BASE_URL = 'http://10.0.2.2:5000';
 
   const [alertActionType, setAlertActionType] = useState<
     'cancel' | 'confirmReceived' | null
   >(null);
 
-  // @ts-ignore
   const showAlert = (header, message) => {
     setAlertHeader(header);
     setAlertMessage(message);
@@ -84,9 +86,9 @@ const OrderCard = ({ order, onCancelOrder }) => {
         return;
       }
 
-      const response = await axios.put(
-        `http://10.0.2.2:5000/v1/updateOrderStatus/${order._id}`,
-
+      const response = await axios.post(
+        `http://10.0.2.2:5000/v1/order/confirmOrder/${order._id}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,44 +97,105 @@ const OrderCard = ({ order, onCancelOrder }) => {
       );
 
       if (response.data.success) {
-
-        setIsConfirmedReceived(true); // ✅ Ẩn nút sau xác nhận
+        setIsConfirmedReceived(true);
         setAlertVisible(false);
+        ToastAndroid.show('Xác nhận đã nhận hàng thành công!', ToastAndroid.SHORT);
       } else {
-        showAlert(
-          'Lỗi',
-          response.data.message || 'Không thể cập nhật đơn hàng.',
-        );
+        showAlert('Lỗi', response.data.message || 'Không thể xác nhận đơn hàng.');
       }
     } catch (error) {
       ToastAndroid.show('Lỗi xác nhận đơn hàng!', ToastAndroid.SHORT);
-      console.log(`error ${error.message}`)
+      console.log('❌ Lỗi xác nhận:', error.response?.data || error.message);
     }
   };
 
   const renderStatusTimeFromHistory = () => {
     if (!order.history || order.history.length === 0) return null;
 
-    // Ưu tiên dòng có chứa 'giao hàng', nếu không có lấy dòng cuối cùng
     const relevantEntry =
       order.history.find(h =>
-        h.message?.toLowerCase().includes('giao hàng')
+        h.description?.toLowerCase().includes('giao hàng') ||
+        h.status?.toLowerCase() === 'completed'
       ) || order.history[order.history.length - 1];
 
-    const match = relevantEntry?.time?.match(/(\d{1,2}:\d{1,2}:\d{1,2}) (\d{1,2}\/\d{1,2}\/\d{4})/);
-
-    if (match) {
-      return `${match[1]} ${match[2]}`; // Trả ra: 14:39:36 3/4/2025
+    if (relevantEntry?.changedAt) {
+      const time = new Date(relevantEntry.changedAt);
+      return `${time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${time.toLocaleDateString('vi-VN')}`;
     }
 
     return null;
   };
 
-  const handleCancelOrder = async () => {
-    try {
-      // Lấy token từ service
-      const token = await getToken();
+  const sendNotification = async (
+    userId: string,
+    username: string,
+    message: string,
+    data = {},
+    title = 'Thông báo',
+    retries = 3
+  ): Promise<{ success: boolean; error?: string }> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        if (!userId || !message || !username) {
+          console.error('[sendNotification] Thiếu userId, username hoặc message');
+          return { success: false, error: 'Thiếu userId, username hoặc message' };
+        }
 
+        const token = await tokenService.getToken();
+        if (!token) {
+          throw new Error('Chưa đăng nhập');
+        }
+
+        console.log(`[sendNotification] Token: ${token}`); // Thêm log để kiểm tra token
+        console.log(`[sendNotification] Thử gửi lần ${attempt} đến ${username} (${userId})`);
+        console.log(`[sendNotification] Body:`, { userId, username, message, title, data }); // Thêm log để kiểm tra body
+
+        const response = await fetch(`${BASE_URL}/v1/notifications/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId,
+            username,
+            message,
+            title,
+            data,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error(`[sendNotification] Phản hồi từ server:`, result); // Thêm log để kiểm tra phản hồi
+          throw new Error(result.error || 'Lỗi tạo notification'); // Sử dụng result.error từ server
+        }
+
+        console.log(`[sendNotification] Gửi thành công đến ${username} (${userId})`);
+        return { success: true, data: result };
+      } catch (error) {
+        console.error(
+          `[sendNotification] Lỗi gửi đến ${userId} (lần ${attempt}): ${error.message}`
+        );
+        if (attempt === retries) {
+          return { success: false, error: error.message };
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    return { success: false, error: 'Hết số lần thử' };
+  };
+
+  const handleCancelOrder = async () => {
+    if (order.orderStatus !== 'Pending') {
+      showAlert('Lỗi', 'Chỉ có thể hủy đơn hàng khi còn ở trạng thái Chờ xác nhận!');
+      return;
+    }
+
+    const userInfo = await tokenService.getUserIdFromToken();
+    try {
+      const token = await getToken();
       if (!token) {
         showAlert('Lỗi', 'Bạn cần đăng nhập để thực hiện hành động này!');
         return;
@@ -143,18 +206,34 @@ const OrderCard = ({ order, onCancelOrder }) => {
         { orderId: order._id },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Gửi token trong header
+            Authorization: `Bearer ${token}`,
           },
         },
       );
 
       if (response.status === 200) {
-        onCancelOrder(order._id);
-        ToastAndroid.show('Hủy đơn hàng thành công !', ToastAndroid.SHORT);
         setAlertVisible(false);
+        onCancelOrder(order._id);
+        const notificationResult = await sendNotification(
+          userInfo?.userId,
+          userInfo?.username || 'Người dùng',
+          'Bạn đã hủy đơn hàng thành công.',
+          { type: 'order', orderId: order._id },
+          'Thông báo đơn hàng'
+        );
+
+        if (!notificationResult.success) {
+          console.error('[Huydonhang] Gửi thông báo thất bại:', notificationResult.error);
+          showAlert(
+            'Thông báo',
+            'Hủy đơn hàng thành công, nhưng gửi thông báo đẩy thất bại! Vui lòng kiểm tra thông báo sau.'
+          );
+        }
       }
     } catch (error) {
-      ToastAndroid.show('Đã xảy ra lỗi khi hủy đơn hàng.', ToastAndroid.SHORT);
+      console.error('❌ Lỗi hủy đơn hàng:', error.response?.data || error.message);
+      const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi hủy đơn hàng.';
+      showAlert('Lỗi', errorMessage);
     }
   };
 
@@ -162,7 +241,6 @@ const OrderCard = ({ order, onCancelOrder }) => {
     <TouchableOpacity
       onPress={() => navigation.navigate('DetailOrderScreen', { order })}>
       <View style={styles.card}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.favorite}>Yêu thích+</Text>
           <Text style={styles.shopName}>Clothique</Text>
@@ -173,56 +251,43 @@ const OrderCard = ({ order, onCancelOrder }) => {
           ]}>
             {(() => {
               let newStatus = '';
-              let history = '';
-
-
               if (
                 order.paymentMethod === 'COD' && order.paymentMethod === 'MoMo' &&
                 order.paymentStatus === 'Pending'
               ) {
-                newStatus = 'Chưa thanh toán'; // Hiển thị "Chưa thanh toán" nếu paymentMethod là COD và paymentStatus là Pending
-                history = 'Chờ thanh toán khi nhận hàng';
+                newStatus = 'Chưa thanh toán';
               } else {
-                // Các trạng thái đơn hàng khác
                 switch (order.orderStatus) {
                   case 'Pending':
                     newStatus = 'Đang xử lý';
-                    history = 'Đang chuẩn bị hàng';
                     break;
                   case 'Processing':
                     newStatus = 'Đơn hàng đang được chuẩn bị';
-                    history = 'Đang giao hàng';
                     break;
                   case 'Shipped':
                     newStatus = 'Đang giao hàng';
-                    history = 'Đang giao hàng';
                     break;
                   case 'Delivered':
                     newStatus = 'Đã giao';
-                    history = 'Đã giao hàng';
                     break;
                   case 'Received':
                     newStatus = 'Đã nhận hàng';
-                    history = 'Khách hàng đã xác nhận';
+                    break;
+                  case 'Completed':
+                    newStatus = 'Đã hoàn tất';
                     break;
                   case 'Cancelled':
                     newStatus = 'Đã hủy';
-                    history = 'Đơn hàng đã bị hủy';
                     break;
-
                   default:
                     newStatus = 'Trạng thái không xác định';
-                    history = 'Lỗi trạng thái';
                 }
-
               }
-
               return newStatus;
             })()}
           </Text>
         </View>
 
-        {/* Product */}
         <View style={styles.productContainer}>
           <Image
             source={{ uri: `http://10.0.2.2:5000${productImage}` }}
@@ -266,12 +331,9 @@ const OrderCard = ({ order, onCancelOrder }) => {
                   </View>
                 </View>
               ))}
-
           </>
         )}
 
-
-        {/* Shipping Address */}
         <View style={styles.shippingAddress}>
           <Text style={styles.addressLabel}>Địa chỉ giao hàng:</Text>
           <Text>{order.shippingAddress.name}</Text>
@@ -283,7 +345,6 @@ const OrderCard = ({ order, onCancelOrder }) => {
           </Text>
         </View>
 
-        {/* Total */}
         <TouchableOpacity onPress={() => setShowBreakdown(prev => !prev)}>
           <Text style={styles.total}>
             Tổng số tiền ({orderItems.reduce((sum, item) => sum + item.quantity, 0)} sản phẩm): ₫
@@ -312,10 +373,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
           </View>
         )}
 
-
-
-        {/* Trạng thái giao hàng + Button */}
-        {order.orderStatus === 'Delivered' && (
+        {(order.orderStatus === 'Delivered' || order.orderStatus === 'Completed') && (
           <View style={styles.footer}>
             <Text style={styles.deliveryNote}>
               {`Đơn hàng giao thành công vào lúc ${renderStatusTimeFromHistory()}`}{' '}
@@ -327,15 +385,12 @@ const OrderCard = ({ order, onCancelOrder }) => {
                   navigation.navigate('OrderRating', {
                     orderId: order._id,
                     orderItems: order.orderItems,
-                    userId: order.userId, // ✅ Truyền luôn userId sang
+                    userId: order.userId,
                   })
                 }
               >
                 <Text>Đánh Giá</Text>
               </TouchableOpacity>
-
-
-
 
               {!isConfirmedReceived && (
                 <TouchableOpacity
@@ -352,7 +407,6 @@ const OrderCard = ({ order, onCancelOrder }) => {
                   <Text style={{ color: '#B35A00' }}>Đã nhận được hàng</Text>
                 </TouchableOpacity>
               )}
-
             </View>
           </View>
         )}
@@ -373,11 +427,9 @@ const OrderCard = ({ order, onCancelOrder }) => {
                 <Text style={{ color: '#B35A00' }}>Hủy đơn hàng</Text>
               </TouchableOpacity>
             </View>
-
           </View>
         )}
       </View>
-
 
       <CustomAlertSecond
         onNo={() => setAlertVisible(false)}
@@ -397,8 +449,6 @@ const OrderCard = ({ order, onCancelOrder }) => {
     </TouchableOpacity>
   );
 };
-
-export default OrderCard;
 
 const styles = StyleSheet.create({
   card: {
@@ -534,7 +584,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 4,
   },
-
-
-
 });
+
+export default OrderCard;

@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@notifee/react-native": "^9.1.8",
     "@react-native-community/checkbox": "^0.5.17",
     "@react-native-firebase/app": "^21.14.0",
     "@react-native-firebase/messaging": "^21.14.0",
@@ -31,6 +32,7 @@
     "react-native-pager-view": "^6.7.0",
     "react-native-paper": "^5.13.1",
     "react-native-permissions": "^5.3.0",
+    "react-native-push-notification": "^8.1.1",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.7.0",
     "react-native-svg": "^15.11.2",

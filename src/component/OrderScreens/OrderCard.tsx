@@ -166,7 +166,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
       <View style={styles.card}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.favorite}>Yêu thích+</Text>
+          <Text style={styles.favorite}>HVNCLC+</Text>
           <Text style={styles.shopName}>Clothique</Text>
           <Text style={[
             styles.status,

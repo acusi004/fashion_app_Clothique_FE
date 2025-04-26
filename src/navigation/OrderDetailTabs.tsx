@@ -27,7 +27,7 @@ const OrderDetailTabs = ({navigation}) => {
                 tabBarLabelStyle: { fontSize: 13, fontWeight: '500' },
                 tabBarItemStyle: { width: 130 },
                 tabBarScrollEnabled: true,
-                tabBarIndicatorStyle: { backgroundColor: '#ff4d00', height: 2 },
+                tabBarIndicatorStyle: { backgroundColor: '#000', height: 2 },
                 tabBarActiveTintColor: '#000',
                 tabBarInactiveTintColor: '#333',
             }}

@@ -59,28 +59,65 @@ export const searchProducts = async (keyword) => {
         }
     }
 };
-export const fetchCategories = async () => {
+
+
+
+
+
+export const FilterProducts = async (keyword, size, color, minPrice, maxPrice, quantity, categoryId) => {
+  try {
     const token = await getToken();
 
-    const response = await fetch("http://10.0.2.2:5000/v1/category", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+    const params = {};
+
+    if (keyword) params.keyword = keyword;
+    if (size) params.size = size;
+    if (color) params.color = color;
+    if (minPrice) params.minPrice = minPrice;
+    if (maxPrice) params.maxPrice = maxPrice;
+    if (quantity) params.stock = quantity;
+    if (categoryId) params.categoryId = categoryId;
+
+    const response = await axios.get(`${API_URL}/product/search`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
-    const data = await response.json();
+    return response.data;
+  } catch (err) {
+    console.error('Lỗi tìm kiếm sản phẩm:', err.response?.data || err.message);
+    return [];
+  }
+};
 
 
-    if (!response.ok) {
-        throw new Error(data.message || "Lỗi không xác định từ API danh mục.");
-    }
 
-    const categoryList = data.categories || data; // hỗ trợ cả 2 format
+
+export const fetchCategories = async () => {
+  try {
+    const token = await getToken();
+
+    const response = await axios.get(`${API_URL}/category`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = response.data;
+
+    const categoryList = data.categories || data; // hỗ trợ cả 2 dạng trả về
+
     if (!Array.isArray(categoryList)) {
-        throw new Error("❌ Dữ liệu không phải mảng!");
+      throw new Error("❌ Dữ liệu không phải mảng!");
     }
 
     return categoryList;
+  } catch (error) {
+    console.error("❌ Lỗi lấy danh sách danh mục:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 

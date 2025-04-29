@@ -388,7 +388,8 @@ const styles = StyleSheet.create({
       borderRadius: 10,
       paddingVertical: 8,
       paddingHorizontal: 12,
-      marginBottom: 8,
+      marginBottom: 15,
+
     },
     messageText: {
       fontSize: 14,

@@ -8,7 +8,7 @@ import {
   StyleSheet,
   SafeAreaView,
   FlatList,
-  Alert,
+  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { RadioButton } from 'react-native-paper';
@@ -21,6 +21,7 @@ import FailedScreen from './FailedScreen.tsx';
 
 const CheckoutScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
   const navigation = useNavigation();
   const route = useRoute();
   const { selectedProducts = [], address = null, paymentMethod1 } = route.params || {};
@@ -121,7 +122,6 @@ const CheckoutScreen = () => {
         if (attempt === retries) {
           return { success: false, error: error.message };
         }
-        // Chờ 1 giây trước khi thử lại
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
@@ -140,8 +140,11 @@ const CheckoutScreen = () => {
     }
 
     try {
+      setIsLoading(true); // Bật trạng thái loading
+
       const token = await tokenService.getToken();
       if (!token) {
+        setIsLoading(false);
         return showAlert('Thông báo', 'Vui lòng đăng nhập trước!');
       }
 
@@ -195,10 +198,9 @@ const CheckoutScreen = () => {
           );
         } else {
           console.log('[ThanhToan] Gửi thông báo thành công');
-          showAlert('Thông báo', 'Đặt hàng thành công!');
+         
         }
 
-        // Trì hoãn navigation để đảm bảo thông báo được xử lý
         setTimeout(() => {
           navigation.reset({ index: 0, routes: [{ name: 'HTScreen' }] });
         }, 1000);
@@ -206,11 +208,20 @@ const CheckoutScreen = () => {
     } catch (error) {
       console.error('[ThanhToan] Lỗi:', error.message);
       showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
+    } finally {
+      setIsLoading(false); // Tắt trạng thái loading dù thành công hay thất bại
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {isLoading && ( // Hiển thị giao diện loading khi isLoading là true
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#000" />
+          <Text style={styles.loadingText}>Đang xử lý...</Text>
+        </View>
+      )}
+
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}>
@@ -341,8 +352,14 @@ const CheckoutScreen = () => {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.orderButton} onPress={ThanhToan}>
-        <Text style={styles.orderText}>Đặt hàng</Text>
+      <TouchableOpacity
+        style={[styles.orderButton, isLoading && styles.orderButtonDisabled]} // Vô hiệu hóa nút khi đang loading
+        onPress={ThanhToan}
+        disabled={isLoading} // Vô hiệu hóa onPress khi đang loading
+      >
+        <Text style={styles.orderText}>
+          {isLoading ? 'Đang xử lý...' : 'Đặt hàng'}
+        </Text>
       </TouchableOpacity>
 
       <CustomAlert
@@ -383,7 +400,7 @@ const CheckoutScreen = () => {
   );
 };
 
-// Giữ nguyên styles
+// Cập nhật styles
 const styles = StyleSheet.create({
   backButton: { paddingTop: 16 },
   backText: { fontSize: 16, fontWeight: 'bold' },
@@ -443,6 +460,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10,
   },
+  orderButtonDisabled: {
+    backgroundColor: '#888', // Màu xám khi đang loading
+    opacity: 0.7,
+  },
   orderText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
   productItem: {
     flexDirection: 'row',
@@ -463,6 +484,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     marginTop: 4,
+  },
+  // Thêm style cho loading overlay
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

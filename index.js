@@ -1,7 +1,3 @@
-/**
- * @format
- */
-
 import { AppRegistry } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
@@ -17,7 +13,8 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
       body: remoteMessage.notification?.body || 'Bạn có thông báo mới',
       android: {
         channelId: 'default',
-        smallIcon: 'ic_launcher',
+        smallIcon: 'ic_launcher', // Biểu tượng nhỏ ở góc phải trên
+        largeIcon: 'ic_launcher', // Biểu tượng lớn bên trái thông báo
         pressAction: { id: 'default' },
       },
     });

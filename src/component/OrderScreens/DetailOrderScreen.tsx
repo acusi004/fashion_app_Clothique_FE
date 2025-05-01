@@ -8,7 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-
+import moment from 'moment';
 // @ts-ignore
 const DetailOrderScreen = ({ route, navigation }) => {
   const { order } = route.params;
@@ -21,7 +21,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
     const status = order.orderStatus;
     const paymentPending =
       order.paymentMethod === 'COD' && order.paymentStatus === 'Pending';
-
+    console.log(order.history)
     if (paymentPending) return 'Chưa thanh toán - Thanh toán khi nhận hàng';
 
     switch (status) {
@@ -56,6 +56,16 @@ const DetailOrderScreen = ({ route, navigation }) => {
   };
 
 
+  const convertCharObjectToString = (obj) => {
+    if (!obj || typeof obj !== 'object') return '';
+    const keys = Object.keys(obj).filter(key => !isNaN(Number(key)));
+    return keys
+      .sort((a, b) => Number(a) - Number(b))
+      .map(k => obj[k])
+      .join('');
+  };
+
+
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
       <ScrollView style={styles.container}>
@@ -63,12 +73,20 @@ const DetailOrderScreen = ({ route, navigation }) => {
 
         <View style={styles.section}>
           <Text style={styles.label}>Thông tin vận chuyển</Text>
-          <Text>SPX Express: SPXVN050683193434</Text>
+          <Text>Đơn vị vận chuyển: GHN</Text>
+          <Text>Mã vận đơn: {order.GHNOrderCode}</Text>
+
+          {/* ✅ Hiển thị ngày giao dự kiến nếu có */}
+          {order.expectedDeliveryTime && (
+            <Text>
+              Dự kiến giao hàng: {moment.unix(order.expectedDeliveryTime).format('HH:mm - DD/MM/YYYY')}
+            </Text>
+          )}
           {order.orderStatus === 'Delivered' && (
             <Text style={styles.success}>{renderStatusText()}</Text>
           )}
-
         </View>
+
 
         <View style={styles.section}>
           <Text style={styles.label}>Địa chỉ nhận hàng</Text>
@@ -92,7 +110,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
                   style={styles.image}
                 />
                 <View style={styles.info}>
-                  <Text>{item.productId.name}</Text>
+                  <Text style={{fontWeight:'bold'}}>{item.productId.name}</Text>
                   <Text>
                     {item.variantId.size} - {item.variantId.color}
                   </Text>
@@ -133,6 +151,13 @@ const DetailOrderScreen = ({ route, navigation }) => {
               <Text>₫{order.shippingFee.toLocaleString()}</Text>
             </View>
 
+            {order.discountAmount > 0 && (
+                <View style={styles.priceRow}>
+                  <Text style={{ flex: 1, fontWeight: 'bold', color: 'green' }}>Giảm từ mã giảm giá</Text>
+                  <Text style={{ color: 'green' }}>-₫{order.discountAmount.toLocaleString()}</Text>
+                </View>
+            )}
+
             <View style={[styles.priceRow, { borderTopWidth: 1, borderColor: '#ccc', paddingTop: 6 }]}>
               <Text style={{ flex: 1, fontWeight: 'bold' }}>Tổng cộng</Text>
               <Text style={{ fontWeight: 'bold' }}>₫{order.totalAmount.toLocaleString()}</Text>
@@ -146,8 +171,10 @@ const DetailOrderScreen = ({ route, navigation }) => {
               {order.history.map((event, index) => {
                 const text = typeof event === 'string'
                   ? event
-                  : (event && typeof event.message === 'string' ? event.message : '');
-
+                  : (event?.description || event?.message || '');
+                const time = event?.changedAt
+                  ? moment(event.changedAt).format('HH:mm - DD/MM/YYYY')
+                  : '';
                 return (
                   <Text
                     key={index}
@@ -157,7 +184,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
                       text.toLowerCase().includes('giao hàng') && { color: '#1abc9c' },
                     ]}
                   >
-                    • {formatHistoryText(text)}
+                    • {formatHistoryText(text)} {time && `| ${time}`}
                   </Text>
                 );
               })}
@@ -166,10 +193,12 @@ const DetailOrderScreen = ({ route, navigation }) => {
 
 
 
+
+
         </View>
 
       </ScrollView>
-      {order.orderStatus === 'Delivered' && (
+      {order.orderStatus === 'Completed' && (
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.btnOutline} onPress={() =>
             navigation.navigate('OrderRating', {
@@ -179,9 +208,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
           }>
             <Text>Đánh Giá</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btnPrimary}>
-            <Text style={{ color: '#B35A00' }}>Đã nhận được hàng</Text>
-          </TouchableOpacity>
+
         </View>
       )}
 
@@ -204,7 +231,10 @@ const styles = StyleSheet.create({
     padding: 10
   },
   section: {
-    marginBottom: 20
+    marginBottom: 20,
+    backgroundColor:'#F5F5F5',
+    borderRadius:15,
+    padding:10
   },
   label: {
     fontWeight: 'bold',

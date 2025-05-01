@@ -19,7 +19,6 @@ const OrderScreen = ({ navigation }) => {
             try {
                 // Lấy dữ liệu đơn hàng
                 const data = await fetchOrders();
-                console.log("Dữ liệu đơn hàng:", data); // Kiểm tra dữ liệu trả về từ API
                 setOrders(data);
                 updateOrderStatus(data);
             } catch (error) {

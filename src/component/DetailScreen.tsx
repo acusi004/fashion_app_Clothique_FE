@@ -28,7 +28,13 @@ const DetailScreen = ({ route, navigation }) => {
     const [alertMessage, setAlertMessage] = useState('');
 
     const [ratings, setRatings] = useState([]);
-    const [comments, setComments] = useState([]);
+    interface Comment {
+        _id: string;
+        likes: Array<{userId: string}>;
+        dislikes: Array<{userId: string}>;
+    }
+
+    const [comments, setComments] = useState<Comment[]>([]);
     const [avgRating, setAvgRating] = useState(0);
 
     // @ts-ignore
@@ -54,7 +60,17 @@ const DetailScreen = ({ route, navigation }) => {
         }
     }, [variantsList]);
 
-    const increaseQuantity = useCallback(() => setQuantity(q => q + 1), []);
+    const increaseQuantity = useCallback(() => {
+        setQuantity(q => {
+            if (q < stock) {
+                return q + 1;
+            } else {
+                ToastAndroid.show('Số lượng đã đạt tối đa trong kho', ToastAndroid.SHORT);
+                return q; // Không tăng nữa
+            }
+        });
+    }, [stock]);
+
     const decreaseQuantity = useCallback(() => setQuantity(q => (q > 1 ? q - 1 : 1)), []);
 
 
@@ -194,7 +210,7 @@ const DetailScreen = ({ route, navigation }) => {
             await likeComment(commentId);
 
             // Cập nhật lại state
-            setComments((prevComments) =>
+            setComments((prevComments: Comment[]) =>
                 prevComments.map((comment) =>
                     comment._id === commentId
                         ? {
@@ -283,7 +299,9 @@ const DetailScreen = ({ route, navigation }) => {
                                     setSizes(Array.isArray(item.size) ? item.size : [item.size]);
                                     setStock(item.stock);
                                     setSelectedSize('');
+                                    setQuantity(1); // 🔥 Reset số lượng về 1 mỗi lần đổi màu
                                 }}
+
                                 style={styles.variantButton}
                             >
                                 <Text style={styles.variantButtonText}>{item.color}</Text>

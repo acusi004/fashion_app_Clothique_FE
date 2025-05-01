@@ -46,7 +46,9 @@ const OrderCard = ({ order, onCancelOrder }) => {
   const [isConfirmedReceived, setIsConfirmedReceived] = useState(
     order.orderStatus === 'Received' || order.orderStatus === 'Completed'
   );
+
   const BASE_URL = 'http://10.0.2.2:5000';
+
 
   const [alertActionType, setAlertActionType] = useState<
     'cancel' | 'confirmReceived' | null
@@ -88,7 +90,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
 
       const response = await axios.post(
         `http://10.0.2.2:5000/v1/order/confirmOrder/${order._id}`,
-        {},
+        {}, // POST cần có body (dù rỗng)
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -109,6 +111,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
     }
   };
 
+
   const renderStatusTimeFromHistory = () => {
     if (!order.history || order.history.length === 0) return null;
 
@@ -125,6 +128,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
 
     return null;
   };
+
 
   const sendNotification = async (
     userId: string,
@@ -187,6 +191,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
     return { success: false, error: 'Hết số lần thử' };
   };
 
+
   const handleCancelOrder = async () => {
     if (order.orderStatus !== 'Pending') {
       showAlert('Lỗi', 'Chỉ có thể hủy đơn hàng khi còn ở trạng thái Chờ xác nhận!');
@@ -237,12 +242,14 @@ const OrderCard = ({ order, onCancelOrder }) => {
     }
   };
 
+
+
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('DetailOrderScreen', { order })}>
       <View style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.favorite}>Yêu thích+</Text>
+          <Text style={styles.favorite}>HVNCLC+</Text>
           <Text style={styles.shopName}>Clothique</Text>
           <Text style={[
             styles.status,
@@ -275,6 +282,10 @@ const OrderCard = ({ order, onCancelOrder }) => {
                     break;
                   case 'Completed':
                     newStatus = 'Đã hoàn tất';
+                    break;
+                  case 'Completed': // ✅ Thêm trường hợp này
+                    newStatus = 'Đã hoàn tất';
+                    history = 'Khách đã xác nhận đã nhận hàng';
                     break;
                   case 'Cancelled':
                     newStatus = 'Đã hủy';
@@ -372,6 +383,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
             </View>
           </View>
         )}
+
 
         {(order.orderStatus === 'Delivered' || order.orderStatus === 'Completed') && (
           <View style={styles.footer}>

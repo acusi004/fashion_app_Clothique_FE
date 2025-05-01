@@ -1,255 +1,228 @@
-// import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { FlatList, Image, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
-import axios from "axios";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Animated,
+  PanResponder,
+  Dimensions,
+  TextInput,
+  ScrollView,
+} from 'react-native';
+import axios from 'axios';
 import tokenService from "../service/tokenService";
-import { jwtDecode } from "jwt-decode";
-import { ActivityIndicator, TextInput } from "react-native-paper";
+import { jwtDecode } from 'jwt-decode';
 import Swiper from "react-native-swiper";
 import TopTabNavigation from "../navigation/TopTabNavigation.tsx";
-import { searchProducts } from "../service/productService.";
-import ItemSearchProducts from "./ItemSearchProducts.tsx";
-import FilterDrawer from "../styles/FilterDrawer";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import React, { useEffect, useState } from "react";
-import { getSearchHistory, saveSearchHistory } from "../service/searchHistoryService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import LottieView from 'lottie-react-native';  // Thêm LottieView vào đây
 
-// @ts-ignore
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 function HomeScreen({ navigation }) {
-    const [userName, setUserName] = useState("Đang tải...");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [productSearch, setProductSearch] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [filterActive, setFilterActive] = useState(false);
-    const [showFilter, setShowFilter] = useState(false);
-    const SEARCH_HISTORY_KEY = 'searchHistory';
-    const [searchHistory, setSearchHistory] = useState([]);
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [userName, setUserName] = useState('Đang tải...');
+  const [chatVisible, setChatVisible] = useState(false);
+  const [inputMessage, setInputMessage] = useState('');
+  const [messages, setMessages] = useState([{ sender: 'bot', text: `Xin chào! Bạn cần hỗ trợ gì không?` }]);
+  const [isLoading, setIsLoading] = useState(false);  // Trạng thái loading cho Lottie
 
-    // Banner images
-    const banner: any[] = [
-        require('../Image/banner.png'),
-        require('../Image/banner2.png')
-    ];
+  const chatPosition = useRef(new Animated.ValueXY({ x: 375, y: 750 })).current;
+  const scrollViewRef = useRef<FlatList>(null);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchUserInfo(); // Gọi lại API khi quay lại HomeScreen
-        }, [])
-    );
+  const banner: any[] = [
+    require('../Image/banner.png'),
+    require('../Image/banner2.png'),
+  ];
 
-    const fetchUserInfo = async () => {
-        try {
-            const token = await tokenService.getToken();
-            if (!token) {
-                console.error("❌ Không tìm thấy token!");
-                return;
-            }
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+    }, [])
+  );
 
-            let decodedToken;
-            try {
-                decodedToken = jwtDecode(token);
-            } catch (error) {
-                console.error("❌ Lỗi khi giải mã token:", error);
-                return;
-            }
+  const fetchUserInfo = async () => {
+    try {
+      const token = await tokenService.getToken();
+      if (!token) return;
+      const decodedToken = jwtDecode(token);
+      const userEmail = decodedToken?.email;
+      if (!userEmail) return;
+      const response = await axios.get('http://10.0.2.2:5000/v1/user/info', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { email: userEmail },
+      });
+      setUserName(response.data.name || 'Người dùng');
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy thông tin user:', error);
+      setUserName('Lỗi tải tên');
+    }
+  };
 
-            const userEmail = decodedToken?.email;
-            if (!userEmail) {
-                console.error("❌ Không lấy được email từ token!");
-                return;
-            }
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) return;
 
-            // Gọi API để lấy thông tin user
-            const response = await axios.get("http://10.0.2.2:5000/v1/user/info", {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { email: userEmail }
-            });
+    // Thêm tin nhắn người dùng vào giao diện trước
+    setMessages((prev) => [...prev, { sender: 'user', text: inputMessage }]);
 
-            // Cập nhật tên người dùng
-            setUserName(response.data.name || "Người dùng");
-        } catch (error) {
-            console.error("❌ Lỗi khi lấy thông tin user:", error);
-            setUserName("Lỗi tải tên");
-        }
-    };
+    // Hiển thị loading Lottie (3 chấm)
+    setIsLoading(true);
 
-    //chỉ chạy khi searchQuery thay đổi
-    useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            handleSearch();
-        }, 500);
-        getSearchHistory().then(setSearchHistory);
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchQuery]);
+    // Gửi tin nhắn đến backend (hoặc n8n webhook)
+    try {
+      const response = await axios.post(
+        'https://datlui.app.n8n.cloud/webhook/e29c5f95-88d1-4170-b94b-7886da3a4c7b',
+        { message: inputMessage }
+      );
+      const botReply = response.data.output;
 
+      // Cập nhật lại tin nhắn và ẩn loading
+      setIsLoading(false);
+      setMessages((prev) => [...prev, { sender: 'bot', text: botReply }]);
+    } catch (error) {
+      setIsLoading(false);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: 'Xin lỗi, hiện tại hệ thống đang bận.' },
+      ]);
+    }
 
-    //chạy khi màn hình quay trở lại
-    useFocusEffect(
-        React.useCallback(() => {
-            return () => {
-                setSearchQuery("");
-                setProductSearch([]);
-                setError("");
-            };
-        }, [])
-    );
+    setInputMessage('');
+  };
 
-    // Mở Drawer
-    const handleOpenFilter = () => {
-        setShowFilter(true);
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: Animated.event([null, { moveX: chatPosition.x, moveY: chatPosition.y }], {
+        useNativeDriver: false,
+      }),
+      onPanResponderRelease: (e, gestureState) => {
+        let finalX = gestureState.moveX - 30;
+        let finalY = gestureState.moveY - 30;
 
-    };
+        finalX = Math.max(0, Math.min(finalX, SCREEN_WIDTH - 60));
+        finalY = Math.max(0, Math.min(finalY, SCREEN_HEIGHT - 150));
 
-    // Đóng Drawer
-    const handleCloseFilter = () => {
-        setShowFilter(false);
-    };
+        Animated.spring(chatPosition, {
+          toValue: { x: finalX, y: finalY },
+          useNativeDriver: false,
+        }).start();
+      },
+    })
+  ).current;
 
-    // Khi người dùng bấm "Áp dụng" trong Drawer
+  const navigateCart = () => navigation.navigate('CartScreen');
 
-    // @ts-ignore
-    const handleApplyFilter = (filters) => {
-        console.log("Filters:", filters);
-        // Ở đây bạn có thể gọi hàm search kèm filters hoặc tuỳ logic
-        setShowFilter(false);
-    };
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.Header}>
+        <Text style={styles.welcomeText}>
+          Chào,{'\n'}
+          <Text style={styles.boldText}>{userName}</Text>
+        </Text>
+        <TouchableOpacity onPress={navigateCart}>
+          <Image style={styles.ImageHeader} source={require('../Image/shopping-cart.png')} />
+        </TouchableOpacity>
+      </View>
 
-    //  Hàm gọi API tìm kiếm sản phẩm (sử dụng hàm từ productService)
-    const handleSearch = async () => {
-        if (!searchQuery.trim()) return;
-        setIsLoading(true);
+      {/* Search */}
+      <TouchableOpacity onPress={() => navigation.navigate('SearchScreen')} style={styles.fakeSearchBox}>
+        <Text style={styles.placeholderText}>Bạn đang tìm kiếm gì?</Text>
+        <Image source={require('../Image/search.png')} style={styles.searchIcon} />
+      </TouchableOpacity>
 
-        setError("");
-        try {
-            const data = await searchProducts(searchQuery);
-            // ToastAndroid.show(`Data: ${data}`, ToastAndroid.SHORT);
-            setProductSearch(data);
-            const updatedHistory = await saveSearchHistory(searchQuery);
-            setSearchHistory(updatedHistory); // cập nhật UI
-
-        } catch (error) {
-            // @ts-ignore
-            setError(error.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    const handleClearHistory = async () => {
-        try {
-            await AsyncStorage.removeItem('searchHistory');
-            setSearchHistory([]);
-        } catch (err) {
-            console.error("Lỗi khi xoá lịch sử:", err);
-        }
-    };
-
-    // @ts-ignore
-    const renderSearchItem = ({ item }) => (
-        <ItemSearchProducts
-            item={item}
-            onPress={(item: any) => {
-                return navigation.navigate("DetailScreen", { product: item });
-            }
-            }
-        />
-    );
-
-    // Chuyển đến giỏ hàng
-    const navigateCart = () => {
-        navigation.navigate("CartScreen");
-    };
-
-    return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.Header}>
-                <Text style={styles.welcomeText}>
-                    Chào,{'\n'}
-                    <Text style={styles.boldText}>{userName}</Text>
-                </Text>
-                <TouchableOpacity onPress={navigateCart}>
-                    <Image
-                        style={styles.ImageHeader}
-                        source={require('../Image/shopping-cart.png')}
-                    />
-                </TouchableOpacity>
+      {/* Banner */}
+      <View style={styles.Banner}>
+        <Swiper autoplay={true} autoplayTimeout={3} showsPagination={false}>
+          {banner.map((image, index) => (
+            <View key={index} style={styles.slideBanner}>
+              <Image source={image} style={styles.imageBanner} />
             </View>
+          ))}
+        </Swiper>
+      </View>
 
-            {/* Search Input */}
-            <TouchableOpacity
-                onPress={() => navigation.navigate("SearchScreen")}
-                style={styles.fakeSearchBox}
-            >
-                <Text style={styles.placeholderText}>Bạn đang tìm kiếm gì?</Text>
-                <Image source={require('../Image/search.png')} style={styles.searchIcon} />
-            </TouchableOpacity>
+      <TopTabNavigation />
 
-            {searchQuery.trim().length > 0 ? (
-                <View style={styles.resultsContainer}>
-                    {isLoading ? (
-                        <ActivityIndicator size="large" color="#27ae60" />
-                    ) : error ? (
-                        <Text style={styles.errorText}>{error}</Text>
-                    ) : (
-                        <FlatList
-                            data={productSearch}
-                            keyExtractor={(item) => item._id}
-                            renderItem={renderSearchItem}
-                            ListEmptyComponent={
-                                <Text style={styles.emptyText}>
-                                    Không tìm thấy sản phẩm nào
-                                </Text>
-                            }
-                        />
-                    )}
+      {/* ChatBox */}
+      {chatVisible && (
+        <View style={styles.overlay}>
+          <View style={styles.chatBox}>
+            <View style={styles.chatHeader}>
+              <View style={styles.logoAndTitle}>
+                <Image source={require('../Image/logo.png')} style={styles.logoImage} />
+                <Text style={styles.chatTitle}>CLOTHIQUE Assistant</Text>
+              </View>
+              <TouchableOpacity onPress={() => setChatVisible(false)}>
+                <Image style={{ width: 15, height: 15 }} source={require('../Image/clear.png')} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={messages}
+              keyExtractor={(_, index) => index.toString()}
+              renderItem={({ item }) => (
+                <View
+                  style={[
+                    styles.messageBubble,
+                    item.sender === 'user'
+                      ? { alignSelf: 'flex-end', backgroundColor: '#DCF8C6' }
+                      : { alignSelf: 'flex-start', backgroundColor: '#f0f0f0' },
+                  ]}
+                >
+                  <Text style={styles.messageText}>{item.text}</Text>
                 </View>
-            ) : isSearchFocused && searchHistory.length > 0 ? (
-                <>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Lịch sử tìm kiếm:</Text>
-                        <TouchableOpacity onPress={handleClearHistory}>
-                            <Text style={{ color: 'red', fontSize: 14 }}>Xoá</Text>
-                        </TouchableOpacity>
-                    </View>
+              )}
+              contentContainerStyle={{ padding: 10 }}
+              ref={scrollViewRef}
+              onContentSizeChange={() => {
+                if (scrollViewRef.current) {
+                  scrollViewRef.current.scrollToEnd({ animated: true });
+                }
+              }}
+            />
 
-                    {searchHistory.map((item, index) => (
-                        <TouchableOpacity key={index} onPress={() => setSearchQuery(item)}>
-                            <Text style={{ paddingVertical: 6, fontSize: 16 }}>{item}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </>
-
-            ) : (
-                <>
-                    <View style={styles.Banner}>
-                        <Swiper autoplay={true} autoplayTimeout={3} showsPagination={false}>
-                            {banner.map((image, index) => (
-                                <View key={index} style={styles.slideBanner}>
-                                    <Image source={image} style={styles.imageBanner} />
-                                </View>
-                            ))}
-                        </Swiper>
-                    </View>
-
-
-                    <TopTabNavigation />
-
-                    <FilterDrawer
-                        visible={showFilter}
-                        onClose={handleCloseFilter}
-                        onApply={handleApplyFilter}
-                    />
-                </>
-
+            {/* Lottie Loading */}
+            {isLoading && (
+              <View style={styles.loadingContainer}>
+                <LottieView
+                  source={require('../Image/Animation - 1745830271793.json')}  // Thêm hiệu ứng 3 chấm
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              </View>
             )}
 
+            {/* Input Message */}
+            <View style={styles.chatInputContainer}>
+              <TextInput
+                placeholder="Nhập tin nhắn..."
+                style={styles.chatInput}
+                value={inputMessage}
+                onChangeText={setInputMessage}
+              />
+              <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
+                <Text style={styles.sendButtonText}>Gửi</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-    );
-}
+      )}
 
+      {/* ChatButton */}
+      {!chatVisible && (
+        <Animated.View {...panResponder.panHandlers} style={[styles.chatButton, chatPosition.getLayout()]}>
+          <TouchableOpacity onPress={() => setChatVisible(true)}>
+            <Image source={require('../Image/happy.png')} style={styles.chatIcon} />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+    </View>
+  );
+}
 // StyleSheet
 const styles = StyleSheet.create({
     container: {
@@ -275,11 +248,6 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30,
         resizeMode: "contain",
-    },
-    searchContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 10,
     },
     TextInputHeader: {
         width: '90%',
@@ -369,6 +337,137 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 0,
     },
+
+    chatIcon: {
+      width: 40,
+      height: 40,
+      resizeMode: 'contain',
+    },
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.3)', // nền mờ
+      justifyContent: 'flex-end',
+      alignItems: 'flex-end',
+    },
+    chatBox: {
+      width: 340,
+      height: 400,
+      backgroundColor: '#fff',
+      borderRadius: 15,
+      margin: 20,
+      overflow: 'hidden',
+
+    },
+    chatHeader: {
+      backgroundColor: '#4B7BEC',
+      padding: 10,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    chatTitle: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 16,
+    },
+    closeButton: {
+      color: '#fff',
+      fontSize: 18,
+    },
+    chatMessages: {
+      flex: 1,
+      padding: 10,
+    },
+    messageBubble: {
+      alignSelf: 'flex-start',
+      backgroundColor: '#f0f0f0',
+      borderRadius: 10,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      marginBottom: 15,
+
+    },
+    messageText: {
+      fontSize: 14,
+      color: '#333',
+
+    },
+    chatInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 10,
+      borderTopWidth: 1,
+      borderTopColor: '#eee',
+    },
+    chatInput: {
+      flex: 1,
+      backgroundColor: '#f6f6f6',
+      borderRadius: 20,
+      paddingHorizontal: 15,
+      height: 40,
+    },
+    sendButton: {
+      marginLeft: 10,
+      backgroundColor: '#4B7BEC',
+      borderRadius: 20,
+      paddingHorizontal: 15,
+      paddingVertical: 8,
+    },
+    sendButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    logoAndTitle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    logoImage: {
+      width: 35,
+      height: 35,
+      marginRight: 8,
+      borderRadius:80
+    },
+    hideButton: {
+      position: 'absolute',
+      bottom: -25,
+      backgroundColor: '#4B7BEC',
+      paddingVertical: 2,
+      paddingHorizontal: 6,
+      borderRadius: 10,
+    },
+    hideButtonText: {
+      color: '#fff',
+      fontSize: 10,
+    },
+    chatButton: {
+      position: 'absolute',
+      width: 60,
+      height: 60,
+      backgroundColor: '#fff',
+      borderRadius: 30,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 5,
+      zIndex: 99,
+    },
+    loadingContainer: {
+      marginTop: 20,
+      alignItems: 'flex-start',
+    },
+    lottie: {
+      width: 80,
+      height: 80,
+    },
+
+
+
+
+
+
 });
 
 export default HomeScreen;

@@ -1,25 +1,27 @@
-
-import React from 'react';
-import { } from 'react-native';
-
-import { NavigationContainer, } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import WelcomeScreen from "./src/component/WelcomeScreen.tsx";
-import LoginScreen from "./src/component/LoginScreen.tsx";
-import RegisterScreen from "./src/component/RegisterScreen.tsx";
-import HomeScreen from "./src/component/HomeScreen.tsx";
-import BottomNavigation from "./src/navigation/BottomNavigation.tsx";
-import FavoriteScreen from "./src/component/FavoriteScreen.tsx";
-import NotificationScreen from "./src/component/NotificationScreen.tsx";
-import ProfileScreen from "./src/component/ProfileScreen.tsx";
-import CartScreen from "./src/component/CartScreen.tsx";
-import SuccessScreen from "./src/component/SuccessScreen.tsx";
+import React, { useEffect } from 'react';
+import { Alert } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import messaging from '@react-native-firebase/messaging';
+import notifee, { EventType, AndroidImportance, NotificationEventType, AndroidStyle } from '@notifee/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import WelcomeScreen from './src/component/WelcomeScreen.tsx';
+import LoginScreen from './src/component/LoginScreen.tsx';
+import RegisterScreen from './src/component/RegisterScreen.tsx';
+import HomeScreen from './src/component/HomeScreen.tsx';
+import BottomNavigation from './src/navigation/BottomNavigation.tsx';
+import FavoriteScreen from './src/component/FavoriteScreen.tsx';
+import NotificationScreen from './src/component/NotificationScreen.tsx';
+import ProfileScreen from './src/component/ProfileScreen.tsx';
+import CartScreen from './src/component/CartScreen.tsx';
+import SuccessScreen from './src/component/SuccessScreen.tsx';
 import ChoseScreen from './src/component/ChoseScreen.tsx';
 import AddressScreen from './src/component/AddressScreen.tsx';
 import EditProfileScreen from './src/component/EditProfileScreen.tsx';
-import CheckOutScreen from './src/component/CheckOutScreen.tsx';
+import CheckoutScreen from './src/component/CheckOutScreen.tsx';
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
+
 import DetailScreen from "./src/component/DetailScreen.tsx";
 import PaymentScreen from './src/component/PaymentScreen.tsx'
 import ChoiceAddress from './src/component/ChoiceAddress.tsx'
@@ -45,6 +47,183 @@ import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
 import CouponScreen from './src/component/CouponScreen.tsx';
 
 function App() {
+  const Stack = createNativeStackNavigator();
+  const navigationRef = React.useRef(null);
+
+ // Yêu cầu quyền thông báo
+ const requestUserPermission = async () => {
+  try {
+    const authStatus = await messaging().requestPermission({
+      alert: true,
+      badge: true,
+      sound: true,
+    });
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    console.log('[FCM] Authorization status:', enabled ? 'Granted' : 'Denied');
+    return enabled;
+  } catch (error) {
+    console.error('[FCM] Lỗi yêu cầu quyền:', error);
+    return false;
+  }
+};
+
+// Lấy và lưu FCM token
+const setupFcmToken = async () => {
+  try {
+    const enabled = await requestUserPermission();
+    if (!enabled) return;
+
+    const fcmToken = await messaging().getToken();
+    console.log('[FCM] Token:', fcmToken);
+
+    const response = await fetch('http://10.0.2.2:5000/v1/notifications/update-fcm', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer <your_token>',
+      },
+      body: JSON.stringify({
+        userId: 'user123',
+        fcmToken,
+      }),
+    });
+    const responseData = await response.json();
+    console.log('[FCM] Kết quả lưu token:', responseData);
+  } catch (error) {
+    console.error('[FCM] Lỗi lấy/lưu token:', error);
+  }
+};
+
+
+
+ // Tạo kênh Notifee
+ const setupNotifeeChannel = async () => {
+  try {
+    await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+      importance: AndroidImportance.HIGH,
+    });
+    console.log('[Notifee] Kênh default đã được tạo');
+  } catch (error) {
+    console.error('[Notifee] Lỗi tạo kênh:', error);
+  }
+};
+
+// Xử lý thông báo foreground
+const setupForegroundHandler = () => {
+  const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+    console.log('[FCM] Nhận thông báo foreground:', JSON.stringify(remoteMessage, null, 2));
+    try {
+      await notifee.displayNotification({
+        title: remoteMessage.notification?.title || 'Thông báo mới',
+        body: remoteMessage.notification?.body || 'Bạn có thông báo mới',
+        data: remoteMessage.data, // Đảm bảo data được truyền vào Notifee
+        android: {
+          channelId: 'default',
+          largeIcon: 'anhlogo',
+          showTimestamp: true,
+          pressAction: { id: 'default' },
+        },
+      });
+      console.log('[Notifee] Hiển thị thông báo thành công');
+    } catch (error) {
+      console.error('[Notifee] Lỗi hiển thị thông báo:', error);
+    }
+  });
+  return unsubscribe;
+};
+
+// Xử lý khi nhấn thông báo
+const setupNotificationOpenHandler = () => {
+  messaging().onNotificationOpenedApp((remoteMessage) => {
+    console.log('[FCM] Người dùng nhấn thông báo:', JSON.stringify(remoteMessage, null, 2));
+    if (remoteMessage?.data?.type === 'order' && remoteMessage?.data?.orderId) {
+      console.log('[FCM] Điều hướng đến DetailOrderScreen với orderId:', remoteMessage.data.orderId);
+      navigationRef.current?.navigate('OrderDetailTabs', {
+        Screen: 'Chờ xác nhận'
+      });
+    } else if (remoteMessage?.data?.type === 'message') {
+      console.log('[FCM] Điều hướng đến ChatScreen');
+      navigationRef.current?.navigate('ChatScreen', {
+        sender: remoteMessage.data.sender,
+        receiver: remoteMessage.data.receiver,
+      });
+    } else {
+      console.log('[FCM] Điều hướng mặc định đến NotificationScreen');
+      navigationRef.current?.navigate('BottomNavigation', { screen: 'NotificationScreen' });
+    }
+  });
+
+  messaging()
+    .getInitialNotification()
+    .then((remoteMessage) => {
+      if (remoteMessage) {
+        console.log('[FCM] Nhận thông báo khi ứng dụng tắt:', JSON.stringify(remoteMessage, null, 2));
+        if (remoteMessage?.data?.type === 'order' && remoteMessage?.data?.orderId) {
+          
+          navigationRef.current?.navigate('OrderDetailTabs', {
+            Screen: 'Chờ xác nhận'
+          });
+          // navigationRef.current?.navigate('DetailOrderScreen', {
+          //   orderId: remoteMessage.data.orderId,
+          // });
+        } else if (remoteMessage?.data?.type === 'message') {
+          navigationRef.current?.navigate('ChatScreen', {
+            sender: remoteMessage.data.sender,
+            receiver: remoteMessage.data.receiver,
+          });
+        } else {
+          navigationRef.current?.navigate('BottomNavigation', { screen: 'NotificationScreen' });
+        }
+      }
+    });
+};
+
+// Xử lý sự kiện Notifee foreground
+const setupNotifeeForegroundEvent = () => {
+  notifee.onForegroundEvent(({ type, detail }) => {
+    console.log('[Notifee] Foreground Event:', type, JSON.stringify(detail, null, 2));
+    if (type === EventType.PRESS && detail.notification?.data) {
+      console.log('[Notifee] Người dùng nhấn thông báo:', JSON.stringify(detail.notification.data, null, 2));
+      if (detail.notification?.data?.type === 'order' && detail.notification?.data?.orderId) {
+        const orderId = detail.notification.data.orderId;
+        console.log('[Notifee] Điều hướng đến DetailOrderScreen với orderId:', orderId);
+        navigationRef.current?.navigate('OrderDetailTabs', {
+          Screen: 'Chờ xác nhận'
+        });
+        console.log("oder id : ",orderId);
+        
+      } else if (detail.notification?.data?.type === 'message') {
+        console.log('[Notifee] Điều hướng đến ChatScreen');
+        navigationRef.current?.navigate('ChatScreen', {
+          sender: detail.notification.data.sender,
+          receiver: detail.notification.data.receiver,
+        });
+      } else {
+        console.log('[Notifee] Điều hướng mặc định đến NotificationScreen');
+        navigationRef.current?.navigate('BottomNavigation', {
+          screen: 'NotificationScreen',
+        });
+      }
+    }
+  });
+};
+
+useEffect(() => {
+  setupFcmToken();
+  setupNotifeeChannel();
+  const unsubscribeForeground = setupForegroundHandler();
+  setupNotificationOpenHandler();
+  setupNotifeeForegroundEvent();
+
+  return () => {
+    unsubscribeForeground();
+  };
+}, []);
+
 
     const Stack = createNativeStackNavigator();
 
@@ -244,6 +423,7 @@ function App() {
             </Stack.Navigator>
         </NavigationContainer>
     );
+
 }
 
 export default App;

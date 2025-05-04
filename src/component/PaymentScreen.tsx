@@ -237,7 +237,7 @@ const CheckoutScreen = () => {
 
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}>
+        onPress={() => navigation.replace('CartScreen')}>
         <Image source={require('../Image/back.png')} />
       </TouchableOpacity>
 
@@ -352,7 +352,7 @@ const CheckoutScreen = () => {
           <TouchableOpacity
               style={styles.discountBox}
               onPress={() =>
-                  navigation.navigate('CouponScreen', {
+                  navigation.replace('CouponScreen', {
                     selectedProducts,
                     address,
                     paymentMethod,
@@ -447,7 +447,7 @@ const CheckoutScreen = () => {
           try {
             await openWithChrome(momoUrl);
             if (isPaymentSuccess) {
-              navigation.navigate('HTScreen');
+              navigation.replace('HTScreen');
             } else {
               showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!');
             }

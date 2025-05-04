@@ -225,10 +225,9 @@ useEffect(() => {
 }, []);
 
 
-    const Stack = createNativeStackNavigator();
 
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 initialRouteName="WelcomeScreen"
             >
@@ -253,7 +252,7 @@ useEffect(() => {
                 <Stack.Screen
                     name="CheckOutScreen"
                     options={{ headerShown: false }}
-                    component={CheckOutScreen} />
+                    component={CheckoutScreen} />
                 <Stack.Screen
                     name="FeedBackScreen"
                     options={{ headerShown: false }}
@@ -358,11 +357,7 @@ useEffect(() => {
                 <Stack.Screen
                     name="CartScreen"
                     component={CartScreen}
-                    options={{
-                        headerTitle: 'Giỏ hàng',
-                        headerTitleAlign: 'center'
-
-                    }}
+                    options={{ headerShown: false }}
 
                 />
                 <Stack.Screen

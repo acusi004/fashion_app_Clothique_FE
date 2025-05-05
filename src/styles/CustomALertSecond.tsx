@@ -4,10 +4,12 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 // @ts-ignore
 const CustomAlertSecond = ({ visible, onYes,onNo, header, message, buttonTextYes ,buttonTextNo}) => {
-    if (!visible) return null; // tránh load modal khi không cần
+
     return (
         <Modal transparent visible={visible} animationType="fade">
-            <View style={styles.overlay}>
+
+
+          <View style={styles.overlay}>
                 <View style={styles.alertContainer}>
                     <View style={styles.iconWrapper}>
                         <MaterialIcons name="info" size={28} color="#fff" />
@@ -32,26 +34,31 @@ const CustomAlertSecond = ({ visible, onYes,onNo, header, message, buttonTextYes
 
 const styles = StyleSheet.create({
     overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 999,
     },
+
     alertContainer: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        paddingVertical: 30,
-        paddingHorizontal: 20,
-        width: 260,
-        alignItems: 'center',
-        position: 'relative',
+      backgroundColor: '#fff',
+      borderRadius: 12,
+      paddingVertical: 30,
+      paddingHorizontal: 20,
+      width: 260,
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'visible', // thêm dòng này
     },
+
     iconWrapper: {
-        position: 'absolute',
-        top: -30,
-        backgroundColor: '#5b5d6b',
-        padding: 15,
-        borderRadius: 50,
+      position: 'absolute',
+      top: -30,
+      backgroundColor: '#5b5d6b',
+      padding: 15,
+      borderRadius: 50,
+      zIndex: 10, // thêm dòng này
     },
     header: {
         marginTop: 20,

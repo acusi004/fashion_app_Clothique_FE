@@ -45,6 +45,7 @@ import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.ts
 import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
 import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
 import CouponScreen from './src/component/CouponScreen.tsx';
+import CheckOutScreen from "./src/component/CheckOutScreen.tsx";
 
 function App() {
   const Stack = createNativeStackNavigator();
@@ -163,7 +164,7 @@ const setupNotificationOpenHandler = () => {
       if (remoteMessage) {
         console.log('[FCM] Nhận thông báo khi ứng dụng tắt:', JSON.stringify(remoteMessage, null, 2));
         if (remoteMessage?.data?.type === 'order' && remoteMessage?.data?.orderId) {
-          
+
           navigationRef.current?.navigate('OrderDetailTabs', {
             Screen: 'Chờ xác nhận'
           });
@@ -195,7 +196,7 @@ const setupNotifeeForegroundEvent = () => {
           Screen: 'Chờ xác nhận'
         });
         console.log("oder id : ",orderId);
-        
+
       } else if (detail.notification?.data?.type === 'message') {
         console.log('[Notifee] Điều hướng đến ChatScreen');
         navigationRef.current?.navigate('ChatScreen', {
@@ -225,7 +226,7 @@ useEffect(() => {
 }, []);
 
 
-    const Stack = createNativeStackNavigator();
+
 
     return (
         <NavigationContainer>

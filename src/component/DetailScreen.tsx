@@ -276,7 +276,7 @@ const DetailScreen = ({ route, navigation }) => {
                             <Text style={styles.itemTitle}>{product.name}</Text>
                             <Text style={styles.itemPrice}>{`${currentVariant.price?.toLocaleString()} VND`}</Text>
                         </View>
-                        <Text style={styles.itemSold}>Đã bán 39.1k</Text>
+                        {/*<Text style={styles.itemSold}>Đã bán 39.1k</Text>*/}
                     </View>
 
                     <View style={styles.body}>

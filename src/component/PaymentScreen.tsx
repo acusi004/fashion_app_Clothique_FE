@@ -205,13 +205,15 @@ const CheckoutScreen = () => {
 
         if (!notificationResult.success) {
           console.error('[ThanhToan] Gửi thông báo thất bại:', notificationResult.error);
-          showAlert(
-            'Thông báo',
-            'Đặt hàng thành công, nhưng gửi thông báo đẩy thất bại! Vui lòng kiểm tra thông báo sau.'
-          );
+          setAlertHeader('Thông báo');
+          setAlertMessage('Đặt hàng thành công, nhưng gửi thông báo đẩy thất bại! Vui lòng kiểm tra thông báo sau.');
+          setAlertVisible(true);
+
+// trong component CustomAlert, truyền thêm prop onCloseNavigation nếu cần
+
         } else {
           console.log('[ThanhToan] Gửi thông báo thành công');
-         
+
         }
 
         setTimeout(() => {
@@ -424,11 +426,15 @@ const CheckoutScreen = () => {
       </TouchableOpacity>
 
       <CustomAlert
-        visible={alertVisible}
-        header={alertHeader}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
+          visible={alertVisible}
+          header={alertHeader}
+          message={alertMessage}
+          onClose={() => {
+            setAlertVisible(false);
+            navigation.reset({ index: 0, routes: [{ name: 'HTScreen' }] });
+          }}
       />
+
 
       <CustomAlertSecond
         visible={confirmOpenBrowser}

@@ -18,6 +18,8 @@ function NotificationScreen() {
     };
 
     const fetchNotifications = async () => {
+        const currentUser = await tokenService.getUserIdFromToken();
+        const currentUserId = currentUser?.userId;
         try {
             const token = await tokenService.getToken();
 
@@ -40,8 +42,10 @@ function NotificationScreen() {
             }
 
             const result = await response.json();
-            setNotifications(result); // Giả sử API trả về: { data: [...] }
-            console.log('Fetched notifications:', result);
+            const userNotifications = result.filter((item) => item.userId === currentUserId);
+            setNotifications(userNotifications);
+        
+            console.log('Fetched notifications:', userNotifications);
         } catch (error) {
             console.error('Error fetching notifications:', error);
         } finally {
@@ -70,22 +74,29 @@ function NotificationScreen() {
             <Text style={styles.header}>Thông báo</Text>
 
             <FlatList
-                data={notifications}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Image source={require('../Image/logo.png')} style={styles.image} />
-                        <View style={styles.textContainer}>
-                            <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.description}>{item.message}</Text>
-                            <Text style={styles.time}>
-                                {formatDateTime(item.createdAt)}
-                            </Text>
-                        </View>
-                      
-                    </View>
-                )}
-            />
+    data={notifications}
+    keyExtractor={(item) => item._id}
+    renderItem={({ item }) => (
+        <View style={styles.card}>
+            <Image source={require('../Image/logo.png')} style={styles.image} />
+            <View style={styles.textContainer}>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.description}>{item.message}</Text>
+                <Text style={styles.time}>
+                    {formatDateTime(item.createdAt)}
+                </Text>
+            </View>
+        </View>
+    )}
+    ListEmptyComponent={
+        !loading && (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Không có thông báo nào</Text>
+            </View>
+        )
+    }
+/>
+
         </View>
     );
 }
@@ -139,6 +150,16 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "red",
     },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#999',
+    },
+    
 });
 
 export default NotificationScreen;

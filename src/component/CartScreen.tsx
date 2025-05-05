@@ -213,12 +213,21 @@ function CartScreen() {
     const selectedProducts = cartData.filter(item =>
         selectedItems.includes(item._id),
     );
-    navigation.navigate('PaymentScreen', {selectedProducts});
+    navigation.replace('PaymentScreen', {selectedProducts});
     console.log('thông tin ', selectedProducts);
   };
 
   return (
+    
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+  <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+    <Image source={require('../Image/back.png')} style={styles.backIcon} />
+  </TouchableOpacity>
+  <Text style={styles.headerTitle}>Giỏ hàng</Text>
+  <View style={{ width: 24 }} /> 
+</View>
+
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={{flex: 1}}>
         <SwipeListView
@@ -369,6 +378,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkoutText: {color: 'white', fontSize: 16, fontWeight: 'bold'},
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+   paddingEnd:16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    backgroundColor: '#fff',
+    marginBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1,
+    color: '#000',
+  },
+  backButton: {
+   paddingTop:4,
+   paddingBottom:4
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  
 });
 
 export default CartScreen;

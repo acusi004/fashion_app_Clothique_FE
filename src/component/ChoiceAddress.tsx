@@ -209,7 +209,7 @@ const AddressScreen = () => {
       <TouchableOpacity
         style={styles.confirmButton}
         onPress={() => {
-          navigation.navigate('PaymentScreen', {
+          navigation.replace('PaymentScreen', {
             address: add,
             selectedProducts: selectedProducts,
           });
@@ -230,7 +230,7 @@ const AddressScreen = () => {
             if (!selectedAddressId) {
               return showAlert('Thông báo', 'Vui lòng chọn địa chỉ trước khi tiếp tục!');
             }
-            navigation.navigate('PaymentScreen', {
+            navigation.replace('PaymentScreen', {
               address: add,
               selectedProducts: selectedProducts,
               paymentMethod1:paymentMethod

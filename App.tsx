@@ -18,7 +18,7 @@ import SuccessScreen from './src/component/SuccessScreen.tsx';
 import ChoseScreen from './src/component/ChoseScreen.tsx';
 import AddressScreen from './src/component/AddressScreen.tsx';
 import EditProfileScreen from './src/component/EditProfileScreen.tsx';
-import CheckoutScreen from './src/component/CheckOutScreen.tsx';
+
 import FeedBackScreen from './src/component/FeedBackScreen.tsx';
 import HTScreen from './src/component/HTScreen.tsx';
 
@@ -45,7 +45,7 @@ import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.ts
 import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
 import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
 import CouponScreen from './src/component/CouponScreen.tsx';
-import CheckOutScreen from "./src/component/CheckOutScreen.tsx";
+import CheckOutScreen from './src/component/CheckOutScreen.tsx';
 
 function App() {
   const Stack = createNativeStackNavigator();

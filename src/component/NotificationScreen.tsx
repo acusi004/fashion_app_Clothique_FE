@@ -17,39 +17,47 @@ function NotificationScreen() {
         setAlertVisible(true);
     };
 
-    const fetchNotifications = async () => {
-        try {
-            const token = await tokenService.getToken();
+  const fetchNotifications = async () => {
+    const currentUser = await tokenService.getUserIdFromToken();
+    const currentUserId = currentUser?.userId;
+    try {
+      const token = await tokenService.getToken();
 
-            if (!token) {
-                return showAlert('Thông báo', 'Vui lòng đăng nhập trước!');
-            }
+      if (!token) {
+        return showAlert('Thông báo', 'Vui lòng đăng nhập trước!');
+      }
 
-            const response = await fetch(`${BASE_URL}/v1/notifications/`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+      const response = await fetch(`${BASE_URL}/v1/notifications/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Server error:', errorData);
-                return;
-            }
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        return;
+      }
 
-            const result = await response.json();
-            setNotifications(result); // Giả sử API trả về: { data: [...] }
-            console.log('Fetched notifications:', result);
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      const result = await response.json();
+      const userNotifications = result
+        .filter((item) => item.userId === currentUserId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Thêm đoạn này để sắp xếp thông báo
 
-    useEffect(() => {
+      setNotifications(userNotifications);
+
+      console.log('Fetched notifications:', userNotifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
         fetchNotifications();
     }, []);
 
@@ -70,22 +78,29 @@ function NotificationScreen() {
             <Text style={styles.header}>Thông báo</Text>
 
             <FlatList
-                data={notifications}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Image source={require('../Image/logo.png')} style={styles.image} />
-                        <View style={styles.textContainer}>
-                            <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.description}>{item.message}</Text>
-                            <Text style={styles.time}>
-                                {formatDateTime(item.createdAt)}
-                            </Text>
-                        </View>
-                      
-                    </View>
-                )}
-            />
+    data={notifications}
+    keyExtractor={(item) => item._id}
+    renderItem={({ item }) => (
+        <View style={styles.card}>
+            <Image source={require('../Image/logo.png')} style={styles.image} />
+            <View style={styles.textContainer}>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.description}>{item.message}</Text>
+                <Text style={styles.time}>
+                    {formatDateTime(item.createdAt)}
+                </Text>
+            </View>
+        </View>
+    )}
+    ListEmptyComponent={
+        !loading && (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Không có thông báo nào</Text>
+            </View>
+        )
+    }
+/>
+
         </View>
     );
 }
@@ -139,6 +154,16 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "red",
     },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#999',
+    },
+
 });
 
 export default NotificationScreen;

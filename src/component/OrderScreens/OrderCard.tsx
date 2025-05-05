@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -46,6 +46,11 @@ const OrderCard = ({ order, onCancelOrder }) => {
   const [isConfirmedReceived, setIsConfirmedReceived] = useState(
     order.orderStatus === 'Received' || order.orderStatus === 'Completed'
   );
+  useEffect(() => {
+    setIsConfirmedReceived(
+      order.orderStatus === 'Received' || order.orderStatus === 'Completed'
+    );
+  }, [order.orderStatus]);
 
   const BASE_URL = 'http://10.0.2.2:5000';
 
@@ -82,6 +87,12 @@ const OrderCard = ({ order, onCancelOrder }) => {
   };
 
   const handleConfirmReceived = async () => {
+    // Nếu đã xác nhận rồi thì không cho xác nhận lại
+    if (order.orderStatus === 'Completed' || order.orderStatus === 'Received') {
+      showAlert('Thông báo', 'Đơn hàng đã được xác nhận hoàn tất trước đó.');
+      return;
+    }
+
     try {
       const token = await getToken();
       if (!token) {
@@ -90,27 +101,41 @@ const OrderCard = ({ order, onCancelOrder }) => {
       }
 
       const response = await axios.post(
-        `http://10.0.2.2:5000/v1/order/confirmOrder/${order._id}`,
-        {}, // POST cần có body (dù rỗng)
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        `${BASE_URL}/v1/order/confirmOrder/${order._id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (response.data.success) {
-        setIsConfirmedReceived(true);
-        setAlertVisible(false);
-        ToastAndroid.show('Xác nhận đã nhận hàng thành công!', ToastAndroid.SHORT);
-      } else {
-        showAlert('Lỗi', response.data.message || 'Không thể xác nhận đơn hàng.');
+      const message = response.data?.message || '';
+      const success = response.data?.success;
+
+      // TH1: BE đã xác nhận từ trước (gửi lại request)
+      if (message.includes('trước đó')) {
+        showAlert('Thông báo', message);
+        setIsConfirmedReceived(true); // ẩn nút nếu còn hiển thị
+        return;
       }
+
+      // TH2: Xác nhận thành công lần đầu
+      if (success || response.status === 200) {
+        setIsConfirmedReceived(true);
+        setAlertVisible(false); // ✅ đóng alert confirm
+        ToastAndroid.show('Xác nhận đã nhận hàng thành công!', ToastAndroid.SHORT);
+        return;
+      }
+
+      // TH3: Thông báo lỗi chung
+      showAlert('Lỗi', message || 'Không thể xác nhận đơn hàng.');
     } catch (error) {
-      ToastAndroid.show('Lỗi xác nhận đơn hàng!', ToastAndroid.SHORT);
+      const msg = error.response?.data?.message || 'Lỗi xác nhận đơn hàng!';
+      showAlert('Lỗi', msg);
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
       console.log('❌ Lỗi xác nhận:', error.response?.data || error.message);
     }
   };
+
+
+
 
 
   const renderStatusTimeFromHistory = () => {

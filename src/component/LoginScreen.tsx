@@ -57,8 +57,8 @@ function LoginScreen({ navigation }) {
       try {
         const permission = await messaging().requestPermission();
         if (
-          permission === messaging.AuthorizationStatus.AUTHORIZED ||
-          permission === messaging.AuthorizationStatus.PROVISIONAL
+            permission === messaging.AuthorizationStatus.AUTHORIZED ||
+            permission === messaging.AuthorizationStatus.PROVISIONAL
         ) {
           const fcmToken = await messaging().getToken();
           console.log('[FCM] Token:', fcmToken);
@@ -89,9 +89,9 @@ function LoginScreen({ navigation }) {
       navigation.reset({ index: 0, routes: [{ name: 'BottomNavigation' }] });
     } catch (error) {
       const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        'Tài khoản hoặc mật khẩu không đúng';
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          'Tài khoản hoặc mật khẩu không đúng';
       showAlert('Đăng nhập thất bại', message);
       console.error('[LoginScreen] Lỗi login:', JSON.stringify(error, null, 2));
     } finally {
@@ -118,71 +118,71 @@ function LoginScreen({ navigation }) {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image source={require('../Image/logo.png')} style={styles.logo} />
-      </View>
-      <Text style={styles.title}>Clothique</Text>
-      <View style={styles.inputWrapper}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={username}
-            onChangeText={text => setUsername(text)}
-          />
+      <View style={styles.container}>
+        <View style={styles.logoContainer}>
+          <Image source={require('../Image/logo.png')} style={styles.logo} />
         </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Mật khẩu"
-            secureTextEntry={secureText}
-            value={password}
-            onChangeText={text => setPassword(text)}
-          />
-          <TouchableOpacity
-            onPress={() => setSecureText(!secureText)}
-            style={styles.eyeIcon}>
-            <Image
-              source={
-                secureText
-                  ? require('../Image/visibility.png')
-                  : require('../Image/hide.png')
-              }
-              style={styles.eyeImage}
+        <Text style={styles.title}>Clothique</Text>
+        <View style={styles.inputWrapper}>
+          <View style={styles.inputContainer}>
+            <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={username}
+                onChangeText={text => setUsername(text)}
             />
-          </TouchableOpacity>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+                style={styles.inputPassword}
+                placeholder="Mật khẩu"
+                secureTextEntry={secureText}
+                value={password}
+                onChangeText={text => setPassword(text)}
+            />
+            <TouchableOpacity
+                onPress={() => setSecureText(!secureText)}
+                style={styles.eyeIcon}>
+              <Image
+                  source={
+                    secureText
+                        ? require('../Image/visibility.png')
+                        : require('../Image/hide.png')
+                  }
+                  style={styles.eyeImage}
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.checkboxRow}>
+            <Checkbox
+                status={isSelected ? 'checked' : 'unchecked'}
+                onPress={() => setIsSelected(!isSelected)}
+            />
+            <Text style={styles.checkboxText}>Ghi nhớ đăng nhập</Text>
+          </View>
+          <View style={styles.footerContainer}>
+            <TouchableOpacity onPress={() => navigation.navigate('ChangePassScreen')}>
+              <Text style={styles.footerText}>Quên mật khẩu?</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
+              <Text style={styles.footerText}>Tạo tài khoản</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.checkboxRow}>
-          <Checkbox
-            status={isSelected ? 'checked' : 'unchecked'}
-            onPress={() => setIsSelected(!isSelected)}
-          />
-          <Text style={styles.checkboxText}>Ghi nhớ đăng nhập</Text>
-        </View>
-        <View style={styles.footerContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('ChangePassScreen')}>
-            <Text style={styles.footerText}>Quên mật khẩu?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
-            <Text style={styles.footerText}>Tạo tài khoản</Text>
-          </TouchableOpacity>
-        </View>
+        {loading ? (
+            <ActivityIndicator size="large" color="#000" />
+        ) : (
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Đăng nhập</Text>
+            </TouchableOpacity>
+        )}
+        <CustomAlert
+            visible={alertVisible}
+            header={alertHeader}
+            message={alertMessage}
+            onClose={() => setAlertVisible(false)}
+        />
       </View>
-      {loading ? (
-        <ActivityIndicator size="large" color="#000" />
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Đăng nhập</Text>
-        </TouchableOpacity>
-      )}
-      <CustomAlert
-        visible={alertVisible}
-        header={alertHeader}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-      />
-    </View>
   );
 }
 

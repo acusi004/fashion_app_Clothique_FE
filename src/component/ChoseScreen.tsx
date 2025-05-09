@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // @ts-ignore
-const ChoseScreen = ({ navigation }) => {
+function ChoseScreen  ({ navigation })  {
     return (
         <SafeAreaView>
             <View style={styles.container}>
@@ -27,7 +27,7 @@ const ChoseScreen = ({ navigation }) => {
     );
 }
 
-export default ChoseScreen;
+
 
 const styles = StyleSheet.create({
     container: {
@@ -93,3 +93,4 @@ const styles = StyleSheet.create({
     },
 
 });
+export default ChoseScreen;

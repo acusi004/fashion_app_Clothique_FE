@@ -9,14 +9,13 @@ function WelcomeScreen({navigation}) {
 
     useEffect(() => {
         const checkLoginStatus = async () => {
+
             const hasLoggedInBefore = await AsyncStorage.getItem('hasLoggedInBefore');
 
             setTimeout(() => {
-                if (hasLoggedInBefore === 'true') {
+
                     navigation.navigate("LoginScreen"); // 👉 Chuyển thẳng vào Login nếu đã từng login
-                } else {
-                    navigation.navigate("ChoseScreen"); // 👉 Nếu chưa thì vào màn hình chọn
-                }
+
             }, 3000);
         };
 

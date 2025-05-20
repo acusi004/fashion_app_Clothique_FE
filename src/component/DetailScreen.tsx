@@ -8,7 +8,7 @@ import { getToken } from '../service/categoryService.js';
 import tokenService from '../service/tokenService.js';
 import { likeComment, dislikeComment } from '../service/commentService';
 
-// @ts-ignore
+
 const DetailScreen = ({ route, navigation }) => {
     const { product } = route.params;
     const [quantity, setQuantity] = useState(1);
@@ -60,7 +60,7 @@ const DetailScreen = ({ route, navigation }) => {
         }
     }, [variantsList]);
 
-    //tăng số lượng khi thêm vào giỏ hàng 
+    //tăng số lượng khi thêm vào giỏ hàng
     const increaseQuantity = useCallback(() => {
         setQuantity(q => {
             if (q < stock) {
@@ -72,7 +72,7 @@ const DetailScreen = ({ route, navigation }) => {
         });
     }, [stock]);
 
-    // giảm số lượng khi thêm vào giỏ hàng 
+    // giảm số lượng khi thêm vào giỏ hàng
     const decreaseQuantity = useCallback(() => setQuantity(q => (q > 1 ? q - 1 : 1)), []);
 
 
@@ -114,7 +114,7 @@ const DetailScreen = ({ route, navigation }) => {
 
     // Xử lý thêm sản phẩm vào giỏ hàng
     const handleAddToCart = useCallback(async () => {
-        //khi chưa chọn kích cỡ sẽ báo người dùng 
+        //khi chưa chọn kích cỡ sẽ báo người dùng
         if (!selectedSize) {
             setAlertHeader('Thông báo');
             setAlertMessage('Vui lòng chọn kích cỡ!');
@@ -122,7 +122,7 @@ const DetailScreen = ({ route, navigation }) => {
             return;
         }
 
-        //gọi biến thể sản phẩm 
+        //gọi biến thể sản phẩm
         const matchedVariant = product.variants.find(
             (v: { _id: string; size: string }) => v.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
         );
@@ -398,7 +398,7 @@ const DetailScreen = ({ route, navigation }) => {
                     <Text>Thêm vào giỏ hàng</Text>
                 </TouchableOpacity>
             </View>
-           
+
             <CustomAlert
                 visible={alertVisible}
                 header={alertHeader}

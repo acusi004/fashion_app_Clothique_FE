@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -10,32 +10,34 @@ import {
   FlatList,
   ActivityIndicator,
   ScrollView,
+  Platform,
+  Linking, AppStateStatus, AppState,
 } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import tokenService from '../service/tokenService';
 import CustomAlert from '../styles/CustomAlert.tsx';
-import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { Platform, Linking } from 'react-native';
 import CustomAlertSecond from '../styles/CustomALertSecond.tsx';
-import FailedScreen from './FailedScreen.tsx';
 
 const CheckoutScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
-  const { selectedProducts = [], address = null, paymentMethod1 } = route.params || {};
+  const { selectedProducts = [], address = null, paymentMethod1, selectedCoupon } = route.params || {};
   const BASE_URL = 'http://10.0.2.2:5000';
+
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertHeader, setAlertHeader] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState<'success' | 'failure' | 'info' | null>(null);
+
   const [momoUrl, setMomoUrl] = useState('');
   const [confirmOpenBrowser, setConfirmOpenBrowser] = useState(false);
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
 
-  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false); // Thêm trạng thái để kiểm tra thanh toán thành công
-  const { selectedCoupon } = route.params || {};
-
-
+  const [orderId, setOrderId] = useState<string | null>(null);
+  // AppState hiện tại
+  const appState = useRef<AppStateStatus>(AppState.currentState);
 
   const openWithChrome = async (url: string) => {
     if (Platform.OS === 'android') {
@@ -60,9 +62,10 @@ const CheckoutScreen = () => {
     console.log('Phương thức thanh toán nhận vào:', paymentMethod1);
   }, [paymentMethod1, selectedProducts, address]);
 
-  const showAlert = (header: string, message: string) => {
+  const showAlert = (header: string, message: string, type: 'success' | 'failure' | 'info' = 'info') => {
     setAlertHeader(header);
     setAlertMessage(message);
+    setAlertType(type);
     setAlertVisible(true);
   };
 
@@ -119,7 +122,7 @@ const CheckoutScreen = () => {
 
         console.log(`[sendNotification] Gửi thành công đến ${username} (${userId})`);
         return { success: true, data: result };
-      } catch (error) {
+      } catch (error: any) {
         console.error(
           `[sendNotification] Lỗi gửi đến ${userId} (lần ${attempt}): ${error.message}`
         );
@@ -133,31 +136,30 @@ const CheckoutScreen = () => {
   };
 
   const discountAmount = selectedCoupon
-      ? selectedCoupon.discountType === 'fixed'
-          ? selectedCoupon.discountValue
-          : Math.floor((selectedCoupon.discountValue / 100) * totalPrice)
-      : 0;
+    ? selectedCoupon.discountType === 'fixed'
+      ? selectedCoupon.discountValue
+      : Math.floor((selectedCoupon.discountValue / 100) * totalPrice)
+    : 0;
   const finalTotal = totalPrice + 25000 - discountAmount;
-
 
   const ThanhToan = async () => {
     const userInfo = await tokenService.getUserIdFromToken();
 
     if (!paymentMethod) {
-      return showAlert('Thông báo', 'Vui lòng chọn phương thức thanh toán');
+      return showAlert('Thông báo', 'Vui lòng chọn phương thức thanh toán', 'info');
     }
 
     if (!address) {
-      return showAlert('Thông báo', 'Hãy chọn địa chỉ giao hàng');
+      return showAlert('Thông báo', 'Hãy chọn địa chỉ giao hàng', 'info');
     }
 
     try {
-      setIsLoading(true); // Bật trạng thái loading
+      setIsLoading(true);
 
       const token = await tokenService.getToken();
       if (!token) {
         setIsLoading(false);
-        return showAlert('Thông báo', 'Vui lòng đăng nhập trước!');
+        return showAlert('Thông báo', 'Vui lòng đăng nhập trước!', 'info');
       }
 
       console.log('[ThanhToan] Gửi yêu cầu tạo đơn hàng...');
@@ -190,7 +192,7 @@ const CheckoutScreen = () => {
           setAlertMessage('Bạn có muốn mở trình duyệt để thanh toán qua MoMo không?');
           setConfirmOpenBrowser(true);
         } else {
-          showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.');
+          showAlert('Thông báo', 'MoMo không trả về liên kết thanh toán.', 'failure');
         }
       }
 
@@ -205,32 +207,22 @@ const CheckoutScreen = () => {
 
         if (!notificationResult.success) {
           console.error('[ThanhToan] Gửi thông báo thất bại:', notificationResult.error);
-          setAlertHeader('Thông báo');
-          setAlertMessage('Đặt hàng thành công, nhưng gửi thông báo đẩy thất bại! Vui lòng kiểm tra thông báo sau.');
-          setAlertVisible(true);
-
-// trong component CustomAlert, truyền thêm prop onCloseNavigation nếu cần
-
+          showAlert('Thông báo', 'Đặt hàng thành công, nhưng gửi thông báo đẩy thất bại! Vui lòng kiểm tra thông báo sau.', 'failure');
         } else {
-          console.log('[ThanhToan] Gửi thông báo thành công');
-
+          showAlert('Thông báo', 'Đặt hàng thành công!', 'success');
         }
-
-        setTimeout(() => {
-          navigation.reset({ index: 0, routes: [{ name: 'HTScreen' }] });
-        }, 1000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('[ThanhToan] Lỗi:', error.message);
-      showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
+      showAlert('Lỗi', error.message || 'Đã xảy ra lỗi, vui lòng thử lại!', 'failure');
     } finally {
-      setIsLoading(false); // Tắt trạng thái loading dù thành công hay thất bại
+      setIsLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {isLoading && ( // Hiển thị giao diện loading khi isLoading là true
+      {isLoading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#000" />
           <Text style={styles.loadingText}>Đang xử lý...</Text>
@@ -262,18 +254,12 @@ const CheckoutScreen = () => {
                 <Text style={styles.addressDetail}>
                   {`${address.addressDetail}, ${address.wardName}, ${address.districtName}, ${address.provinceName}`}
                 </Text>
-                <Text style={styles.addressPhone}>
-                  SĐT: {address.phoneNumber}
-                </Text>
+                <Text style={styles.addressPhone}>SĐT: {address.phoneNumber}</Text>
               </View>
             ) : (
               <View style={styles.addressBox}>
-                <Text style={styles.addressName}>
-                  Bạn chưa chọn địa chỉ giao hàng
-                </Text>
-                <Text style={styles.addressDetail}>
-                  Hãy chọn địa chỉ giao hàng
-                </Text>
+                <Text style={styles.addressName}>Bạn chưa chọn địa chỉ giao hàng</Text>
+                <Text style={styles.addressDetail}>Hãy chọn địa chỉ giao hàng</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -298,15 +284,11 @@ const CheckoutScreen = () => {
                 />
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>{item.productId.name}</Text>
-                  <Text style={styles.productSize}>
-                    Size: {item.variantId.size}
-                  </Text>
+                  <Text style={styles.productSize}>Size: {item.variantId.size}</Text>
                   <Text style={styles.productPrice}>
                     Giá: {(item.variantId.price * item.quantity).toLocaleString()} đ
                   </Text>
-                  <Text style={styles.productQuantity}>
-                    Số lượng: {item.quantity}
-                  </Text>
+                  <Text style={styles.productQuantity}>Số lượng: {item.quantity}</Text>
                 </View>
               </View>
             )}
@@ -332,9 +314,6 @@ const CheckoutScreen = () => {
           ))}
         </View>
 
-
-
-
         {/* Phương thức giao hàng */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Phương thức giao hàng</Text>
@@ -343,53 +322,49 @@ const CheckoutScreen = () => {
               source={require('../Image/giaohangtietkiem.png')}
               style={styles.shippingIcon}
             />
-            <Text style={styles.shippingText}>
-              Giao hàng tiết kiệm (2-3 ngày)
-            </Text>
+            <Text style={styles.shippingText}>Giao hàng tiết kiệm (2-3 ngày)</Text>
           </View>
         </View>
 
         {/* Mã giảm giá */}
         <View style={styles.section}>
           <TouchableOpacity
-              style={styles.discountBox}
-              onPress={() =>
-                  navigation.navigate('CouponScreen', {
-                    selectedProducts,
-                    address,
-                    paymentMethod,
-                    orderTotal: totalPrice + 25000, // truyền tổng đơn hàng bao gồm cả phí ship
-                    onSelectCoupon: (coupon: any) => {
-                      navigation.setParams({ selectedCoupon: coupon });
-                    },
-                  })
-              }>
+            style={styles.discountBox}
+            onPress={() =>
+              navigation.navigate('CouponScreen', {
+                selectedProducts,
+                address,
+                paymentMethod,
+                orderTotal: totalPrice + 25000,
+                onSelectCoupon: (coupon: any) => {
+                  navigation.setParams({ selectedCoupon: coupon });
+                },
+              })
+            }>
             <Text style={styles.sectionTitle}>Mã giảm giá</Text>
             <Text style={styles.discountHint}>Chọn hoặc nhập mã ưu đãi của bạn</Text>
           </TouchableOpacity>
-
         </View>
+
         {selectedCoupon && (
-            <View style={styles.selectedCoupon}>
-              <Image
-                  source={require('../Image/couponIcon.png')}
-                  style={styles.couponIcon}
-              />
-              <Text style={styles.couponText}>
-                {selectedCoupon.discountType === 'fixed'
-                    ? `Giảm ₫${(selectedCoupon.discountValue / 1000).toLocaleString()}k`
-                    : `Giảm ${selectedCoupon.discountValue}%`}
-              </Text>
-            </View>
+          <View style={styles.selectedCoupon}>
+            <Image
+              source={require('../Image/couponIcon.png')}
+              style={styles.couponIcon}
+            />
+            <Text style={styles.couponText}>
+              {selectedCoupon.discountType === 'fixed'
+                ? `Giảm ₫${(selectedCoupon.discountValue / 1000).toLocaleString()}k`
+                : `Giảm ${selectedCoupon.discountValue}%`}
+            </Text>
+          </View>
         )}
 
         {/* Tổng tiền */}
         <View style={styles.priceSection}>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Giá:</Text>
-            <Text style={styles.priceValue}>
-              {totalPrice.toLocaleString()} đ
-            </Text>
+            <Text style={styles.priceValue}>{totalPrice.toLocaleString()} đ</Text>
           </View>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
@@ -397,44 +372,42 @@ const CheckoutScreen = () => {
           </View>
 
           {selectedCoupon && (
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Mã giảm giá:</Text>
-                <Text style={[styles.priceValue, { color: 'green' }]}>
-                  -{discountAmount.toLocaleString()} đ
-                </Text>
-              </View>
+            <View style={styles.priceRow}>
+              <Text style={styles.priceLabel}>Mã giảm giá:</Text>
+              <Text style={[styles.priceValue, { color: 'green' }]}>
+                -{discountAmount.toLocaleString()} đ
+              </Text>
+            </View>
           )}
 
           <View style={styles.priceRowTotal}>
             <Text style={styles.totalLabel}>Tổng:</Text>
-            <Text style={styles.totalValue}>
-              {finalTotal.toLocaleString()} đ
-            </Text>
+            <Text style={styles.totalValue}>{finalTotal.toLocaleString()} đ</Text>
           </View>
-
         </View>
       </ScrollView>
 
       <TouchableOpacity
-        style={[styles.orderButton, isLoading && styles.orderButtonDisabled]} // Vô hiệu hóa nút khi đang loading
+        style={[styles.orderButton, isLoading && styles.orderButtonDisabled]}
         onPress={ThanhToan}
-        disabled={isLoading} // Vô hiệu hóa onPress khi đang loading
-      >
-        <Text style={styles.orderText}>
-          {isLoading ? 'Đang xử lý...' : 'Đặt hàng'}
-        </Text>
+        disabled={isLoading}>
+        <Text style={styles.orderText}>{isLoading ? 'Đang xử lý...' : 'Đặt hàng'}</Text>
       </TouchableOpacity>
 
       <CustomAlert
-          visible={alertVisible}
-          header={alertHeader}
-          message={alertMessage}
-          onClose={() => {
-            setAlertVisible(false);
+        visible={alertVisible}
+        header={alertHeader}
+        message={alertMessage}
+        onClose={() => {
+          setAlertVisible(false);
+          if (alertType === 'success') {
             navigation.reset({ index: 0, routes: [{ name: 'HTScreen' }] });
-          }}
+          } else if (alertType === 'failure') {
+            navigation.reset({ index: 0, routes: [{ name: 'CancelledPaymentScreen' }] });
+          }
+          // alertType 'info' thì chỉ đóng alert không điều hướng
+        }}
       />
-
 
       <CustomAlertSecond
         visible={confirmOpenBrowser}
@@ -445,7 +418,7 @@ const CheckoutScreen = () => {
         onNo={() =>
           navigation.reset({
             index: 0,
-            routes: [{ name: 'FailedScreen' }],
+            routes: [{ name: 'CancelledPaymentScreen' }],
           })
         }
         onYes={async () => {
@@ -455,11 +428,11 @@ const CheckoutScreen = () => {
             if (isPaymentSuccess) {
               navigation.replace('HTScreen');
             } else {
-              showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!');
+              showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!', 'failure');
             }
           } catch (err) {
             console.error('[CheckoutScreen] Lỗi khi mở Chrome:', err);
-            showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.');
+            showAlert('Lỗi', 'Không thể mở Chrome hoặc liên kết không hợp lệ.', 'failure');
           }
         }}
       />
@@ -467,7 +440,6 @@ const CheckoutScreen = () => {
   );
 };
 
-// Cập nhật styles
 const styles = StyleSheet.create({
   backButton: { paddingTop: 16 },
   backText: { fontSize: 16, fontWeight: 'bold' },
@@ -485,32 +457,33 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    marginBottom: 16
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8
+    marginBottom: 8,
   },
   addressBox: {
     backgroundColor: '#f5f5f5',
     padding: 12,
-    borderRadius: 8
+    borderRadius: 8,
   },
   addressName: {
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   addressDetail: {
     fontSize: 14,
-    color: 'gray'
+    color: 'gray',
   },
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8},
+    marginBottom: 8,
+  },
   paymentText: {
-    fontSize: 16
+    fontSize: 16,
   },
 
   shippingBox: {
@@ -524,10 +497,10 @@ const styles = StyleSheet.create({
   shippingIcon: {
     width: 40,
     height: 40,
-    marginRight: 10
+    marginRight: 10,
   },
   shippingText: {
-    fontSize: 16
+    fontSize: 16,
   },
 
   priceSection: {
@@ -559,7 +532,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   orderButtonDisabled: {
-    backgroundColor: '#888', // Màu xám khi đang loading
+    backgroundColor: '#888',
     opacity: 0.7,
   },
   orderText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
@@ -573,15 +546,19 @@ const styles = StyleSheet.create({
   },
 
   productImage: {
-    width: 80, height: 80, borderRadius: 8, marginRight: 10},
-  productInfo: {
-    flex: 1
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 10,
   },
-  productName: {fontSize: 16, fontWeight: 'bold'},
-  productSize: {fontSize: 14, color: 'gray'},
-  productPrice: {fontSize: 16, fontWeight: 'bold', color: '#333'},
-  productQuantity: {fontSize: 14, color: '#666'},
-  emptyText: {fontSize: 16, textAlign: 'center', marginTop: 20, color: 'gray'},
+  productInfo: {
+    flex: 1,
+  },
+  productName: { fontSize: 16, fontWeight: 'bold' },
+  productSize: { fontSize: 14, color: 'gray' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#333' },
+  productQuantity: { fontSize: 14, color: '#666' },
+  emptyText: { fontSize: 16, textAlign: 'center', marginTop: 20, color: 'gray' },
 
   addressPhone: {
     fontSize: 14,
@@ -620,8 +597,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f5f0',
     padding: 8,
     borderRadius: 8,
-    marginBottom:10,
-
+    marginBottom: 10,
   },
   couponIcon: {
     width: 24,
@@ -633,9 +609,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#008060',
   },
-
-
-
 });
 
 export default CheckoutScreen;

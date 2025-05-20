@@ -45,6 +45,8 @@ import DetailOrderScreen from "./src/component/OrderScreens/DetailOrderScreen.ts
 import OrderRating from "./src/component/OrderScreens/OrderRating.tsx";
 import OrderRated from "./src/component/OrderScreens/OrderRated.tsx";
 import CouponScreen from './src/component/CouponScreen.tsx';
+import CancelledPaymentScreen from './src/component/CancelledPaymentScreen.tsx';
+import CheckMomoStatusScreen from './src/component/CheckMomoStatusScreen.tsx';
 
 function App() {
   const Stack = createNativeStackNavigator();
@@ -297,9 +299,17 @@ function App() {
           options={{ headerShown: false }}
           component={ProfileScreen} />
         <Stack.Screen
+          name=" CheckMomoStatusScreen;"
+          options={{ headerShown: false }}
+          component={CheckMomoStatusScreen} />
+        <Stack.Screen
           name="DetailScreen"
           options={{ headerShown: false }}
           component={DetailScreen} />
+        <Stack.Screen
+          name="CancelledPaymentScreen"
+          options={{ headerShown: false }}
+          component={CancelledPaymentScreen} />
         <Stack.Screen
           name="ResetPasswordScreen"
           options={{

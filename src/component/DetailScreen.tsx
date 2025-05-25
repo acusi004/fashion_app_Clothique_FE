@@ -233,36 +233,7 @@ const DetailScreen = ({ route, navigation }) => {
         }
     };
 
-    const handleDislike = async (commentId) => {
-        try {
-            const token = await getToken();
-            const currentUser = await tokenService.getUserIdFromToken();
-            const currentUserId = currentUser?.userId;
 
-            if (!currentUserId) return;
-
-            // Gửi yêu cầu DISLIKE
-            await dislikeComment(commentId);
-
-            // Cập nhật lại state
-            setComments((prevComments) =>
-                prevComments.map((comment) =>
-                    comment._id === commentId
-                        ? {
-                            ...comment,
-                            dislikes: Array.isArray(comment.dislikes)
-                                ? [...comment.dislikes, { userId: currentUserId }]
-                                : [{ userId: currentUserId }],
-                            likes: Array.isArray(comment.likes) ? comment.likes : [],
-                        }
-                        : comment
-                )
-            );
-
-        } catch (error) {
-            console.error("Lỗi khi dislike comment:", error);
-        }
-    };
 
     return (
         <View style={styles.container}>
@@ -278,7 +249,7 @@ const DetailScreen = ({ route, navigation }) => {
                     <View style={styles.headerChild}>
                         <View>
                             <Text style={styles.itemTitle}>{product.name}</Text>
-                            <Text style={styles.itemPrice}>{`${currentVariant.price?.toLocaleString()} VND`}</Text>
+                            <Text style={styles.itemPrice}>{`${currentVariant.salePrice?.toLocaleString()} VND`}</Text>
                         </View>
                         {/*<Text style={styles.itemSold}>Đã bán 39.1k</Text>*/}
                     </View>

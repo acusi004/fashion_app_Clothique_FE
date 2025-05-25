@@ -337,7 +337,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
             <Text style={styles.variantText}>
               {variant.size} - {variant.color}
             </Text>
-            <Text style={styles.price}>₫{variant.price.toLocaleString()}</Text>
+            <Text style={styles.price}>₫{variant.salePrice}</Text>
             <Text style={styles.quantity}>x{product.quantity}</Text>
           </View>
         </View>
@@ -363,7 +363,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
                       {item.productId.name}
                     </Text>
                     <Text style={styles.extraProductPrice}>
-                      ₫{item.variantId.price.toLocaleString()}
+                      ₫{item.variantId.salePrice}
                     </Text>
                   </View>
                 </View>
@@ -395,7 +395,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
               <View key={index} style={styles.breakdownRow}>
                 <Text style={{ flex: 1 }} numberOfLines={1}>{item.productId.name}</Text>
                 <Text>
-                  ₫{item.variantId.price.toLocaleString()} x {item.quantity}
+                  ₫{item.variantId.salePrice} x {item.quantity}
                 </Text>
               </View>
             ))}

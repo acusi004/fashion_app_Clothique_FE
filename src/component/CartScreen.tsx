@@ -59,6 +59,7 @@ function CartScreen() {
 
         // Cập nhật số lượng ban đầu của từng sản phẩm
         console.log(cartData);
+        console.log(data);
 
         const initialQuantities = {};
         data.cart.forEach(item => {
@@ -251,8 +252,8 @@ function CartScreen() {
                   Size {item.variantId.size}
                 </Text>
                 <Text style={styles.productPrice}>
-                  {item.variantId?.price
-                    ? (item.variantId.price * item.quantity).toLocaleString()
+                  {item.variantId?.salePrice
+                    ? (item.variantId.salePrice * item.quantity)
                     : 'Chưa có giá'}{' '}
                   đ
                 </Text>

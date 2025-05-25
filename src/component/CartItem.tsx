@@ -25,7 +25,7 @@ const CartItem = ({item, quantity, isSelected, onIncrease, onDecrease, onToggleS
                 <Text style={styles.productSize}>Size {item.variantId.size}</Text>
                 <Text style={styles.productPrice}>
                     {item.variantId?.price
-                        ? (item.variantId.price * item.quantity).toLocaleString()
+                        ? (item.variantId.salePrice * item.quantity).toLocaleString()
                         : "Chưa có giá"}{" "}
                     đ
                 </Text>

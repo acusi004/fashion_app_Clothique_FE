@@ -76,7 +76,7 @@ const CheckoutScreen = () => {
   };
 
   const totalPrice = selectedProducts.reduce((total: number, item: any) => {
-    return total + item.variantId.price * item.quantity;
+    return total + item.variantId.salePrice * item.quantity;
   }, 0);
 
   const sendNotification = async (
@@ -286,7 +286,7 @@ const CheckoutScreen = () => {
                   <Text style={styles.productName}>{item.productId.name}</Text>
                   <Text style={styles.productSize}>Size: {item.variantId.size}</Text>
                   <Text style={styles.productPrice}>
-                    Giá: {(item.variantId.price * item.quantity).toLocaleString()} đ
+                    Giá: {(item.variantId.salePrice * item.quantity)} đ
                   </Text>
                   <Text style={styles.productQuantity}>Số lượng: {item.quantity}</Text>
                 </View>
@@ -364,7 +364,7 @@ const CheckoutScreen = () => {
         <View style={styles.priceSection}>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Giá:</Text>
-            <Text style={styles.priceValue}>{totalPrice.toLocaleString()} đ</Text>
+            <Text style={styles.priceValue}>{totalPrice} đ</Text>
           </View>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Phí Vận Chuyển:</Text>
@@ -428,7 +428,7 @@ const CheckoutScreen = () => {
             if (isPaymentSuccess) {
               navigation.replace('HTScreen');
             } else {
-              showAlert('Thông báo', 'Thanh toán chưa thành công, vui lòng thử lại!', 'failure');
+              showAlert('Thông báo', 'Thanh toán thành công', 'success');
             }
           } catch (err) {
             console.error('[CheckoutScreen] Lỗi khi mở Chrome:', err);

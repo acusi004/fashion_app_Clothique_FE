@@ -87,7 +87,7 @@ const ItemProducts = ({product, getRandomImage, onPress}) => {
                 <View style={styles.bestPriceTag}>
                     <Text style={styles.bestPriceText}>Rẻ Vô Địch</Text>
                 </View>
-                <Text style={styles.price}> {`${product.variants[0]?.price.toLocaleString()} VND`}</Text>
+                <Text style={styles.price}> {`${product.variants[0]?.salePrice} VND`}</Text>
             </View>
         </TouchableOpacity>
     )

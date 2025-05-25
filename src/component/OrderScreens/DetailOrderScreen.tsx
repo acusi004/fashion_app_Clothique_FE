@@ -116,7 +116,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
                   </Text>
                   <Text>Số lượng: {item.quantity}</Text>
                   <Text style={styles.price}>
-                    ₫{item.variantId.price.toLocaleString()}
+                    ₫{item.variantId.salePrice}
                   </Text>
                 </View>
               </View>
@@ -141,7 +141,7 @@ const DetailOrderScreen = ({ route, navigation }) => {
                   {item.productId.name} ({item.variantId.size}/{item.variantId.color}) x {item.quantity}
                 </Text>
                 <Text>
-                  ₫{(item.variantId.price * item.quantity).toLocaleString()}
+                  ₫{(item.variantId.salePrice * item.quantity).toLocaleString()}
                 </Text>
               </View>
             ))}

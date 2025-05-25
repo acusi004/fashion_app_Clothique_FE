@@ -38,7 +38,7 @@ const ItemSearchProducts = ({ item, onPress }) => {
                 <Text style={styles.name}>{product.name}</Text>
                 {product.variants && product.variants.length > 0 && (
                     <Text style={styles.price}>
-                        {product.variants[0].price.toLocaleString()} VND
+                        {product.variants[0].salePrice} VND
                     </Text>
                 )}
             </View>
